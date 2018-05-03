@@ -12,7 +12,7 @@ import (
 func main() {
 
 	fmt.Println("go!")
-	packFile := "./modules.json"
+	packFile := "./data/modules.json"
 	jsonBytes := getBytes(packFile)
 	jsonParsed, _ := gabs.ParseJSON(jsonBytes)
 
@@ -23,7 +23,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		pack.Name = key
+		pack.Command = key
 		fmt.Println(pack)
 	}
 
@@ -31,7 +31,7 @@ func main() {
 
 // Package struct
 type Package struct {
-	Name     string `json:"name,omitempty"`
+	Command  string `json:"command,omitempty"`
 	Version  string `json:"version,omitempty"`
 	From     string `json:"from,omitempty"`
 	Resolved string `json:"resolved,omitempty"`
@@ -39,7 +39,7 @@ type Package struct {
 
 // Implement the Stringer interface for printing
 func (p Package) String() string {
-	return fmt.Sprintf("{Package: %s, %s, %s, %s", p.Name, p.From, p.Version, p.Resolved)
+	return fmt.Sprintf("\ncommand: %s,\nfrom: %s,\nversion: %s,\nresolved: %s\n", p.Command, p.From, p.Version, p.Resolved)
 }
 
 // Gets a slice of bytes from a file.
