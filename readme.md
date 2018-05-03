@@ -1,0 +1,16 @@
+# Go
+
+## Resources
+- [A Tour of Go](https://tour.golang.org/list)
+- [Effective Go](https://golang.org/doc/effective_go.html)
+- [Standard Library](https://golang.org/pkg/)
+- [golang/go/wiki/Learn](https://github.com/golang/go/wiki/Learn)
+- [The Go Programming Language Specification](https://golang.org/ref/spec)
+- [Writing Web Applications](https://golang.org/doc/articles/wiki/)
+
+### The Go Blog
+- [Go Slices: usage and internals](https://blog.golang.org/go-slices-usage-and-internals)
+- [Generating code](https://blog.golang.org/generate)
+- [Share Memory By Communicating](https://blog.golang.org/share-memory-by-communicating)
+- [JSON and Go](https://blog.golang.org/json-and-go)
+- [C? Go? Cgo!](https://blog.golang.org/c-go-cgo)
