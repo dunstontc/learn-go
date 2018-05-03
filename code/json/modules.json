@@ -1,0 +1,212 @@
+{
+  "dependencies": {
+    "asciicast2gif": {
+      "version": "0.1.3",
+      "from": "asciicast2gif",
+      "resolved": "https://registry.npmjs.org/asciicast2gif/-/asciicast2gif-0.1.3.tgz"
+    },
+    "bars": {
+      "version": "1.2.2",
+      "from": "git+https://github.com/jez/bars.git",
+      "resolved": "git+https://github.com/jez/bars.git#6f5cde29afce17dbf6b28e9b33f7c8e8c28166f9"
+    },
+    "cowsay": {
+      "version": "1.2.1",
+      "from": "cowsay",
+      "resolved": "https://registry.npmjs.org/cowsay/-/cowsay-1.2.1.tgz"
+    },
+    "create-react-app": {
+      "version": "1.4.1",
+      "from": "create-react-app",
+      "resolved": "https://registry.npmjs.org/create-react-app/-/create-react-app-1.4.1.tgz"
+    },
+    "cson": {
+      "version": "4.1.0",
+      "from": "cson",
+      "resolved": "https://registry.npmjs.org/cson/-/cson-4.1.0.tgz"
+    },
+    "doctoc": {
+      "version": "1.3.0",
+      "from": "doctoc",
+      "resolved": "https://registry.npmjs.org/doctoc/-/doctoc-1.3.0.tgz"
+    },
+    "eslint": {
+      "version": "4.15.0",
+      "from": "eslint",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-4.15.0.tgz"
+    },
+    "eslint-plugin-vue": {
+      "version": "4.1.0",
+      "from": "eslint-plugin-vue",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-vue/-/eslint-plugin-vue-4.1.0.tgz"
+    },
+    "estilo": {
+      "version": "1.3.3",
+      "from": "estilo",
+      "resolved": "https://registry.npmjs.org/estilo/-/estilo-1.3.3.tgz"
+    },
+    "fast-cli": {
+      "version": "2.0.0",
+      "from": "fast-cli",
+      "resolved": "https://registry.npmjs.org/fast-cli/-/fast-cli-2.0.0.tgz"
+    },
+    "fixjson": {
+      "version": "1.0.1",
+      "from": "fixjson",
+      "resolved": "https://registry.npmjs.org/fixjson/-/fixjson-1.0.1.tgz"
+    },
+    "fkill-cli": {
+      "version": "3.7.0",
+      "from": "fkill-cli",
+      "resolved": "https://registry.npmjs.org/fkill-cli/-/fkill-cli-3.7.0.tgz"
+    },
+    "gatsby-cli": {
+      "version": "1.1.28",
+      "from": "gatsby-cli",
+      "resolved": "https://registry.npmjs.org/gatsby-cli/-/gatsby-cli-1.1.28.tgz"
+    },
+    "generator-dotfiles": {
+      "version": "0.1.0"
+    },
+    "gifi": {
+      "version": "1.2.0",
+      "from": "gifi",
+      "resolved": "https://registry.npmjs.org/gifi/-/gifi-1.2.0.tgz"
+    },
+    "gifify": {
+      "version": "2.4.0",
+      "from": "gifify",
+      "resolved": "https://registry.npmjs.org/gifify/-/gifify-2.4.0.tgz"
+    },
+    "git-recent": {
+      "version": "1.0.3",
+      "from": "git-recent",
+      "resolved": "https://registry.npmjs.org/git-recent/-/git-recent-1.0.3.tgz"
+    },
+    "hexo-cli": {
+      "version": "1.0.3",
+      "from": "hexo-cli",
+      "resolved": "https://registry.npmjs.org/hexo-cli/-/hexo-cli-1.0.3.tgz"
+    },
+    "hpm": {
+      "version": "0.0.0",
+      "from": "hpm",
+      "resolved": "https://registry.npmjs.org/hpm/-/hpm-0.0.0.tgz"
+    },
+    "instant-markdown-d": {
+      "version": "0.1.0",
+      "from": "instant-markdown-d",
+      "resolved": "https://registry.npmjs.org/instant-markdown-d/-/instant-markdown-d-0.1.0.tgz"
+    },
+    "jsctags": {
+      "version": "5.2.0",
+      "from": "git+https://github.com/ramitos/jsctags.git",
+      "resolved": "git+https://github.com/ramitos/jsctags.git#6ca344907d1978513c8138ce7ac1a4d3008a8ad6"
+    },
+    "jsonlint": {
+      "version": "1.6.2",
+      "from": "jsonlint",
+      "resolved": "https://registry.npmjs.org/jsonlint/-/jsonlint-1.6.2.tgz"
+    },
+    "loopback-cli": {
+      "version": "4.0.0",
+      "from": "loopback-cli",
+      "resolved": "https://registry.npmjs.org/loopback-cli/-/loopback-cli-4.0.0.tgz"
+    },
+    "neovim": {
+      "version": "3.5.0",
+      "from": "neovim",
+      "resolved": "https://registry.npmjs.org/neovim/-/neovim-3.5.0.tgz"
+    },
+    "nodemon": {
+      "version": "1.12.1",
+      "from": "nodemon",
+      "resolved": "https://registry.npmjs.org/nodemon/-/nodemon-1.12.1.tgz"
+    },
+    "npm": {
+      "version": "5.6.0",
+      "from": "npm",
+      "resolved": "https://registry.npmjs.org/npm/-/npm-5.6.0.tgz"
+    },
+    "nyaovim": {
+      "version": "0.1.1",
+      "from": "nyaovim",
+      "resolved": "https://registry.npmjs.org/nyaovim/-/nyaovim-0.1.1.tgz"
+    },
+    "package-json-to-readme": {
+      "version": "2.0.0",
+      "from": "package-json-to-readme",
+      "resolved": "https://registry.npmjs.org/package-json-to-readme/-/package-json-to-readme-2.0.0.tgz"
+    },
+    "pajv": {
+      "version": "1.2.0",
+      "from": "pajv",
+      "resolved": "https://registry.npmjs.org/pajv/-/pajv-1.2.0.tgz"
+    },
+    "parsefunc": {
+      "version": "1.3.1",
+      "from": "parsefunc",
+      "resolved": "https://registry.npmjs.org/parsefunc/-/parsefunc-1.3.1.tgz"
+    },
+    "remark-cli": {
+      "version": "5.0.0",
+      "from": "remark-cli",
+      "resolved": "https://registry.npmjs.org/remark-cli/-/remark-cli-5.0.0.tgz"
+    },
+    "tern": {
+      "version": "0.21.0",
+      "from": "tern",
+      "resolved": "https://registry.npmjs.org/tern/-/tern-0.21.0.tgz"
+    },
+    "todo": {
+      "version": "1.1.0",
+      "from": "todo",
+      "resolved": "https://registry.npmjs.org/todo/-/todo-1.1.0.tgz"
+    },
+    "unified": {
+      "version": "6.1.6",
+      "from": "unified",
+      "resolved": "https://registry.npmjs.org/unified/-/unified-6.1.6.tgz"
+    },
+    "vsce": {
+      "version": "1.36.1",
+      "from": "vsce",
+      "resolved": "https://registry.npmjs.org/vsce/-/vsce-1.36.1.tgz"
+    },
+    "vscode-json-languageservice": {
+      "version": "3.0.4",
+      "from": "vscode-json-languageservice",
+      "resolved": "https://registry.npmjs.org/vscode-json-languageservice/-/vscode-json-languageservice-3.0.4.tgz"
+    },
+    "vtop": {
+      "version": "0.5.7",
+      "from": "vtop",
+      "resolved": "https://registry.npmjs.org/vtop/-/vtop-0.5.7.tgz"
+    },
+    "vue-cli": {
+      "version": "2.8.2",
+      "from": "vue-cli",
+      "resolved": "https://registry.npmjs.org/vue-cli/-/vue-cli-2.8.2.tgz"
+    },
+    "wallpaper-cli": {
+      "version": "1.2.0",
+      "from": "wallpaper-cli",
+      "resolved": "https://registry.npmjs.org/wallpaper-cli/-/wallpaper-cli-1.2.0.tgz"
+    },
+    "write-good": {
+      "version": "0.11.3",
+      "from": "write-good",
+      "resolved": "https://registry.npmjs.org/write-good/-/write-good-0.11.3.tgz"
+    },
+    "x2j-cli": {
+      "version": "1.0.4",
+      "from": "x2j-cli",
+      "resolved": "https://registry.npmjs.org/x2j-cli/-/x2j-cli-1.0.4.tgz"
+    },
+    "yo": {
+      "version": "2.0.0",
+      "from": "yo",
+      "resolved": "https://registry.npmjs.org/yo/-/yo-2.0.0.tgz"
+    }
+  }
+}

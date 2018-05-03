@@ -1,0 +1,25 @@
+#   ┌─┐┬┌┬┐┬┌─┐┌┐┌┌─┐┬─┐┌─┐
+#   │ ┬│ │ ││ ┬││││ │├┬┘├┤
+#  o└─┘┴ ┴ ┴└─┘┘└┘└─┘┴└─└─┘
+
+# Mac files
+Icon?
+.DS_store
+
+# dependencies
+vendor/*
+
+# Local files
+.env
+.variables
+ignore/*
+**/*.db
+
+# Misc.
+!.gitkeep
+.idea
+.vscode
+.projectile
+*/tags
+
+
