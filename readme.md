@@ -1,5 +1,11 @@
 # Go
 
+<div align="center">
+  <a href="https://github.com/golang/go">
+    <img src="https://raw.githubusercontent.com/dunstontc/assets/master/images/logos/gopher.png" alt="gopher" title="gopher" width="25%">
+  </a>
+</div>
+
 ## Resources
 - [A Tour of Go](https://tour.golang.org/list)
 - [Effective Go](https://golang.org/doc/effective_go.html)
