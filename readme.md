@@ -1,5 +1,3 @@
-# Go
-
 <div align="center">
   <a href="https://github.com/golang/go">
     <img src="https://raw.githubusercontent.com/dunstontc/assets/master/images/logos/gopher.png" alt="gopher" title="gopher" width="25%">
