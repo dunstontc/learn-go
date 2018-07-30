@@ -11,6 +11,9 @@
 - [golang/go/wiki/Learn](https://github.com/golang/go/wiki/Learn)
 - [The Go Programming Language Specification](https://golang.org/ref/spec)
 - [Writing Web Applications](https://golang.org/doc/articles/wiki/)
+- [ardanlabs/gotraining](https://github.com/ardanlabs/gotraining)
+- [GoesToEleven/GolangTraining](https://github.com/GoesToEleven/GolangTraining)
+- [GoesToEleven/golang-web-dev](https://github.com/GoesToEleven/golang-web-dev)
 
 ### The Go Blog
 - [Go Slices: usage and internals](https://blog.golang.org/go-slices-usage-and-internals)
