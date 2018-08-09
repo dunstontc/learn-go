@@ -2,8 +2,9 @@
 
 ## Links
 - [GoesToEleven/GolangTraining](https://github.com/GoesToEleven/GolangTraining)
+  - [Course Outline](https://docs.google.com/document/d/1nt5bYAAS5sTVF6tpLaFLDHQzo5BNkcr4b507fg3ZPwM/edit)
 - [GoesToEleven/golang-web-dev](https://github.com/GoesToEleven/golang-web-dev)
-- [Course outline](https://docs.google.com/document/d/1nt5bYAAS5sTVF6tpLaFLDHQzo5BNkcr4b507fg3ZPwM/edit)
+  - [Course Outline](https://docs.google.com/document/d/1QKWp1VYd26uiQZWIR05pahSa0HnbD1qqj9dtIQiVVjU/edit)
 - [Slides](https://drive.google.com/drive/folders/0B22KXlqHz6ZNfjNXTzk1U3JHUkJ6VjJ3dnJKNzVtNjRUM3Q2WFNqWGI2Q3RadERqUlVrOEU)
 - [Spec](https://golang.org/ref/spec)
 - [Effective Go](https://golang.org/doc/effective_go.html)

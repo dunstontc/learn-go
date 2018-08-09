@@ -5,6 +5,10 @@ Training for Golang (go language)
 ## Contents
 
 - Getting Started
+  - Hello World
+  - Numeral Systems
+  - UTF-8
+- Language Baics
   - Packages
   - variables
   - Scope
@@ -13,14 +17,13 @@ Training for Golang (go language)
   - Memory Address
   - Pointers
   - Remainder
+  - Booleans
 - Control Flow
   - For Loop
   - Switch Statements
   - If Else 
   - Exercises
 - Functions
-- Booleans
-  - Exercises
 - Data Structures
   - Array
   - Slice
