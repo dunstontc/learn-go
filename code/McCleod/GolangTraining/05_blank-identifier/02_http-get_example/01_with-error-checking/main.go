@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	res, err := http.Get("http://www.geekwiseacademy.com/")
+	res, err := http.Get("https://jsonplaceholder.typicode.com/todos")
 	check(err)
 	page, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	res, _ := http.Get("http://www.geekwiseacademy.com/")
+	res, _ := http.Get("https://jsonplaceholder.typicode.com/todos")
 	page, _ := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	fmt.Printf("%s", page)

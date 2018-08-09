@@ -25,8 +25,8 @@ func main() {
 }
 
 /*
-  expression not needed
-  -- if no expression provided, go checks for the first case that evals to true
-  -- makes the switch operate like if/if else/else
-  cases can be expressions
-*/
+ * expression not needed
+ * -- if no expression provided, go checks for the first case that evals to true
+ * -- makes the switch operate like if/if else/else
+ * cases can be expressions
+ */

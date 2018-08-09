@@ -10,20 +10,39 @@ Training for Golang (go language)
   - UTF-8
 - Language Baics
   - Packages
-  - variables
+  - Variables
+    - Shorthand
+    - Zero Value
   - Scope
   - Blank Identifier
   - Constants
-  - Memory Address
+  - Memory 
+    - Showing Addresses
+    - Using Addresses
   - Pointers
+    - Referencing
+    - Dereferencing
+    - Using Pointers
   - Remainder
-  - Booleans
+- Booleans
+- Runes
 - Control Flow
   - For Loop
   - Switch Statements
   - If Else 
   - Exercises
 - Functions
+  - Params vs. Args
+    - Variadic
+  - Returns
+    - Named
+    - Multiple
+  - Closure
+  - Callbacks
+  - Recursion
+  - Defer
+  - Pass by Value
+  - Anonymous Self-Executing
 - Data Structures
   - Array
   - Slice
@@ -39,6 +58,7 @@ Training for Golang (go language)
 - [GoesToEleven/golang-web-dev](https://github.com/GoesToEleven/golang-web-dev)
 - [Course outline](https://docs.google.com/document/d/1nt5bYAAS5sTVF6tpLaFLDHQzo5BNkcr4b507fg3ZPwM/edit)
 - [Slides](https://drive.google.com/drive/folders/0B22KXlqHz6ZNfjNXTzk1U3JHUkJ6VjJ3dnJKNzVtNjRUM3Q2WFNqWGI2Q3RadERqUlVrOEU)
+- [teh-cmc/go-internals](https://github.com/teh-cmc/go-internals)
 - Books, etc.
   - [Effective Go](https://golang.org/doc/effective_go.html)
   - [An Introduction to Programming in Go - Caleb Doxsey](https://www.golang-book.com/books/intro)

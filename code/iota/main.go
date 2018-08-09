@@ -14,10 +14,13 @@ func main() {
 	fmt.Println("binary\t\tdecimal")
 	fmt.Printf("%b\t", kb)
 	fmt.Printf("%d\n", kb)
+
 	fmt.Printf("%b\t", mb)
 	fmt.Printf("%d\n", mb)
+
 	fmt.Printf("%b\t", gb)
 	fmt.Printf("%d\n", gb)
+
 	fmt.Printf("%b\t", tb)
 	fmt.Printf("%d\n", tb)
 }
