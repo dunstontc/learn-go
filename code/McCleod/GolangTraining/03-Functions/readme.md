@@ -1,30 +1,65 @@
 # Functions
 
-- parameters vs. arguments
-  - params
-    multiple “variadic” params
-  - args
-    - multiple “variadic” args
-- returns
+- Parameters vs. Arguments
+  - Params
+    - multiple *variadic* params
+  - Args
+    - multiple *variadic* args
+- Returns
   - multiple returns
   - named returns - yuck!
-- review
+<!-- - review
   - func expressions
-  - closure 
-- callbacks
-- recursion
-- defer
-- pass by value
+  - closure  -->
+- Callbacks
+- Recursion
+- Defer
+- Pass by Value
   - reference types
 - Immediately Invoked Function Expressions (iifes)
 
 
 ## Parameters v. Arguments
 
+> You define with params and call with args.
+
+
 ## Returns
+```go
+func main() {
+	fmt.Println(greet("Jane ", "Doe"))
+}
+
+func greet(fname, lname string) string {
+	return fmt.Sprint(fname, lname)
+}
+```
+
+### Multiple Returns
+```go
+func main() {
+	fmt.Println(greet("Jane ", "Doe "))
+}
+
+func greet(fname, lname string) (string, string) {
+	return fmt.Sprint(fname, lname), fmt.Sprint(lname, fname)
+}
+```
+
+### Named Returns
+```go
+func main() {
+	fmt.Println(greet("Jane ", "Doe"))
+}
+
+func greet(fname string, lname string) (s string) {
+	s = fmt.Sprint(fname, lname)
+	return
+}
+```
+
 
 ## Callbacks
-
 ```go
 func visit(numbers []int, callback func(int)) {
 	for _, n := range numbers {
@@ -40,7 +75,6 @@ func main() {
 ```
 
 ## Recursion
-
 ```go
 func factorial(x int) int {
 	if x == 0 {
@@ -54,8 +88,8 @@ func main() {
 }
 ```
 
-## Defer
 
+## Defer
 ```go
 func hello() {
 	fmt.Print("hello ")
@@ -73,12 +107,10 @@ func main() {
 
 
 ## IIFEs
-
 ```go
 func main() {
 	func() {
 		fmt.Println("I'm driving!")
 	}()
 }
-
 ```
