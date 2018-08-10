@@ -14,9 +14,9 @@
 - callbacks
 - recursion
 - defer
-- anonymous self-executing functions
 - pass by value
   - reference types
+- Immediately Invoked Function Expressions (iifes)
 
 
 ## Parameters v. Arguments
@@ -26,10 +26,6 @@
 ## Callbacks
 
 ```go
-package main
-
-import "fmt"
-
 func visit(numbers []int, callback func(int)) {
 	for _, n := range numbers {
 		callback(n)
@@ -46,10 +42,6 @@ func main() {
 ## Recursion
 
 ```go
-package main
-
-import "fmt"
-
 func factorial(x int) int {
 	if x == 0 {
 		return 1
@@ -63,3 +55,30 @@ func main() {
 ```
 
 ## Defer
+
+```go
+func hello() {
+	fmt.Print("hello ")
+}
+
+func world() {
+	fmt.Println("world")
+}
+
+func main() {
+	defer world()
+	hello()
+}
+```
+
+
+## IIFEs
+
+```go
+func main() {
+	func() {
+		fmt.Println("I'm driving!")
+	}()
+}
+
+```

@@ -42,7 +42,7 @@ Training for Golang (go language)
   - Recursion
   - Defer
   - Pass by Value
-  - Anonymous Self-Executing
+  - Immediately Invoked Function Expression (*iife*)
 - Data Structures
   - Array
   - Slice
@@ -83,6 +83,7 @@ Training for Golang (go language)
 | *Variadic Functions*  | A func that accepts an unlimited number of parameters.                                                                                                                                                                                                                             |
 | *Callbacks*           | Passing a function as an argument.                                                                                                                                                                                                                                                 |
 | *Defer*               | A "defer" statement invokes a function whose execution is deferred to the moment the surrounding function returns, either because the surrounding function executed a return statement, reached the end of its function body, or because the corresponding goroutine is panicking. |
+| *slice*               | An address pointing to an underlying array, a length, and a capacity.                                                                                                                                                                                                              |
 
 
 
