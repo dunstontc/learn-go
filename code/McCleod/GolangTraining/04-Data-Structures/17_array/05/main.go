@@ -11,6 +11,6 @@ func main() {
 		x[i] = string(i)
 	}
 	for _, v := range x {
-		fmt.Printf("%v - %T - %v\n", v, v, []byte(v))
+		fmt.Printf("%s - %T - %03v\n", v, v, []byte(v))
 	}
 }
