@@ -4,14 +4,14 @@
  We initialized those variables with specific values
  We used the short variable declaration operator with a struct literal to initialize
  ----------------------------------------
- here is how we talk about structs:
- -- user defined type
- -- we declare the type
- -- the type has fields
- -- the type can also have "tags"
- ----  we haven't seen this yet
- -- the type has an underlying type
- ---- in this case, the underlying type is struct
+here is how we talk about structs:
+ - user defined type
+ - we declare the type
+ - the type has fields
+ - the type can also have "tags"
+    - we haven't seen this yet
+ - the type has an underlying type
+    - in this case, the underlying type is struct
  -- we declare variables of the type
  -- we initialize those variables
  ---- initialize with a specific value, or
