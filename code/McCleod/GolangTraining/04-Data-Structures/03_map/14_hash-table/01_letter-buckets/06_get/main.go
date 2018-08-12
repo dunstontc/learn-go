@@ -17,5 +17,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s", bs)
+	fmt.Printf("%s", bs) // The entirety of Moby Dick
 }

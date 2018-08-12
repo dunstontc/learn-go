@@ -47,6 +47,7 @@ Training for Golang (go language)
   - Array
   - Slice
   - Map
+    - Hash Tables
   - Struct
   - Interfaces
 - Go Routines
@@ -86,5 +87,6 @@ Training for Golang (go language)
 | *slice*               | An address pointing to an underlying array, a length, and a capacity.                                                                                                                                                                                                              |
 | *statement*           | A statement performs an action.                                                                                                                                                                                                                                                    |
 | *expression*          | An expression produces a value.                                                                                                                                                                                                                                                    |
+| *hash tables*         | A way of making searches more performant. <br> The underlying data structure of `map`s in Go.                                                                                                                                                                                      |
 
 

@@ -39,6 +39,7 @@
   - Capacity is a measure of that extent: 
     - it is the sum of the length of the slice and the length of the array beyond the slice; 
   - The capacity of a slice a can be discovered using the built-in function `cap(a)`. 
+- [Go Slices: usage and internals](https://blog.golang.org/go-slices-usage-and-internals)
 
 ### `make`
 - A new, initialized slice value for a given element type T is made using the built-in function make, which takes a slice type and parameters specifying the length and optionally the capacity. 
@@ -55,6 +56,7 @@
   - key / value storage
   - a “dictionary”
 - The value of an uninitialized map is `nil`.
+- [Macro View of Map Internals In Go](https://www.ardanlabs.com/blog/2013/12/macro-view-of-map-internals-in-go.html)
 
 
 ## Structs

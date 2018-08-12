@@ -34,7 +34,8 @@ func handleIndex(res http.ResponseWriter, req *http.Request) {
 			http.Error(res, err.Error(), 500)
 			return
 		}
-		io.WriteString(res, `<!DOCTYPE html>
+		io.WriteString(res, `
+<!DOCTYPE html>
 <html>
   <head>
 
@@ -47,7 +48,8 @@ func handleIndex(res http.ResponseWriter, req *http.Request) {
 	} else {
 
 		// render the form
-		io.WriteString(res, `<!DOCTYPE html>
+		io.WriteString(res, `
+  <!DOCTYPE html>
   <html>
     <head>
 
