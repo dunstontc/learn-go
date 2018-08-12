@@ -1,4 +1,4 @@
-DATA STRUCTURES - SLICE
+<!--
 video #80
 Slice
 definition
@@ -93,3 +93,124 @@ sets slice to zero value which is nil
 var student []string
 make
 student := make([]string, 35)
+-->
+
+# Slices
+
+## Slicing a Slice
+
+```go
+func main() {
+
+	var results []int
+	fmt.Println(results)
+
+	mySlice := []string{"a", "b", "c", "g", "m", "z"}
+	fmt.Println(mySlice)
+	fmt.Println(mySlice[2:4])  // slicing a slice
+	fmt.Println(mySlice[2])    // index access; accessing by index
+	fmt.Println("myString"[2]) // index access; accessing by index
+}
+```
+
+## Make
+
+```go
+func main() {
+
+	customerNumber := make([]int, 3)
+	// 3 is length & capacity
+	// length - number of elements referred to by the slice
+	// capacity - number of elements in the underlying array
+	customerNumber[0] = 7
+	customerNumber[1] = 10
+	customerNumber[2] = 15
+
+	fmt.Println(customerNumber[0])
+	fmt.Println(customerNumber[1])
+	fmt.Println(customerNumber[2])
+
+	greeting := make([]string, 3, 5)
+	// 3 is length - number of elements referred to by the slice
+	// 5 is capacity - number of elements in the underlying array
+	// you could also do it like this
+
+	greeting[0] = "Good morning!"
+	greeting[1] = "Bonjour!"
+	greeting[2] = "dias!"
+
+	fmt.Println(greeting[2])
+}
+```
+
+## Append
+
+```go
+func main() {
+
+	mySlice := []int{1, 2, 3, 4, 5}
+	myOtherSlice := []int{6, 7, 8, 9}
+
+	mySlice = append(mySlice, myOtherSlice...)
+
+	fmt.Println(mySlice)
+}
+```
+
+## Delete
+
+```go
+func main() {
+
+	mySlice := []string{"Monday", "Tuesday"}
+	myOtherSlice := []string{"Wednesday", "Thursday", "Friday"}
+
+	mySlice = append(mySlice, myOtherSlice...)
+	fmt.Println(mySlice)
+
+	mySlice = append(mySlice[:2], mySlice[3:]...)
+	fmt.Println(mySlice)
+
+}
+```
+
+## Create
+
+### *Shorthand*
+```go
+func main() {
+	student := []string{}
+	students := [][]string{}
+	fmt.Println(student)        // []
+	fmt.Println(students)       // []
+	fmt.Println(student == nil) // false
+}
+// requires the use of append
+```
+
+### *Var*
+```go
+func main() {
+	var student []string
+	var students [][]string
+	fmt.Println(student)        // []
+	fmt.Println(students)       // []
+	fmt.Println(student == nil) // true
+}
+// requires the use of append
+```
+
+### *Make*
+```go
+func main() {
+	student := make([]string, 35)
+	students := make([][]string, 35)
+	fmt.Println(student)        // [
+	fmt.Println(students)       // [[] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] [] []]
+	fmt.Println(student == nil) // false
+}
+// Length & Capaciity get set with `make()`
+```
+
+
+## Multidimensional
