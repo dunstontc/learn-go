@@ -44,13 +44,16 @@ Training for Golang (go language)
   - Pass by Value
   - Immediately Invoked Function Expression (*iife*)
 - Data Structures
-  - Array
-  - Slice
-  - Map
+  - Arrays
+  - Slices
+  - Maps
     - Hash Tables
-  - Struct
+  - Structs
+    - Tags
+    - Promotion
+    - JSON
   - Interfaces
-- Go Routines
+- Goroutines
 - Error Handling
 - Testing
 

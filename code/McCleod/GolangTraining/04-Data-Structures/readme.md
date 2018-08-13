@@ -52,7 +52,7 @@
 
 ## Maps
 
-- A [map](https://golang.org/ref/spec#Map_types) is an unordered group of elements of one type, called the element type, indexed by a set of unique keys of another type, called the key type.
+- A [map](https://golang.org/ref/spec#Map_types) is an unordered group of elements of one type, called the element type, indexed by a set of unique keys of another type, called the key type. Field names may be specified explicitly (*IdentifierList*) or implicitly (*AnonymousField*).
   - key / value storage
   - a “dictionary”
 - The value of an uninitialized map is `nil`.
@@ -61,10 +61,11 @@
 
 ## Structs
 
+- A [struct](https://golang.org/ref/spec#Struct_types) is a sequence of named elements, called *fields*, each of which has a name and a type.
 - a data structure
 - a composite type
 - allows us to collect properties together
-- https://golang.org/ref/spec#Struct_types
+- [Composition with Go](http://goinggo.net/2015/09/composition-with-go.html)
 
 
 ## Interfaces

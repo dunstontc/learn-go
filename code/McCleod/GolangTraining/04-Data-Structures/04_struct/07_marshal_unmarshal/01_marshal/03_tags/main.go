@@ -14,5 +14,6 @@ type person struct {
 func main() {
 	p1 := person{"James", "Bond", 20}
 	bs, _ := json.Marshal(p1)
-	fmt.Println(string(bs))
+
+	fmt.Println(string(bs)) // {"First":"James","wisdom score":20}
 }

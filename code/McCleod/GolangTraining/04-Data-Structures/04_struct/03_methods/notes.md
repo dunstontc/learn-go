@@ -1,6 +1,6 @@
-(p person) is the "receiver"
-it is another parameter
-not idiomatic to use "this" or "self"
+- `(p person)` is the *receiver*
+- it is another parameter
+- not idiomatic to use "this" or "self"
 
 
 > "Not many people know this, but method notation, i.e. `v.Method()` is actually syntactic sugar and Go also understands the de-sugared version of it: `(T).Method(v)`.
