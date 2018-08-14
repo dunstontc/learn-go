@@ -14,6 +14,7 @@ type shape interface {
 	area() float64
 }
 
+// `info/0` prints the area of a `shape`
 func info(z shape) {
 	fmt.Println(z)
 	fmt.Println(z.area())
@@ -21,6 +22,6 @@ func info(z shape) {
 
 func main() {
 	s := square{10}
-	fmt.Printf("%T\n",s)
+	fmt.Printf("%T\n", s)
 	info(s)
 }

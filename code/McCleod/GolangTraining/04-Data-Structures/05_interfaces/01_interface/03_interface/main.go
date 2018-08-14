@@ -18,15 +18,17 @@ type shape interface {
 	area() float64
 }
 
+// implements the shape interface
 func (s square) area() float64 {
 	return s.side * s.side
 }
 
-// which implements the shape interface
+// implements the shape interface
 func (c circle) area() float64 {
 	return math.Pi * c.radius * c.radius
 }
 
+// Prints the area of a `shape`
 func info(z shape) {
 	fmt.Println(z)
 	fmt.Println(z.area())
