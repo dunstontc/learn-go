@@ -144,3 +144,5 @@ func main() {
   - Strings
 - Encode/Decode
   - Streams
+  - Encode (Writer)
+  - Decode (Reader)
