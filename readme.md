@@ -20,4 +20,3 @@
 - [Generating code](https://blog.golang.org/generate)
 - [Share Memory By Communicating](https://blog.golang.org/share-memory-by-communicating)
 - [JSON and Go](https://blog.golang.org/json-and-go)
-- [C? Go? Cgo!](https://blog.golang.org/c-go-cgo)

@@ -13,27 +13,24 @@ func main() {
 	msg := "Do not dwell in the past, do not dream of the future, concentrate the mind on the present."
 	rdr := strings.NewReader(msg)
 	_, err := io.Copy(os.Stdout, rdr)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	check(err)
 
 	rdr2 := bytes.NewBuffer([]byte(msg))
 	_, err = io.Copy(os.Stdout, rdr2)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	check(err)
 
 	res, err := http.Get("http://www.mcleods.com")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	check(err)
 
 	io.Copy(os.Stdout, res.Body)
 	if err := res.Body.Close(); err != nil {
 		fmt.Println(err)
 	}
+}
 
+func check(err error) {
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }

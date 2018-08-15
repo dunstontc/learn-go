@@ -26,8 +26,9 @@
     - Dereferencing
     - Using Pointers
   - Remainder
-- Booleans
-- Runes
+  - Booleans
+  - Runes
+  - Error Handling
 - Control Flow
   - For Loop
   - Switch Statements
@@ -56,12 +57,15 @@
   - Map
   - Struct
   - Interfaces
-- Go Routines
-- Error Handling
+- Concurrency
 - Testing
+- Standard Library
 
 
-## Constants
+## Language Basics
+
+
+### Constants
 
 ```go
 const p = "death & taxes"
@@ -81,3 +85,80 @@ func main() {
 	fmt.Println(language)
 }
 ```
+
+## Control Flow
+
+## Functions
+
+## Data Structures
+
+## Concurrency
+
+## Testing
+
+## Standard Library
+
+- [golang.org/pkg/](https://golang.org/pkg/)
+  - archive/
+    - archive/tar
+    - archive/zip
+  - [bufio](https://golang.org/pkg/bufio/) - Implements buffered I/O. It wraps an io.Reader or io.Writer object, creating another object (Reader or Writer) that also implements the interface but provides buffering and some help for textual I/O.
+  - [builtin](https://golang.org/pkg/builtin/) - Provides documentation for Go's predeclared identifiers.
+  - [bytes](https://golang.org/pkg/bytes/) - Implements functions for the manipulation of byte slices. It is analogous to the facilities of the strings package.
+  - compress/
+  - container/
+  - [context](https://golang.org/pkg/context/) - Defines the Context type, which carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes.
+  - crypto/ - Collects common cryptographic constants.
+  - database/
+  - debug/
+  - encoding/ - Defines interfaces shared by other packages that convert data to and from byte-level and textual representations.
+  - [errors](https://golang.org/pkg/errors/) - Implements functions to manipulate errors.
+  - expvar - Provides a standardized interface to public variables, such as operation counters in servers.
+  - [flag](https://golang.org/pkg/flag/) - Implements command-line flag parsing.
+  - [fmt](https://golang.org/pkg/fmt/) - Implements formatted I/O with functions analogous to C's printf and scanf.
+  - go/
+  - hash/
+  - [html/](https://golang.org/pkg/html/) - Provides functions for escaping and unescaping HTML text.
+    - [html/template](https://golang.org/pkg/html/template/) - Implements data-driven templates for generating HTML output safe against code injection.
+  - [image/](https://golang.org/pkg/image/) - Implements a basic 2-D image library.
+    - [image/color](https://golang.org/pkg/image/color/) - Implements a basic color library.
+      - [image/color/palette](https://golang.org/pkg/image/color/palette/) - Provides standard color palettes.
+    - image/draw
+    - image/gif
+    - image/jpeg
+    - image/png
+  - index/
+    - [index/suffixarray](https://golang.org/pkg/index/suffixarray/) - Implements substring search in logarithmic time using an in-memory suffix array.
+  - [io/](https://golang.org/pkg/io/) -	Provides basic interfaces to I/O primitives.
+    - [io/ioutil](https://golang.org/pkg/io/ioutil/) - Implements some I/O utility functions.
+  - log/
+  - math/
+  - mime/
+  - net/
+  - os/
+  - [path/](https://golang.org/pkg/path/)
+    - [path/filepath](https://golang.org/pkg/path/filepath/) - Implements utility routines for manipulating filename paths in a way compatible with the target operating system-defined file paths.
+  - plugin - Implements loading and symbol resolution of Go plugins.
+  - [reflect](https://golang.org/pkg/reflect/) - Implements run-time reflection, allowing a program to manipulate objects with arbitrary types.
+  - [regexp/](https://golang.org/pkg/regexp/) - Implements regular expression search.
+    - [regexp/syntax](https://golang.org/pkg/regexp/syntax/) - Parses regular expressions into parse trees and compiles parse trees into programs.
+  - runtime/
+  - [sort](https://golang.org/pkg/sort/) - Provides primitives for sorting slices and user-defined collections.
+  - [strconv](https://golang.org/pkg/strconv/) - Implements conversions to and from string representations of basic data types.  
+  - [strings](https://golang.org/pkg/strings/) - Implements simple functions to manipulate UTF-8 encoded strings.
+  - sync/
+    - sync/atomic
+  - syscall - Contains an interface to the low-level operating system primitives.
+  - testing/
+    - testing/iotest
+    - testing/quick
+  - text/
+    - text/scanner - Provides a scanner and tokenizer for UTF-8-encoded text.
+    - text/tabwriter - Implements a write filter (tabwriter.Writer) that translates tabbed columns in input into properly aligned text.
+    - text/template - Implements data-driven templates for generating textual output.
+      - text/template/parse - Builds parse trees for templates as defined by text/template and html/template.
+  - [time](https://golang.org/pkg/time/) - Provides functionality for measuring and displaying time.
+  - unicode/
+    - unicode/utf16
+    - unicode/utf8
+  - unsafe - contains operations that step around the type safety of Go programs.
