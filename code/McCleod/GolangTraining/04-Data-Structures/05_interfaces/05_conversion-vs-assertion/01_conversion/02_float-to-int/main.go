@@ -5,6 +5,6 @@ import "fmt"
 func main() {
 	var x = 12
 	var y = 12.1230123
-	fmt.Println(int(y) + x)
+	fmt.Println(int(y) + x) // 24
 	// conversion: float64 to int
 }

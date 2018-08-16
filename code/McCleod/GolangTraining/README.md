@@ -51,12 +51,14 @@ Training for Golang (go language)
   - Structs
     - Tags
     - Promotion
+      - Anonymous Fields (Embedded Types)
     - JSON
   - Interfaces
     - Polymorphism/Substitutability
     - Empty Interface
     - Method Sets
     - Conversion vs. Assertion
+      - Conversion - Widening/Narrowing
 - Concurrency
   - Goroutines
 - Error Handling

@@ -13,7 +13,7 @@ func main() {
 	i, _ := strconv.ParseInt("-42", 10, 64)
 	u, _ := strconv.ParseUint("42", 10, 64)
 
-	fmt.Println(b, f, i, u)
+	fmt.Println(b, f, i, u) // true 3.1415 -42 42
 
 	//	FormatBool, FormatFloat, FormatInt, and FormatUint convert values to strings:
 	w := strconv.FormatBool(true)
@@ -21,5 +21,5 @@ func main() {
 	y := strconv.FormatInt(-42, 16)
 	z := strconv.FormatUint(42, 16)
 
-	fmt.Println(w, x, y, z)
+	fmt.Println(w, x, y, z) // true 3.1415E+00 -2a 2a
 }

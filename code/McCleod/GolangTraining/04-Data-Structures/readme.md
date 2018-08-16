@@ -69,3 +69,21 @@
 
 
 ## Interfaces
+
+- *Method Sets*
+  - receivers
+    - value receiver
+      - value type
+      - pointer type
+    - pointer receiver 
+      - pointer type
+
+```mermaid
+graph LR
+A{receivers} -->B1[Value Receiver]
+A{receivers} -->B2(*Pointer Receiver)
+B1 --> C1[value type]
+B1 --> C2(pointer type)
+B2 --> C3(pointer type)
+```
+

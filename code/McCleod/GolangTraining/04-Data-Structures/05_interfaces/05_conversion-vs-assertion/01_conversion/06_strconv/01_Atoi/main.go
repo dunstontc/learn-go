@@ -9,5 +9,5 @@ func main() {
 	var x = "12"
 	var y = 6
 	z, _ := strconv.Atoi(x)
-	fmt.Println(y + z)
+	fmt.Println(y + z) // 18
 }
