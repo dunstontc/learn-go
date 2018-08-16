@@ -5,6 +5,7 @@
 </div>
 
 ## Resources
+- [Go Proverbs](https://go-proverbs.github.io/)
 - [A Tour of Go](https://tour.golang.org/list)
 - [Effective Go](https://golang.org/doc/effective_go.html)
 - [Standard Library](https://golang.org/pkg/)
