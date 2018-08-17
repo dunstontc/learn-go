@@ -62,7 +62,18 @@ Training for Golang (go language)
       - Conversion - Widening/Narrowing
 - Concurrency
   - Goroutines
+    - WaitGroups
+    - Mutex
+    - Atomicity
+  - Channels
+    - Unbuffered Channels Block
+    - Passing & Returning Channels
+    - Channel Direction
+    - Closures
 - Error Handling
+  - Handling Errors
+  - Set Output
+  - Custom Errors
 - Testing
 
 
@@ -91,4 +102,5 @@ Training for Golang (go language)
   - [hex](https://goplay.space/#4vWR8_1Df3S)
   - [loop](https://goplay.space/#RI8kukvUrgb)
   - [println (without fmt O.o)](https://play.golang.org/p/wtevqXpFwfP)
+  - [factorial (channels)](https://play.golang.org/p/fQDB-wmTYql)
 

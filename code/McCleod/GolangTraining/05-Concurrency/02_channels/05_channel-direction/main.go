@@ -35,7 +35,7 @@ func puller(c <-chan int) <-chan int {
 }
 
 /*
-The optional <- operator specifies the channel direction, send or receive.
-If no direction is given, the channel is bidirectional.
-https://golang.org/ref/spec#Channel_types
-*/
+ * The optional <- operator specifies the channel direction, send or receive.
+ * If no direction is given, the channel is bidirectional.
+ * https://golang.org/ref/spec#Channel_types
+ */

@@ -24,6 +24,7 @@ func main() {
 	}()
 
 	go func() {
+		// _ := <-done // No need to explicitly throw away a value off of a channel
 		<-done
 		<-done
 		close(c)
