@@ -74,6 +74,9 @@ Training for Golang (go language)
   - Handling Errors
   - Set Output
   - Custom Errors
+    - `errors.New()`
+    - `fmt.Errorf()`
+    - Custom Type
 - Testing
 
 
