@@ -20,9 +20,7 @@ func main() {
 		<title>Hello World!</title>
 		</head>
 		<body>
-		<h1>` +
-		name +
-		`</h1>
+		<h1>` + name + `</h1>
 		</body>
 		</html>
 	`)
@@ -37,6 +35,6 @@ func main() {
 }
 
 /*
-at the terminal:
-go run main.go Todd
-*/
+ * at the terminal:
+ * go run main.go Clay
+ */
