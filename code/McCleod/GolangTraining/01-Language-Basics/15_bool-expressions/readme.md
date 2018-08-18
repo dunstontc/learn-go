@@ -13,10 +13,23 @@
     - `&&`  
 
 
+## True-False
+```go
+func main() {
+
+	if true {
+		fmt.Println("This ran")
+	}
+
+	if false {
+		fmt.Println("This did not run")
+	}
+}
+```
+
 ## Operators
 
-### Not
-
+### Not (Bang)
 ```go
 func main() {
 
@@ -32,7 +45,6 @@ func main() {
 ```
 
 ### Or 
-
 ```go
 func main() {
 
@@ -43,7 +55,6 @@ func main() {
 ```
 
 ### And 
-
 ```go
 func main() {
 
