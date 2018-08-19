@@ -5,7 +5,7 @@ You get to pass in one value - that's it!
 Fortunately, we have many different types which that value can be including composite types which compose together values. (These are also known as aggregate data types - they aggregate together many different values).
 
 ## Slice
-Use this for passing in a bunch of values of the same type. We could have a []int or a []string or a slice of any type.
+Use this for passing in a bunch of values of the same type. We could have a `[]int` or a `[]string` or a slice of any type.
 
 ## Map 
 Use this for passing in key-value data.
