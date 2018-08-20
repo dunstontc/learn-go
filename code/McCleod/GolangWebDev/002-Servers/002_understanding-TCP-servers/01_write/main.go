@@ -14,6 +14,8 @@ func main() {
 	}
 	defer li.Close()
 
+	fmt.Println("Live on port 8080")
+
 	for {
 		conn, err := li.Accept()
 		if err != nil {

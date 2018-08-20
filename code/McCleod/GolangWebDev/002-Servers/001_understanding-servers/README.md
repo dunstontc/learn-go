@@ -1,4 +1,4 @@
-# Web Programming Synonymous Terms
+## Web Programming Synonymous Terms
 - router
 - request router
 - multiplexer
@@ -14,7 +14,7 @@
 
 ***
 
-# Request & response
+## Request & response
 
 Request and response messages are similar. Both messages consist of:
 
@@ -25,7 +25,7 @@ Request and response messages are similar. Both messages consist of:
 
 ***
 
-## HTTP request
+### HTTP request
 
 Request
 - request line
@@ -40,39 +40,41 @@ example request line:
 
 ***
 
-## HTTP response
+### HTTP response
 
-Reponse
+#### Reponse
 - status line
 - headers
 - optional message body
 
-Status-Line
-- HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+#### Status-Line
+- `HTTP-Version SP Status-Code SP Reason-Phrase CRLF`
 
-example status line:
-- HTTP/1.1 200 OK
+#### example status line:
+```http
+HTTP/1.1 200 OK
+```
 
 ***
 
-## Headers
+### Headers
 [List of header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 
 ***
 
-## Inspect
+### Inspect
 - you can use google chrome dev tools / network
 - you can use CURL at the command line
 
-```
+```bash
 curl -v golang.org
 ```
 
 ***
 
-# Documentation
+## Documentation
 
-## [Hypertext Transfer Protocol](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol)
+### [Hypertext Transfer Protocol](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol)
 
 Development of HTTP was initiated by Tim Berners-Lee at CERN in 1989. Standards development of HTTP was coordinated by the Internet Engineering Task Force (IETF) and the World Wide Web Consortium (W3C), culminating in the publication of a series of Requests for Comments (RFCs). 
 
@@ -80,7 +82,7 @@ The first definition of HTTP/1.1, the version of HTTP in common use, occurred in
 
 A later version, the successor HTTP/2, was standardized in 2015, and is now supported by major web servers.
 
-## [Request For Comment (RFC)](https://en.wikipedia.org/wiki/Request_for_Comments)
+### [Request For Comment (RFC)](https://en.wikipedia.org/wiki/Request_for_Comments)
 
 A Request for Comments (RFC) is a type of publication from the Internet Engineering Task Force (IETF) and the Internet Society (ISOC), the principal technical development and standards-setting bodies for the Internet.
 
@@ -88,25 +90,25 @@ An RFC is authored by engineers and computer scientists in the form of a memoran
 
 Request for Comments documents were invented by Steve Crocker in 1969 to help record unofficial notes on the development of ARPANET. RFCs have since become official documents of Internet specifications, communications protocols, procedures, and events.
 
-## [Internet Engineering Task Force (IETF)](https://en.wikipedia.org/wiki/Internet_Engineering_Task_Force)
+### [Internet Engineering Task Force (IETF)](https://en.wikipedia.org/wiki/Internet_Engineering_Task_Force)
 
 The Internet Engineering Task Force (IETF) develops and promotes voluntary Internet standards, in particular the standards that comprise the Internet protocol suite (TCP/IP). It is an open standards organization, with no formal membership or membership requirements. All participants and managers are volunteers, though their work is usually funded by their employers or sponsors.
 
 The IETF started out as an activity supported by the U.S. federal government, but since 1993 it has operated as a standards development function under the auspices of the Internet Society, an international membership-based non-profit organization.
 
-## [List of RFCs](https://en.wikipedia.org/wiki/List_of_RFCs)
+### [List of RFCs](https://en.wikipedia.org/wiki/List_of_RFCs)
 
 
 ***
 
-# RFC 7230
+## RFC 7230
 
 HTTP was created for the World Wide Web (WWW) architecture and has
 evolved over time to support the scalability needs of a worldwide
 hypertext system.  Much of that architecture is reflected in the
 terminology and syntax productions used to define HTTP.
 
-## 2.1.  Client/Server Messaging
+### 2.1.  Client/Server Messaging
 
 HTTP is a stateless request/response protocol that operates by
 exchanging messages across a reliable TRANSPORT- or
@@ -141,10 +143,11 @@ case, this might be accomplished via a single bidirectional
 CONNECTION (===) between the user agent (UA) and the origin
 server (O).
 
+```
 	request   >
 UA ======================================= O
 						   <   response
-
+```
 A client sends an HTTP REQUEST to a server in the form of a REQUEST
 MESSAGE, beginning with a REQUEST-LINE that includes a method, URI,
 and protocol version, followed by header fields
@@ -169,8 +172,9 @@ The following example illustrates a typical message exchange for a
 GET request on the URI
 "http://www.example.com/hello.txt":
 
-## Client request:
+### Client request:
 
+```http
 GET /hello.txt HTTP/1.1
 
 User-Agent: curl/7.16.3 libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3
@@ -178,10 +182,11 @@ User-Agent: curl/7.16.3 libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3
 Host: www.example.com
 
 Accept-Language: en, mi
+```
 
+### Server response:
 
-## Server response:
-
+```http
 HTTP/1.1 200 OK
 
 Date: Mon, 27 Jul 2009 12:28:53 GMT
@@ -201,8 +206,9 @@ Vary: Accept-Encoding
 Content-Type: text/plain
 
 Hello World! My payload includes a trailing CRLF.
+```
 
-## 2.2.  Implementation Diversity
+### 2.2.  Implementation Diversity
 
 When considering the design of HTTP, it is easy to fall into a trap
 of thinking that all user agents are general-purpose browsers and all

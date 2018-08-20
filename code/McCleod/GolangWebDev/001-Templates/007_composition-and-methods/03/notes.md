@@ -2,6 +2,7 @@ for your perusal:
 https://golang.org/ref/spec#Composite_literals
 
 
+```go
 	y := year{
 		Fall: semester{
 			Term: "Fall",
@@ -25,3 +26,4 @@ https://golang.org/ref/spec#Composite_literals
 			},
 		},
 	}
+```

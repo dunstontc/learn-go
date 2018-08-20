@@ -9,23 +9,25 @@
 
 - Templates
   - Primitive Method (string to html)
-  - `text/template`
-    - Parse & Execute
-      - ParseFiles
-      - ParseGlob
-      - `init()` & `template.Must()`
-    - Data 
-      - Variables
-    - Data Structures
-      - slices
-      - maps
-      - structs
-      - slice struct
-      - struct slice struct
-      - *anonymous types*
-    - Functions
-      - `template.FuncMap`
-      - pipelines
+  - Parse & Execute
+    - ParseFiles
+    - ParseGlob
+    - `init()` & `template.Must()`
+  - Data 
+    - Variables
+  - Data Structures
+    - slices
+    - maps
+    - structs
+    - slice struct
+    - struct slice struct
+    - *anonymous types*
+  - Functions
+    - `template.FuncMap`
+    - pipelines
+    - predefined global functions
+  - Nested Templates
+  - Composition
 - Servers
 - net_http
 - Routing
