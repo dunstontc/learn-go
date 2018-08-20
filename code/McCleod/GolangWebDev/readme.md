@@ -30,7 +30,9 @@
   - Composition
 - TCP
   - TCP (Transmission Control Protocol)
-    - Listen, Accept, Read/Write
+    - Listen
+    - Accept
+    - Read/Write
 - HTTP
   - `net/http`
   - `Handler` - (`ServeHTTP(ResponseWriter, *Request)`)
