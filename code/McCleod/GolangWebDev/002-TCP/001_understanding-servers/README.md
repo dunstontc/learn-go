@@ -229,3 +229,55 @@ save only a subset of those results that might be interesting or
 erroneous).  Spiders, for example, are typically given a start URI
 and configured to follow certain behavior while crawling the Web as a
 hypertext graph.
+
+
+## OSI
+
+<table class="wikitable" style="margin: 1em auto 1em auto;">
+  <tbody>
+    <tr>
+      <th colspan="5">OSI Model</th>
+    </tr>
+    <tr>
+      <th colspan="2">Layer</th>
+      <th><a href="/wiki/Protocol_data_unit" title="Protocol data unit">Protocol data unit</a> (PDU)
+      </th>
+      <th style="width:30em;">Function<sup id="cite_ref-3" class="reference"><a href="#cite_note-3">[3]</a></sup></th>
+    </tr>
+    <tr>
+      <th rowspan="4">Host<br>layers</th>
+      <td style="background:#d8ec9b;">7.&nbsp;<a href="/wiki/Application_layer" title="Application layer">Application</a></td>
+      <td style="background:#d8ec9c;" rowspan="3"><a href="/wiki/Data_(computing)" title="Data (computing)">Data</a></td>
+      <td style="background:#d8ec9c;"><small>High-level <a href="/wiki/API" class="mw-redirect" title="API">APIs</a>, including resource sharing, remote file access</small></td>
+    </tr>
+    <tr>
+      <td style="background:#d8ec9b;">6.&nbsp;<a href="/wiki/Presentation_layer" title="Presentation layer">Presentation</a></td>
+      <td style="background:#d8ec9b;"><small>Translation of data between a networking service and an application; including <a href="/wiki/Character_encoding" title="Character encoding">character encoding</a>, <a href="/wiki/Data_compression" title="Data compression">data compression</a> and <a href="/wiki/Encryption" title="Encryption">encryption/decryption</a></small></td>
+    </tr>
+    <tr>
+      <td style="background:#d8ec9b;">5. <a href="/wiki/Session_layer" title="Session layer">Session</a></td>
+      <td style="background:#d8ec9b;"><small>Managing communication <a href="/wiki/Session_(computer_science)" title="Session (computer science)">sessions</a>, i.e. continuous exchange of information in the form of multiple back-and-forth transmissions between two nodes</small></td>
+    </tr>
+    <tr>
+      <td style="background:#e7ed9c;">4. <a href="/wiki/Transport_layer" title="Transport layer">Transport</a></td>
+      <td style="background:#e7ed9c;"><a href="/wiki/Packet_segmentation" title="Packet segmentation">Segment</a>, <a href="/wiki/Datagram" title="Datagram">Datagram</a></td>
+      <td style="background:#e7ed9c;"><small>Reliable transmission of data segments between points on a network, including <a href="/wiki/Packet_segmentation" title="Packet segmentation">segmentation</a>, <a href="/wiki/Acknowledgement_(data_networks)" title="Acknowledgement (data networks)">acknowledgement</a> and <a href="/wiki/Multiplexing" title="Multiplexing">multiplexing</a></small></td>
+    </tr>
+    <tr>
+      <th rowspan="3">Media<br>layers</th>
+      <td style="background:#eddc9c;">3. <a href="/wiki/Network_layer" title="Network layer">Network</a></td>
+      <td style="background:#eddc9c;"><a href="/wiki/Network_packet" title="Network packet">Packet</a></td>
+      <td style="background:#eddc9c;"><small>Structuring and managing a multi-node network, including <a href="/wiki/Address_space" title="Address space">addressing</a>, <a href="/wiki/Routing" title="Routing">routing</a> and <a href="/wiki/Network_traffic_control" title="Network traffic control">traffic control</a></small></td>
+    </tr>
+    <tr>
+      <td style="background:#e9c189;">2. <a href="/wiki/Data_link_layer" title="Data link layer">Data link</a></td>
+      <td style="background:#e9c189;"><a href="/wiki/Frame_(networking)" title="Frame (networking)">Frame</a></td>
+      <td style="background:#e9c189;"><small>Reliable transmission of data frames between two nodes connected by a physical layer</small></td>
+    </tr>
+    <tr>
+      <td style="background:#e9988a;">1. <a href="/wiki/Physical_layer" title="Physical layer">Physical</a></td>
+      <td style="background:#e9988a;"><a href="/wiki/Symbol_rate#Symbols" title="Symbol rate">Symbol</a></td>
+      <td style="background:#e9988a;"><small>Transmission and reception of raw bit streams over a physical medium</small></td>
+    </tr>
+  </tbody>
+</table>

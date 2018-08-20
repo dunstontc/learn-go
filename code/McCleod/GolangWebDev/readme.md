@@ -28,13 +28,23 @@
     - predefined global functions
   - Nested Templates
   - Composition
-- Servers
-  - TCP
+- TCP
+  - TCP (Transmission Control Protocol)
     - Listen, Accept, Read/Write
-- net_http
+- HTTP
+  - `net/http`
+  - `Handler` - (`ServeHTTP(ResponseWriter, *Request)`)
 - Routing
 - Assets
 - State
 - Sessions
 - AWS
 - DataBases
+
+## Terms
+
+|   Term    |             Definition             |                         Link                         |
+| --------- | ---------------------------------- | ---------------------------------------------------- |
+| OSI model | Open Systems Interconnection model | [wikipedia](https://en.wikipedia.org/wiki/OSI_model) |
+| tcp       | Transmission Control Protocol      |                                                      |
+| http      | Hypertext Transfer Protocol        |                                                      |

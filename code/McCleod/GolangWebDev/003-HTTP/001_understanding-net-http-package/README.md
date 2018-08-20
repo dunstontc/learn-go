@@ -13,12 +13,12 @@ type Handler interface {
 
 # Server
 
-[http.ListenAndServe](https://godoc.org/net/http#ListenAndServe)
+## [http.ListenAndServe](https://godoc.org/net/http#ListenAndServe)
 ``` Go
 func ListenAndServe(addr string, handler Handler) error
 ```
 
-[http.ListenAndServeTLS](https://godoc.org/net/http#ListenAndServeTLS)
+## [http.ListenAndServeTLS](https://godoc.org/net/http#ListenAndServeTLS)
 ``` Go
 func ListenAndServeTLS(addr, certFile, keyFile string, handler Handler) error
 ```
