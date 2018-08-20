@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .blue { color: blue;}
+    </style>
+    <meta charset="UTF-8">
+    <title>Input Type Submit</title>
+</head>
+<body>
+
+<header>
+    {{if .Method}}
+        <p> The request method:
+            <span class="blue">{{.Method}}</span>
+        </p>
+    {{end}}
+
+    {{if .Host}}
+        <p> The request host:
+            <span class="blue">{{.Host}}</span>
+        </p>
+    {{end}}
+
+    {{if .ContentLength}}
+        <p> The request ContentLength:
+            <span class="blue">{{.ContentLength}}</span>
+        </p>
+    {{end}}
+
+    {{if .URL}}<p>The request URL:</p>
+    <ul>
+        <li>Scheme: <span class="blue">{{.URL.Scheme}}</span></li>
+        <li>Opaque: <span class="blue">{{.URL.Opaque}}</span></li>
+        <li>Host: <span class="blue">{{.URL.Host}}</span></li>
+        <li>Path: <span class="blue">{{.URL.Path}}</span></li>
+        <li>RawPath: <span class="blue">{{.URL.RawPath}}</span></li>
+        <li>ForceQuery: <span class="blue">{{.URL.ForceQuery}}</span></li>
+        <li>RawQuery: <span class="blue">{{.URL.RawQuery}}</span></li>
+        <li>Fragment: <span class="blue">{{.URL.Fragment}}</span></li>
+    </ul>
+    {{end}}
+
+
+    {{if .Header}}
+        {{range $k, $v := .Header}}
+            <p>{{$k}}</p>
+            <ul>
+            {{range $v}}
+                <li class="blue">{{.}}</li>
+            {{end}}
+            </ul>
+        {{end}}
+    {{end}}
+
+    {{if .Submissions}}<p><strong>variable names</strong> (identifiers) and <em>values</em>:</p>
+        {{range $key, $value := .Submissions}}
+                <p><strong>{{$key}}</strong></p>
+                <ul>{{range $value}}<li><em class="blue">{{.}}</em></li>{{end}}</ul>
+        {{end}}
+    {{end}}
+
+</header>
+
+<form action="/" method="POST">
+        <input type="text" name="fname" placeholder="first name" autofocus autocomplete="off">
+        <input type="submit" name="submit-btn" value="onda button">
+</form>
+
+</body>
+</html>

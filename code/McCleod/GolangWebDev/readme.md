@@ -36,6 +36,9 @@
 - HTTP
   - `net/http`
   - `Handler` - (`ServeHTTP(ResponseWriter, *Request)`)
+  - Forms
+    - POST -> body
+    - GET -> URL
 - Routing
 - Assets
 - State
@@ -45,8 +48,9 @@
 
 ## Terms
 
-|   Term    |             Definition             |                         Link                         |
-| --------- | ---------------------------------- | ---------------------------------------------------- |
-| OSI model | Open Systems Interconnection model | [wikipedia](https://en.wikipedia.org/wiki/OSI_model) |
-| tcp       | Transmission Control Protocol      |                                                      |
-| http      | Hypertext Transfer Protocol        |                                                      |
+|   Term    |                                                                                                                                                             Definition                                                                                                                                                              |                         Link                         |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| OSI model | Open Systems Interconnection model                                                                                                                                                                                                                                                                                                  | [wikipedia](https://en.wikipedia.org/wiki/OSI_model) |
+| tcp       | Transmission Control Protocol                                                                                                                                                                                                                                                                                                       |                                                      |
+| http      | Hypertext Transfer Protocol                                                                                                                                                                                                                                                                                                         |                                                      |
+| mux       | In electronics, a multiplexer is a device that selects one of several analog or digital input signals and forwards the selected input into a single line. <br> In telecommunications and computer networks, multiplexing is a method by which multiple analog or digital signals are combined into one signal over a shared medium. |                                                      |

@@ -73,7 +73,7 @@ Any value of type ```*http.ServeMux``` implements the ```http.Handler``` interfa
 
 Remember, the ```http.Handler``` interface requires that a type have the ```ServeHTTP``` method.
 
-```
+```go
 type Handler interface {
     ServeHTTP(ResponseWriter, *Request)
 }
@@ -100,7 +100,7 @@ type ServeMux
 
 We can use ```Handle``` like this:
 
-```
+```go
 	mux := http.NewServeMux()
 	mux.Handle("/", h)
 	mux.Handle("/cat", c)
@@ -108,7 +108,7 @@ We can use ```Handle``` like this:
 
 The overall game plan:
 
-We will create a NewServeMux, then attach the method ```Handle``` to it to set routes, then pass our ```*http.ServeMux``` to ```http.ListenAndServe```.
+We will create a NewServeMux, then attach the method `Handle` to it to set routes, then pass our `*http.ServeMux` to `http.ListenAndServe`.
 
 
 *** 
