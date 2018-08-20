@@ -6,14 +6,9 @@
 </head>
 <body>
 
-{{range .Wisdom}}
-{{uc .Name}}
-{{end}}
+    Without date formatting: {{.}}
 
-
-{{range .Wisdom}}
-{{ft .Name}}
-{{end}}
+    With date formatting: {{fdateMDY .}}
 
 
 </body>

@@ -24,6 +24,8 @@
       - struct slice struct
       - *anonymous types*
     - Functions
+      - `template.FuncMap`
+      - pipelines
 - Servers
 - net_http
 - Routing
