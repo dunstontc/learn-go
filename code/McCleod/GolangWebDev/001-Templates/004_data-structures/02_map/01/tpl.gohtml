@@ -5,10 +5,10 @@
     <title>My Peeps</title>
 </head>
 <body>
-<ul>
-    {{range $index, $element := .}}
-    <li>{{$index}} - {{$element}}</li>
-    {{end}}
-</ul>
+    <ul>
+        {{range .}}
+        <li>{{.}}</li>
+        {{end}}
+    </ul>
 </body>
 </html>
