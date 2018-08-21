@@ -1,0 +1,74 @@
+{
+    "dependencies": {
+      "@angular/cli": {
+        "version": "6.0.8",
+        "from": "@angular/cli",
+        "resolved": "https://registry.npmjs.org/@angular/cli/-/cli-6.0.8.tgz"
+      },
+      "@vue/cli": {
+        "version": "3.0.0-beta.10",
+        "from": "@vue/cli",
+        "resolved": "https://registry.npmjs.org/@vue/cli/-/cli-3.0.0-beta.10.tgz"
+      },
+      "@vue/cli-init": {
+        "version": "3.0.0-beta.10",
+        "from": "@vue/cli-init",
+        "resolved": "https://registry.npmjs.org/@vue/cli-init/-/cli-init-3.0.0-beta.10.tgz"
+      },
+      "create-react-app": {
+        "version": "1.5.2",
+        "from": "create-react-app",
+        "resolved": "https://registry.npmjs.org/create-react-app/-/create-react-app-1.5.2.tgz"
+      },
+      "eslint": {
+        "version": "4.19.1",
+        "from": "eslint",
+        "resolved": "https://registry.npmjs.org/eslint/-/eslint-4.19.1.tgz"
+      },
+      "fixjson": {
+        "version": "1.1.0",
+        "from": "fixjson",
+        "resolved": "https://registry.npmjs.org/fixjson/-/fixjson-1.1.0.tgz"
+      },
+      "gulp": {
+        "version": "3.9.1",
+        "from": "gulp",
+        "resolved": "https://registry.npmjs.org/gulp/-/gulp-3.9.1.tgz"
+      },
+      "node-sass": {
+        "version": "4.9.0",
+        "from": "node-sass",
+        "resolved": "https://registry.npmjs.org/node-sass/-/node-sass-4.9.0.tgz"
+      },
+      "npm": {
+        "version": "6.2.0",
+        "from": "npm",
+        "resolved": "https://registry.npmjs.org/npm/-/npm-6.2.0.tgz"
+      },
+      "serve": {
+        "version": "9.3.0",
+        "from": "serve",
+        "resolved": "https://registry.npmjs.org/serve/-/serve-9.3.0.tgz"
+      },
+      "tiny-care-terminal": {
+        "version": "1.4.1",
+        "from": "tiny-care-terminal",
+        "resolved": "https://registry.npmjs.org/tiny-care-terminal/-/tiny-care-terminal-1.4.1.tgz"
+      },
+      "typescript": {
+        "version": "2.9.2",
+        "from": "typescript",
+        "resolved": "https://registry.npmjs.org/typescript/-/typescript-2.9.2.tgz"
+      },
+      "vsce": {
+        "version": "1.46.0",
+        "from": "vsce",
+        "resolved": "https://registry.npmjs.org/vsce/-/vsce-1.46.0.tgz"
+      },
+      "vue-cli": {
+        "version": "2.9.3",
+        "from": "vue-cli",
+        "resolved": "https://registry.npmjs.org/vue-cli/-/vue-cli-2.9.3.tgz"
+      }
+    }
+  }

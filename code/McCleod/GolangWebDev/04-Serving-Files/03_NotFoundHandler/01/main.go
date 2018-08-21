@@ -7,7 +7,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", foo)
-	http.Handle("/favicon.ico", http.NotFoundHandler())
+	// http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.ListenAndServe(":8080", nil)
 }
 

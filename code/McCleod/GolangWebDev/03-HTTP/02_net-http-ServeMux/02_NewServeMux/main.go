@@ -7,6 +7,9 @@ import (
 
 type hotdog int
 
+// type Handler interface {
+// 	ServeHTTP(ResponseWriter, *Request)
+// }
 func (d hotdog) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	io.WriteString(res, "dog dog dog")
 }
