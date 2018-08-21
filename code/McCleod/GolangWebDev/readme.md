@@ -8,7 +8,7 @@
 ## Outline
 
 - Templates
-  - Primitive Method (string to html)
+  - ~~primitive Method (string to html)~~
   - Parse & Execute
     - ParseFiles
     - ParseGlob
@@ -40,11 +40,18 @@
     - POST -> body
     - GET -> URL
 - Routing
-- Assets
-- State
-- Sessions
-- AWS
-- DataBases
+  - `http.NewServeMux()`
+  - Default ServeMux
+  - `http.HandleFunc()`
+  - `http.HandlerFunc()`
+  - third-party-serveMux
+- Serving Files
+  - ~~io.Copy()~~
+  - ServeContent
+  - ServeFile
+  - http.FileServer
+
+
 
 ## Terms
 
@@ -54,3 +61,4 @@
 | tcp       | Transmission Control Protocol                                                                                                                                                                                                                                                                                                       |                                                      |
 | http      | Hypertext Transfer Protocol                                                                                                                                                                                                                                                                                                         |                                                      |
 | mux       | In electronics, a multiplexer is a device that selects one of several analog or digital input signals and forwards the selected input into a single line. <br> In telecommunications and computer networks, multiplexing is a method by which multiple analog or digital signals are combined into one signal over a shared medium. |                                                      |
+| rfc7230  |                                                                                                                                                                                                                                                                                                                                     | [ietf.org](https://tools.ietf.org/html/rfc7230)      |
