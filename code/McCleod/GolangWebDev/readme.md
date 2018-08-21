@@ -40,16 +40,17 @@
     - POST -> body
     - GET -> URL
 - Routing
-  - `http.NewServeMux()`
+  - http.NewServeMux()
   - Default ServeMux
-  - `http.HandleFunc()`
-  - `http.HandlerFunc()`
+  - http.HandleFunc()
+  - http.HandlerFunc()
   - third-party-serveMux
 - Serving Files
   - ~~io.Copy()~~
   - ServeContent
   - ServeFile
   - http.FileServer
+    - http.StripPrefix
 
 
 
