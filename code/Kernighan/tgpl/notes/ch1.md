@@ -45,14 +45,14 @@ $ go build helloworld.go
 ```
 This creates an executable binary file called helloworld that can be run any time without further processing:
 ```bash
-$ ./helloworld Hello, BF
+$ ./helloworld Hello, 世界
 ```
 We have labeled each significant example as a reminder that you can obtain the code from the book’s source code repository at gopl.io:
 ```
-  gopl.io/ch1/helloworld
+gopl.io/ch1/helloworld
 ```
-
 If you run `go get gopl.io/ch1/helloworld`, it will fetch the source code and place it in the corresponding directory. There’s more about this topic in Section 2.6 and Section 10.7.   
+
 Let’s now talk about the program itself. Go code is organized into packages, which are similar to libraries or modules in other languages. A package consists of one or more .go source files in a single directory that define what the package does. Each source file begins with a package declaration, here package main, that states which package the file belongs to, followed by a list of other packages that it imports, and then the declarations of the program that are stored in that file.   
 The Go standard library has over 100 packages for common tasks like input and output, sorting, and text manipulation. For instance, the fmt package contains functions for printing formatted output and scanning input. Println is one of the basic output functions in fmt; it prints one or more values, separated by spaces, with a newline character at the end so that the values appear as a single line of output.   
 Package main is special. It defines a standalone executable program, not a library. Within package main the function main is also special—it’s where execution of the program begins. Whatever main does is what the program does. Of course, main will normally call upon functions in other packages to do much of the work, such as the function fmt.Println.   
