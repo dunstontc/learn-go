@@ -17,6 +17,8 @@ func main() {
 	counts := make(map[string]int)
 	input := bufio.NewScanner(os.Stdin)
 	for input.Scan() {
+		// line := input.Text()
+		// counts[line] = counts[line] + 1
 		counts[input.Text()]++
 	}
 	// NOTE: ignoring potential errors from input.Err()
