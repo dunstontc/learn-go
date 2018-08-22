@@ -619,8 +619,10 @@ When one goroutine attempts a send or receive on a channel, it blocks until anot
 
 ## 1.7. A Web Server
 
-## 1.8. Loose Ends
+Go's libraries makes it easy to write a web server that responds to client requests like those made by `fetch`. In this section, we’ll show a minimal server that returns the path component of the URL used to access the server. That is, if the request is for `http://localhost:8000/hello`, the response will be `URL.Path = "/hello"`.
 
+
+## 1.8. Loose Ends
 - Control flow
 - Named types
 - Pointers
