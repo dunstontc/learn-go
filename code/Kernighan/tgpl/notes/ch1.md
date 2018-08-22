@@ -2,17 +2,14 @@
 
 <!-- TOC -->
 
-- [Chapter 1: Tutorial](#chapter-1-tutorial)
-  - [1.1. Hello, World](#11-hello-world)
-  - [1.2. Command-Line Arguments](#12-command-line-arguments)
-  - [1.3. Finding Duplicate Lines](#13-finding-duplicate-lines)
-  - [1.4. Animated GIFs](#14-animated-gifs)
-    - [Exercises](#exercises)
-  - [1.5. Fetching a URL](#15-fetching-a-url)
-    - [Exercises](#exercises-1)
-  - [1.6. Fetching URLs Concurrently](#16-fetching-urls-concurrently)
-  - [1.7. A Web Server](#17-a-web-server)
-  - [1.8. Loose Ends](#18-loose-ends)
+- [1.1. Hello, World](#11-hello-world)
+- [1.2. Command-Line Arguments](#12-command-line-arguments)
+- [1.3. Finding Duplicate Lines](#13-finding-duplicate-lines)
+- [1.4. Animated GIFs](#14-animated-gifs)
+- [1.5. Fetching a URL](#15-fetching-a-url)
+- [1.6. Fetching URLs Concurrently](#16-fetching-urls-concurrently)
+- [1.7. A Web Server](#17-a-web-server)
+- [1.8. Loose Ends](#18-loose-ends)
 
 <!-- /TOC -->
 
