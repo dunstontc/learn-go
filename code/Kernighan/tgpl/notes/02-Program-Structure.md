@@ -52,7 +52,7 @@ float32 float64 complex64 compled128
 bool byte rune string error
 ```
 
-- [Functions](https://golang.org/pkg/builtin/)
+[Functions](https://golang.org/pkg/builtin/):
   - `make`
   - `len`
   - `cap`
@@ -216,7 +216,141 @@ The fix is to use an ordinary assignment for the second statement.
 A short variable declaration acts like an assignment only to variables that were already declared in the same lexical block; declarations in an outer block are ignored. We’ll see examples of this at the end of the chapter.
 
 ### 2.3.2 Pointers
+
+A variable is a piece of storage containing a value. Variables created by declarations are identified by a name, such as x, but many variables are identified only by expressions like x[i] or x.f. All these expressions read the value of a variable, except when they appear on the lefthand side of an assignment, in which case a new value is assigned to the variable.  
+
+A *pointer* value is the *address* of a variable. A pointer is thus the location at which a value is stored. Not every value has an address, but every variable does. With a pointer, we can read or update the value of a variable *indirectly*, without using or even knowing the name of the variable, if indeed it has a name.  
+
+If a variable is declared `var x int`, the expression `&x` ("address of x") yields a pointer to an integer variable, that is, a value of type `*int`, which is pronounced "pointer to int". If this value is called `p`, we say "p points to x", or equivalently "p contains the address of x". The variable to which `p` points is written `*p`. The expression `*p` yields the value of that variable, an `int`, but since `*p` denotes a variable, it may also appear on the left-hand side of an assignment, in which case the assignment updates the variable.  
+```go
+  x := 1
+  p := &x         // p, of type *int, points to x
+  fmt.Println(*p) // "1"
+  *p = 2          // equivalent to x = 2
+  fmt.Println(x)  // "2"
+```
+
+Each component of a variable of aggregate type (a field of a struct or an element of an array) is also a variable and thus has an address too. 
+
+Variables are sometimes described as *addressable* values. Expressions that denote variables are the only expressions to which the *address-of* operator & may be applied.
+
+The zero value for a pointer of any type is `nil`. The test `p != nil` is true if `p` points to a variable. Pointers are comparable; two pointers are equal if and only if they point to the same variable or both are `nil`.
+```go
+  var x, y int
+  fmt.Println(&x == &x, &x == &y, &x == nil) // "true false false"
+```
+
+It is perfectly safe for a function to return the address of a local variable. For instance, in the code below, the local variable v created by this particular call to f will remain in existence even after the call has returned, and the pointer p will still refer to it:
+```go
+  var p = f()
+  func f() *int {
+    v := 1
+    return &v
+  }
+```
+
+Each call of `f` returns a distinct value:
+```go
+  fmt.Println(f() == f()) // "false"
+```
+
+Because a pointer contains the address of a variable, passing a pointer argument to a function makes it possible for the function to update the variable that was indirectly passed. For example, this function increments the variable that its argument points to and returns the new value of the variable so it may be used in an expression:
+```go
+  func incr(p *int) int {
+    *p++ // increments what p points to; does not change p
+    return *p
+  }
+  v := 1
+  incr(&v)              // side effect: v is now 2
+  fmt.Println(incr(&v)) // "3" (and v is 3)
+```
+
+Each time we take the address of a variable or copy a pointer, we create new aliases or ways to identify the same variable. For example, `*p` is an alias for `v`. Pointer aliasing is useful because it allows us to access a variable without using its name, but this is a double-edged sword: to find all the statements that access a variable, we have to know all its aliases. It’s not just pointers that create aliases; aliasing also occurs when we copy values of other reference types like slices, maps, and channels, and even structs, arrays, and interfaces that contain these types.   
+
+Pointers are key to the `flag` package, which uses a program’s command-line arguments to set the values of certain variables distributed throughout the program. To illustrate, this variation on the earlier `echo` command takes two optional flags: `-n` causes `echo` to omit the trailing newline that would normally be printed, and `-s sep` causes it to separate the output arguments by the contents of the string `sep` instead of the default single space. Since this is our fourth version, the package is called `gopl.io/ch2/echo4`. 
+```go
+// gopl.io/ch2/echo4
+// Echo4 prints its command-line arguments.
+package main
+
+import (
+	"flag"
+	"fmt"
+	"strings"
+)
+
+var n = flag.Bool("n", false, "omit trailing newline")
+var sep = flag.String("s", " ", "separator")
+
+func main() {
+	flag.Parse()
+	fmt.Print(strings.Join(flag.Args(), *sep))
+	if !*n {
+		fmt.Println()
+	}
+}
+```
+
+The function `flag.Bool` creates a new flag variable of type `bool`. It takes three arguments: the name of the flag (`"n"`), the variable’s default value (`false`), and a message that will be printed if the user provides an invalid argument, an invalid flag, or `-h` or `-help`. Similarly, `flag.String` takes a name, a default value, and a message, and creates a string variable. The variables `sep` and `n` are pointers to the flag variables, which must be accessed indirectly as `*sep` and `*n`.
+
+When the program is run, it must call `flag.Parse` before the flags are used, to update the flag variables from their default values. The non-flag arguments are available from `flag.Args()` as a slice of strings. If `flag.Parse` encounters an error, it prints a usage message and calls `os.Exit(2)` to terminate the program.
+
+Let’s run some test cases on echo:
+```bash
+  $ go build gopl.io/ch2/echo4
+  $ ./echo4 a bc def
+  a bc def
+  $ ./echo4 -s / a bc def
+  a/bc/def
+  $ ./echo4 -n a bc def
+  a bc def$
+  $ ./echo4 -help
+  Usage of ./echo4:
+    -n    
+          omit trailing newline
+    -s string
+          separator (default " ")
+```
 ### 2.3.3 The `new` Function
+
+Another way to create a variable is to use the built-in function `new`. The expression `new(T)` creates an *unnamed variable* of type `T`, initializes it to the zero value of `T`, and returns its address, which is a value of type `*T`.
+```go
+  p := new(int)   // p, of type *int, points to an unnamed int variable
+  fmt.Println(*p) // "0"
+  *p = 2          // sets the unnamed int to 2
+  fmt.Println(*p) // "2"
+```
+
+A variable created with new is no different from an ordinary local variable whose address is taken, except that there’s no need to invent (and declare) a dummy name, and we can use `new(T)` in an expression. Thus `new` is only a syntactic convenience, not a fundamental notion.
+The two `newInt` functions below have identical behaviors.
+```go
+  func newInt() *int {
+    return new(int)
+  }
+  func newInt() *int {
+    var dummy int
+    return &dummy
+  }
+```
+
+Each call to `new` returns a distinct variable with a unique address:
+```go
+
+  p := new(int)
+  q := new(int)
+  fmt.Println(p == q) // "false"
+```
+
+There is one exception to this rule: two variables whose type carries no information and is therefore of size zero, such as `struct{}` or `[0]int`, may, depending on the implementation, have the same address.  
+
+The `new` function is relatively rarely used because the most common unnamed variables are of struct types, for which the struct literal syntax (§4.4.1) is more flexible.  
+
+Since new is a predeclared function, not a keyword, it’s possible to redefine the name for something else within a function, for example:
+```go
+  func delta(old, new int) int { return new - old }
+```
+Of course, within delta, the built-in `new` function is unavailable.
+
 ### 2.3.4 Lifetime of Variables
 ### 2.3.5 Tuple Assignment
 ### 2.3.6 Assignability
