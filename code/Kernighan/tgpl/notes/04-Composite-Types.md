@@ -13,19 +13,9 @@
 
 
 ## 4.1. Arrays 
-
-
 ## 4.2. Slices 
-
-
 ## 4.3. Maps 
-
-
 ## 4.4. Structs 
-
-
 ## 4.5. JSON 
-
-
 ## 4.6. Text and HTML Templates
 

@@ -13,19 +13,9 @@
 
 
 ## 3.1. Integers 
-
-
 ## 3.2. Floating-Point Numbers 
-
-
 ## 3.3. Complex Numbers 
-
-
 ## 3.4. Booleans 
-
-
 ## 3.5. Strings 
-
-
 ## 3.6. Constants
 
