@@ -9,11 +9,13 @@
   - [2.3.2 Pointers](#232-pointers)
   - [2.3.3 The `new` Function](#233-the-new-function)
   - [2.3.4 Lifetime of Variables](#234-lifetime-of-variables)
-  - [2.3.5 Tuple Assignment](#235-tuple-assignment)
-  - [2.3.6 Assignability](#236-assignability)
 - [2.4. Assignments](#24-assignments)
+  - [2.4.1 Tuple Assignment](#241-tuple-assignment)
+  - [2.4.2 Assignability](#242-assignability)
 - [2.5. Type Declarations](#25-type-declarations)
 - [2.6. Packages and Files](#26-packages-and-files)
+  - [2.6.1 Imports](#261-imports)
+  - [2.6.2 Package Initialization](#262-package-initialization)
 - [2.7. Scope](#27-scope)
 
 <!-- /TOC -->
@@ -41,31 +43,23 @@ In addition, there are about three dozen *predeclared* names like int and true f
 
 Constants:
 ```
-true false iota nil
+  true false iota nil
 ```
 
 Types:
 ```
-int  int8  int16  int32  int64
-uint uint8 uint16 uint32 uint64 uintptr
-float32 float64 complex64 compled128
-bool byte rune string error
+  int  int8  int16  int32  int64
+  uint uint8 uint16 uint32 uint64 uintptr
+  float32 float64 complex64 compled128
+  bool byte rune string error
 ```
 
 [Functions](https://golang.org/pkg/builtin/):
-  - `make`
-  - `len`
-  - `cap`
-  - `new`
-  - `append`
-  - `copy`
-  - `close`
-  - `delete`
-  - `complex`
-  - `real`
-  - `imag`
-  - `panic`
-  - `recover`
+```
+  make len cap new append copy close delete 
+  complex real imag
+  panic recover
+```
 
 These names are not reserved, so you may use them in declarations. We’ll see a handful of places where redeclaring one of them makes sense, but beware of the potential for confusion.  
 
@@ -335,7 +329,6 @@ The two `newInt` functions below have identical behaviors.
 
 Each call to `new` returns a distinct variable with a unique address:
 ```go
-
   p := new(int)
   q := new(int)
   fmt.Println(p == q) // "false"
@@ -352,9 +345,46 @@ Since new is a predeclared function, not a keyword, it’s possible to redefine 
 Of course, within delta, the built-in `new` function is unavailable.
 
 ### 2.3.4 Lifetime of Variables
-### 2.3.5 Tuple Assignment
-### 2.3.6 Assignability
+
+The *lifetime* of a variable is the interval of time during which it exists as the program executes. The lifetime of a package-level variable is the entire execution of the program. By contrast, local variables have dynamic lifetimes: a new instance is created each time the declaration statement is executed, and the variable lives on until it becomes *unreachable*, at which point its storage may be recycled. Function parameters and results are local variables too; they are created each time their enclosing function is called.  
+
+For example, in this excerpt from the Lissajous program of Section 1.4,  
+```go
+  for t := 0.0; t < cycles*2*math.Pi; t += res {
+    x := math.Sin(t)
+    y := math.Sin(t*freq + phase)
+    img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5), blackIndex)
+}
+```
+the variable `t` is created each time the for loop begins, and new variables `x` and `y` are created on each iteration of the loop.  
+
+How does the garbage collector know that a variable’s storage can be reclaimed? The full story is much more detailed than we need here, but the basic idea is that every package-level variable, and every local variable of each currently active function, can potentially be the start or root of a path to the variable in question, following pointers and other kinds of references that ultimately lead to the variable. If no such path exists, the variable has become unreachable, so it can no longer affect the rest of the computation.  
+
+Because the lifetime of a variable is determined only by whether or not it is reachable, a local variable may outlive a single iteration of the enclosing loop. It may continue to exist even after its enclosing function has returned.  
+
+A compiler may choose to allocate local variables on the heap or on the stack but, perhaps surprisingly, this choice is not determined by whether var or new was used to declare the variable.  
+```go
+var global *int
+
+func f() {
+  var x int
+  x = 1
+  global = &x
+}
+
+func g() {
+  y := new(int)
+  *y = 1
+}
+```
+
+Here, `x` must be heap-allocated because it is still reachable from the variable `global` after `f` has returned, despite being declared as a local variable; we say `x` *escapes from* `f`. Conversely, when `g` returns, the variable `*y` becomes unreachable and can be recycled. Since *y does not escape from g, it’s safe for the compiler to allocate *y on the stack, even though it was allocated with new. In any case, the notion of escaping is not something that you need to worry about in order to write correct code, though it’s good to keep in mind during performance optimization, since each variable that escapes requires an extra memory allocation.
+
+Garbage collection is a tremendous help in writing correct programs, but it does not relieve you of the burden of thinking about memory. You don’t need to explicitly allocate and free memory, but to write efficient programs you still need to be aware of the lifetime of variables. For example, keeping unnecessary pointers to short-lived objects within long-lived objects, especially global variables, will prevent the garbage collector from reclaiming the short-lived objects.
+
 ## 2.4. Assignments
+### 2.4.1 Tuple Assignment
+### 2.4.2 Assignability
 ## 2.5. Type Declarations 
 ## 2.6. Packages and Files 
 ### 2.6.1 Imports
