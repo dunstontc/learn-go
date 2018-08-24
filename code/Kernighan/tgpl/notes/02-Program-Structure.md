@@ -5,6 +5,12 @@
 - [2.1. Names](#21-names)
 - [2.2. Declarations](#22-declarations)
 - [2.3. Variables](#23-variables)
+  - [2.3.1 Short Variable Declarations](#231-short-variable-declarations)
+  - [2.3.2 Pointers](#232-pointers)
+  - [2.3.3 The `new` Function](#233-the-new-function)
+  - [2.3.4 Lifetime of Variables](#234-lifetime-of-variables)
+  - [2.3.5 Tuple Assignment](#235-tuple-assignment)
+  - [2.3.6 Assignability](#236-assignability)
 - [2.4. Assignments](#24-assignments)
 - [2.5. Type Declarations](#25-type-declarations)
 - [2.6. Packages and Files](#26-packages-and-files)
@@ -33,32 +39,19 @@ continue     for          import       return       var
 
 In addition, there are about three dozen *predeclared* names like int and true for built-in constants, types, and functions:
 
-- Constants:
-  - `true`
-  - `false`
-  - `iota`
-  - `nil`
-- Types:
-  - `int`
-  - `int8`
-  - `int16`
-  - `int32`
-  - `int64`
-  - `uint`
-  - `uint8`
-  - `uint16`
-  - `uint32`
-  - `uint64`
-  - `uintptr`
-  - `float32`
-  - `float64`
-  - `complex64`
-  - `compled128`
-  - `bool`
-  - `byte`
-  - `rune`
-  - `string`
-  - `error`
+Constants:
+```
+true false iota nil
+```
+
+Types:
+```
+int  int8  int16  int32  int64
+uint uint8 uint16 uint32 uint64 uintptr
+float32 float64 complex64 compled128
+bool byte rune string error
+```
+
 - [Functions](https://golang.org/pkg/builtin/)
   - `make`
   - `len`
@@ -166,8 +159,71 @@ A set of variables can also be initialized by calling a function that returns mu
   var f, err = os.Open(name) // os.Open returns a file and an error
 ```
 
+### 2.3.1 Short Variable Declarations
+Within a function, an alternate form called a *short variable declaration* may be used to declare and initialize local variables. It takes the form `name := expression`, and the type of `name` is determined by the type of expression. Here are three of the many short variable declarations in the `lissajous` function (§1.4):  
+```go
+  anim := gif.GIF{LoopCount: nframes}
+  freq := rand.Float64() * 3.0
+  t := 0.0
+```
+
+Because of their brevity and flexibility, short variable declarations are used to declare and initialize the majority of local variables. A `var` declaration tends to be reserved for local variables that need an explicit type that differs from that of the initializer expression, or for when the variable will be assigned a value later and its initial value is unimportant.  
+```go
+  i := 100                  // an int
+  var boiling float64 = 100 // a float64
+  var names []string
+  var err error
+  var p Point
+```
+
+As with var declarations, multiple variables may be declared and initialized in the same short variable declaration,  
+```go
+  i, j := 0, 1
+```
+but declarations with multiple initializer expressions should be used only when they help readability, such as for short and natural groupings like the initialization part of a for loop.  
+
+Keep in mind that `:=` is a declaration, whereas `=` is an assignment. A multi-variable declaration should not be confused with a *tuple assignment* (§2.4.1), in which each variable on the left-hand side is assigned the corresponding value from the right-hand side:
+```go
+  i, j = j, i // swap values of i and j
+```
+
+Like ordinary `var` declarations, short variable declarations may be used for calls to functions like `os.Open` that return two or more values:
+```go
+  f, err := os.Open(name)
+    if err != nil {
+  return err
+  }
+  // ...use f...
+  f.Close()
+```
+
+One subtle but important point: a short variable declaration does not necessarily *declare* all the variables on its left-hand side. If some of them were already declared in the same lexical block (§2.7), then the short variable declaration acts like an *assignment* to those variables.  
+In the code below, the first statement declares both `in` and `err`. The second declares `out` but only assigns a value to the existing `err` variable.  
+```go
+  in, err := os.Open(infile)
+  // ...
+  out, err := os.Create(outfile)
+```
+A short variable declaration must declare at least one new variable, however, so this code will not compile:
+```go
+
+  f, err := os.Open(infile)
+  // ...
+  f, err := os.Create(outfile) // compile error: no new variables
+```
+The fix is to use an ordinary assignment for the second statement.  
+
+A short variable declaration acts like an assignment only to variables that were already declared in the same lexical block; declarations in an outer block are ignored. We’ll see examples of this at the end of the chapter.
+
+### 2.3.2 Pointers
+### 2.3.3 The `new` Function
+### 2.3.4 Lifetime of Variables
+### 2.3.5 Tuple Assignment
+### 2.3.6 Assignability
 ## 2.4. Assignments
 ## 2.5. Type Declarations 
 ## 2.6. Packages and Files 
+### 2.6.1 Imports
+### 2.6.2 Package Initialization
 ## 2.7. Scope
 

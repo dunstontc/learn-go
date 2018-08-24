@@ -20,6 +20,12 @@
 2. Program Structure
     - 2.1. Names
     - 2.2. Declarations
+     - 2.3.1 Short Variable Declarations
+      - 2.3.2 Pointers
+      - 2.3.3 The `new` Function
+      - 2.3.4 Lifetime of Variables
+      - 2.3.5 Tuple Assignment
+      - 2.3.6 Assignability
     - 2.3. Variables
     - 2.4. Assignments
     - 2.5. Type Declarations 
@@ -31,12 +37,21 @@
     - 3.3. Complex Numbers 
     - 3.4. Booleans 
     - 3.5. Strings 
+      - 3.5.1. String Literals
+      - 3.5.2. Unicode
+      - 3.5.3. UTF-8
+      - 3.5.4. Strings and Byte Slices
+      - 3.5.5. Conversions between Strings and Numbers
     - 3.6. Constants
 4. Composite Types
     - 4.1. Arrays 
     - 4.2. Slices 
+      - 4.2.1. TheappendFunction
     - 4.3. Maps 
     - 4.4. Structs 
+      - 4.4.1. Struct Literals
+      - 4.4.2. Comparing Structs
+      - 4.4.3. Struct Embedding and Anonymous Fields
     - 4.5. JSON 
     - 4.6. Text and HTML Templates
 5. Functions
@@ -44,8 +59,11 @@
     - 5.2. Recursion 
     - 5.3. Multiple Return Values 
     - 5.4. Errors 
+      - 5.4.1. Error-Handling Strategies
+      - 5.4.2. End of File (EOF)
     - 5.5. Function Values 
     - 5.6. Anonymous Functions 
+      - 5.6.1. Caveat: Capturing Iteration Variables
     - 5.7. Variadic Functions 
     - 5.8. Deferred Function Calls 
     - 5.9. Panic 
@@ -123,4 +141,3 @@
     - 13.3. Example: Deep Equivalence 
     - 13.4. Calling C Code with cgo
     - 13.5. Another Word of Caution
-
