@@ -43,6 +43,8 @@
       - 3.5.4. Strings and Byte Slices
       - 3.5.5. Conversions between Strings and Numbers
     - 3.6. Constants
+      - 3.6.1 The Constant Generator `iota`
+      - 3.6.2 Untyped Constants
 4. Composite Types
     - 4.1. Arrays 
     - 4.2. Slices 
