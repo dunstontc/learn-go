@@ -404,7 +404,7 @@ which saves us from having to repeat (and re-evaluate) the expression for the va
 
 
 ### 2.4.1 Tuple Assignment
-Another form of assignment, known as *tuple assignment*, allows several variables to be assigned at once. All of the right-hand side expressions are evaluated before any of the vari- ables are updated, making this form most useful when some of the variables appear on both sides of the assignment, as happens, for example, when swapping the values of two variables:
+Another form of assignment, known as *tuple assignment*, allows several variables to be assigned at once. All of the right-hand side expressions are evaluated before any of the variables are updated, making this form most useful when some of the variables appear on both sides of the assignment, as happens, for example, when swapping the values of two variables:
 ```go
   x, y = y, x
   a[i], a[j] = a[j], a[i]
@@ -483,7 +483,7 @@ A `type` declaration defines a new *named type* that has the same underlying typ
   type name underlyingType
 ```
 
-Type declarations most often appear at package level, where the named type is visible through- out the package, and if the name is exported (it starts with an upper-case letter), it’s accessible from other packages as well.  
+Type declarations most often appear at package level, where the named type is visible throughout the package, and if the name is exported (it starts with an upper-case letter), it’s accessible from other packages as well.  
 
 To illustrate type declarations, let’s turn the different temperature scales into different types:
 ```go
@@ -719,8 +719,8 @@ Note that the range loop in init uses only the index; the value is unnecessary a
 We’ll see other uses of init functions in the next section and in Section 10.5.
 
 #### Exercises
-- **Exercise 2.3**: Rewrite `PopCount` to use a loop instead of a single expression. Compare the performance of the two versions. (Section 11.4 shows how to compare the performance of differ- ent implementations systematically.)
-- **Exercise 2.4**: Write a version of `PopCount` that counts bits by shifting its argument through 64 bit positions, testing the rightmost bit each time. Compare its performance to the table- lookup version.
+- **Exercise 2.3**: Rewrite `PopCount` to use a loop instead of a single expression. Compare the performance of the two versions. (Section 11.4 shows how to compare the performance of different implementations systematically.)
+- **Exercise 2.4**: Write a version of `PopCount` that counts bits by shifting its argument through 64 bit positions, testing the rightmost bit each time. Compare its performance to the tablelookup version.
 - **Exercise 2.5**: The expression `x&(x-1)` clears the rightmost non-zero bit of `x`. Write a version of `PopCount` that counts bits by using this fact, and assess its performance.
 
 ## 2.7. Scope
@@ -792,7 +792,7 @@ Like `for` loops, `if` statements and `switch` statements also create implicit b
 
 The second `if` statement is nested within the first, so variables declared within the first statement’s initializer are visible within the second. Similar rules apply to each case of a `switch` statement: there is a block for the condition and a block for each case body.
 
-At the package level, the order in which declarations appear has no effect on their scope, so a declaration may refer to itself or to another that follows it, letting us declare recursive or mutually recursive types and functions. The compiler will report an error if a constant or vari- able declaration refers to itself, however.
+At the package level, the order in which declarations appear has no effect on their scope, so a declaration may refer to itself or to another that follows it, letting us declare recursive or mutually recursive types and functions. The compiler will report an error if a constant or variable declaration refers to itself, however.
 
 In this program:
 ```go
