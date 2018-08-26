@@ -390,6 +390,8 @@ Under the covers, `bufio.Scanner`, `ioutil.ReadFile`, and `ioutil.WriteFile` use
 
 The next program demonstrates basic usage of Go's standard image packages, which we'll use to create a sequence of bit-mapped images and then encode the sequence as a GIF animation. The images, called *Lissajous figures*, were a staple visual effect in sci-fi films of the 1960s. They are the parametric curves produced by harmonic oscillation in two dimensions, such as two sine waves fed into the x and y inputs of an oscilloscope. Figure 1.1 shows some examples.
 
+![Figure 1.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig1.1.png)
+
 There are several new constructs in this code, including `const` declarations, struct types, and composite literals. Unlike most of our examples, this one also involves floating-point com- putations. We'll discuss these topics only briefly here, pushing most details off to later chap- ters, since the primary goal right now is to give you an idea of what Go looks like and the kinds of things that can be done easily with the language and its libraries.
 ```go
 // gopl.io/ch1/lissajous

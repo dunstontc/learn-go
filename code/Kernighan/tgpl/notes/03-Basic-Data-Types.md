@@ -183,12 +183,20 @@ Runes are printed with `%c`, or with `%q` if quoting is desired:
 ```
 
 ## 3.2. Floating-Point Numbers 
+![Figure 3.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.1.png)
+![Figure 3.2](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.2.png)
+
+
 ## 3.3. Complex Numbers 
+
+![Figure 3.3](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.3.png)
 ## 3.4. Booleans 
 ## 3.5. Strings 
 ### 3.5.1 String Literals 
+![Figure 3.4](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.4.png)
 ### 3.5.2 Unicode
 ### 3.5.3 UTF-8
+![Figure 3.5](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.5.png)
 ### 3.5.4 Strings and Byte Slices
 ### 3.5.5 Conversions between Strings and Numbers
 ## 3.6. Constants
