@@ -9,3 +9,4 @@
 | channel        | A channel is a communication mechanism that allows one goroutine to pass values of a specified type to another goroutine |
 | variable       | A variable is a piece of storage containing a value.                                                                     |
 | alias          | An alias is an additional way to identify an existing variable                                                           |
+| comparable     | two values of the same type may be compared using the == and != operators                                                |

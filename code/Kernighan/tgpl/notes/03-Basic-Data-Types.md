@@ -33,11 +33,160 @@ There are also two types called just `int` and `uint` that are the natural or mo
 
 The type `rune` is an synonym for `int32` and conventionally indicates that a value is a Unicode code point. The two names may be used interchangeably. Similarly, the type `byte` is an synonym for `uint8`, and emphasizes that the value is a piece of raw data rather than a small numeric quantity.
 
+Finally, there is an unsigned integer type `uintptr`, whose width is not specified but is sufficient to hold all the bits of a pointer value. The `uintptr` type is used only for low-level programming, such as at the boundary of a Go program with a C library or an operating system. We’ll see examples of this when we deal with the unsafe package in Chapter 13.
+
+Regardless of their size, `int`, `uint`, and `uintptr` are different types from their explicitly sized siblings. Thus `int` is not the same type as `int32`, even if the natural size of integers is 32 bits, and an explicit conversion is required to use an `int` value where an `int32` is needed, and vice versa.
+
+Signed numbers are represented in *2's-complement* form, in which the high-order bit is reserved for the sign of the number and the range of values of an *n*-bit number is from $−2^{n−1}$ to $2^{n−1}−1$. Unsigned integers use the full range of bits for non-negative values and thus have the range 0 to $2^n−1$. For instance, the range of `int8` is −128 to 127, whereas the range of `uint8` is 0 to 255.
+
+Go’s binary [operators](https://golang.org/ref/spec#Operators) for arithmetic, logic, and comparison are listed here in order of decreasing precedence:
+```
+  *    /    %    <<    >>    &    &^    
+  +    -    |    ^
+  ==   !=   <    <=    >     >=
+  &&
+  ||
+```
+There are only five levels of precedence for binary operators. Operators at the same level associate to the left, so parentheses may be required for clarity, or to make the operators evaluate in the intended order in an expression like `mask & (1 << 28)`.
+
+Each operator in the first two lines of the table above, for instance `+`, has a corresponding assignment operator like `+=` that may be used to abbreviate an assignment statement.
+
+The integer arithmetic operators `+,` `-,` `*,` and `/` may be applied to integer, floating-point, and complex numbers, but the remainder operator `%` applies only to integers. The behavior of `%` for negative numbers varies across programming languages. In Go, the sign of the remainder is always the same as the sign of the dividend, so `-5 % 3` and `-5 % -3` are both `-2`. The behavior of `/` depends on whether its operands are integers, so `5.0/4.0` is `1.25`, but `5/4` is `1` because integer division truncates the result toward zero.
+
+If the result of an arithmetic operation, whether signed or unsigned, has more bits than can be represented in the result type, it is said to *overflow*. The high-order bits that do not fit are silently discarded. If the original number is a signed type, the result could be negative if the leftmost bit is a 1, as in the `int8` example here:
+```go
+  var u uint8 = 255
+  fmt.Println(u, u+1, u*u) // "255 0 1"
+  var i int8 = 127
+  fmt.Println(i, i+1, i*i) // "127 -128 1"
+```
+Two integers of the same type may be compared using the binary comparison operators below; the type of a comparison expression is a boolean.
+```
+  ==    equal to
+  !=    not equal to
+  <     less than
+  <=    less than or equal to
+  >     greater than
+  >=    greater than or equal to
+```
+
+In fact, all values of basic type—booleans, numbers, and strings—are *comparable*, meaning that two values of the same type may be compared using the `==` and `!=` operators. Furthermore, integers, floating-point numbers, and strings are *ordered* by the comparison operators. The values of many other types are not comparable, and no other types are ordered. As we encounter each type, we’ll present the rules governing the *comparability* of its values.
+
+There are also unary addition and subtraction operators:
+```
+  +    unary positive (no effect)
+  -    unary negation
+```
+For integers, `+x` is a shorthand for `0+x` and `-x` is a shorthand for `0-x`; for floating-point and complex numbers, `+x` is just `x` and `-x` is the negation of `x`.
+
+Go also provides the following bitwise binary operators, the first four of which treat their operands as bit patterns with no concept of arithmetic carry or sign:
+```
+  &    bitwise AND
+  |    bitwise OR
+  ^    bitwise XOR
+  &^   bit clear (AND NOT) << left shift
+  >>   right shift
+```
+
+The operator `^` is bitwise exclusive OR (XOR) when used as a binary operator, but when used as a unary prefix operator it is bitwise negation or complement; that is, it returns a value with each bit in its operand inverted. The `&^` operator is bit clear (AND NOT): in the expression  `z = x &^ y`, each bit of `z` is `0` if the corresponding bit of `y` is `1`; otherwise it equals the corresponding bit of `x`.
+
+The code below shows how bitwise operations can be used to interpret a `uint8` value as a compact and efficient set of 8 independent bits. It uses `Printf`’s `%b` verb to print a number’s binary digits; `08` modifies `%b` (an adverb!) to pad the result with zeros to exactly 8 digits.
+```go
+  var x uint8 = 1<<1 | 1<<5
+  var y uint8 = 1<<1 | 1<<2
+  fmt.Printf("%08b\n", x)    // "00100010", the set {1, 5}
+  fmt.Printf("%08b\n", y)    // "00000110", the set {1, 2}
+  fmt.Printf("%08b\n", x&y)  // "00000010", the intersection {1}
+  fmt.Printf("%08b\n", x|y)  // "00100110", the union {1, 2, 5}
+  fmt.Printf("%08b\n", x^y)  // "00100100", the symmetric difference {2, 5}
+  fmt.Printf("%08b\n", x&^y) // "00100000", the difference {5}
+  for i := uint(0); i < 8; i++ {
+      if x&(1<<i) != 0 { // membership test
+          fmt.Println(i) // "1", "5"
+      } 
+  }
+  fmt.Printf("%08b\n", x<<1) // "01000100", the set {2, 6}
+  fmt.Printf("%08b\n", x>>1) // "00010001", the set {0, 4}
+```
+(Section 6.5 shows an implementation of integer sets that can be much bigger than a byte.)
+
+In the shift operations `x<<n` and `x>>n`, the `n` operand determines the number of bit positions to shift and must be unsigned; the x operand may be unsigned or signed. Arithmetically, a left shift `x<<n` is equivalent to multiplication by $2^n$ and a right shift `x>>n` is equivalent to the floor of division by $2^n$.
+
+Left shifts fill the vacated bits with zeros, as do right shifts of unsigned numbers, but right shifts of signed numbers fill the vacated bits with copies of the sign bit. For this reason, it is important to use unsigned arithmetic when you’re treating an integer as a bit pattern.
+
+Although Go provides unsigned numbers and arithmetic, we tend to use the signed `int` form even for quantities that can’t be negative, such as the length of an array, though `uint` might seem a more obvious choice. Indeed, the built-in len function returns a signed int, as in this loop which announces prize medals in reverse order:
+```go
+  medals := []string{"gold", "silver", "bronze"}
+  for i := len(medals) - 1; i >= 0; i-- {
+      fmt.Println(medals[i]) // "bronze", "silver", "gold"
+  }
+```
+
+The alternative would be calamitous. If `len` returned an unsigned number, then `i` too would be a `uint`, and the condition `i >= 0` would always be true by definition. After the third iteration, in which `i == 0`, the `i--` statement would cause `i` to become not `−1`, but the maximum uint value (for example, $2^{64}−1$), and the evaluation of `medals[i]` would fail at run time, or *panic* (§5.9), by attempting to access an element outside the bounds of the slice.
+
+For this reason, unsigned numbers tend to be used only when their bitwise operators or peculiar arithmetic operators are required, as when implementing bit sets, parsing binary file formats, or for hashing and cryptography. They are typically not used for merely non-negative quantities.
+
+In general, an explicit conversion is required to convert a value from one type to another, and binary operators for arithmetic and logic (except shifts) must have operands of the same type. Although this occasionally results in longer expressions, it also eliminates a whole class of problems and makes programs easier to understand.
+
+As an example familiar from other contexts, consider this sequence:
+```go
+  var apples int32 = 1
+  var oranges int16 = 2
+  var compote int = apples + oranges // compile error
+```
+Attempting to compile these three declarations produces an error message:
+```
+  invalid operation: apples + oranges (mismatched types int32 and int16)
+```
+This type mismatch can be fixed in several ways, most directly by converting everything to a common type:
+```go
+  var compote = int(apples) + int(oranges)
+```
+
+As described in Section 2.5, for every type `T`, the conversion operation `T(x)` converts the value `x` to type `T` if the conversion is allowed. Many integer-to-integer conversions do not entail any change in value; they just tell the compiler how to interpret a value. But a conversion that narrows a big integer into a smaller one, or a conversion from integer to floating-point or vice versa, may change the value or lose precision:
+```go
+  f := 3.141 // a float64
+  i := int(f)
+  fmt.Println(f, i)   // "3.141 3"
+  f = 1.99
+  fmt.Println(int(f)) // "1"
+```
+Float to integer conversion discards any fractional part, truncating toward zero. You should avoid conversions in which the operand is out of range for the target type, because the behavior depends on the implementation:
+```go
+  f := 1e100  // a float64
+  i := int(f) // result is implementation-dependent
+```
+Integer literals of any size and type can be written as ordinary decimal numbers, or as octal numbers if they begin with `0`, as in `0666`, or as hexadecimal if they begin with `0x` or `0X`, as in `0xdeadbeef`. Hex digits may be upper or lower case. Nowadays octal numbers seem to be used for exactly one purpose—file permissions on POSIX systems—but hexadecimal numbers are widely used to emphasize the bit pattern of a number over its numeric value.
+
+When printing numbers using the `fmt` package, we can control the radix and format with the `%d`, `%o`, and `%x` verbs, as shown in this example:
+```go
+  o := 0666
+  fmt.Printf("%d %[1]o %#[1]o\n", o) // "438 666 0666"
+  x := int64(0xdeadbeef)
+  fmt.Printf("%d %[1]x %#[1]x %#[1]X\n", x)
+  // Output:
+  // 3735928559 deadbeef 0xdeadbeef 0XDEADBEEF
+```
+
+Note the use of two `fmt` tricks. Usually a `Printf` format string containing multiple `%` verbs would require the same number of extra operands, but the `[1]` "adverbs" after `%` tell `Printf` to use the first operand over and over again. Second, the `#` adverb for `%o` or `%x` or `%X` tells `Printf` to emit a `0` or `0x` or `0X` prefix respectively.
+
+Rune literals are written as a character within single quotes. The simplest example is an ASCII character like `'a'`, but it’s possible to write any Unicode code point either directly or with numeric escapes, as we will see shortly.
+
+Runes are printed with `%c`, or with `%q` if quoting is desired:
+```go
+  ascii := 'a'
+  unicode := 'D'
+  newline := '\n'
+  fmt.Printf("%d %[1]c %[1]q\n", ascii)   // "97 a 'a'" 
+  fmt.Printf("%d %[1]c %[1]q\n", unicode) // "22269 D 'D'" 
+  fmt.Printf("%d %[1]q\n", newline)       // "10 '\n'"
+```
+
 ## 3.2. Floating-Point Numbers 
 ## 3.3. Complex Numbers 
 ## 3.4. Booleans 
 ## 3.5. Strings 
-### 3.5.1 String Literals
+### 3.5.1 String Literals 
 ### 3.5.2 Unicode
 ### 3.5.3 UTF-8
 ### 3.5.4 Strings and Byte Slices
