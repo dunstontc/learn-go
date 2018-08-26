@@ -211,31 +211,68 @@ Floating-point values are conveniently printed with `Printf’s` `%g` verb, whic
 The code above prints the powers of *e* with three decimal digits of precision, aligned in an eight-character field:
 |   `x`   |      $e^x$      |
 | ------- | --------------- |
-| `x = 0` | $e^x$ = 1.000   |
-| `x = 1` | $e^x$ = 2.718   |
-| `x = 2` | $e^x$ = 7.389   |
-| `x = 3` | $e^x$ = 20.086  |
-| `x = 4` | $e^x$ = 54.598  |
-| `x = 5` | $e^x$ = 148.413 |
-| `x = 6` | $e^x$ = 403.429 |
-| `x = 7` | $e^x$ = 1096.63 |
+| x = 0 | $e^x$ = 1.000   |
+| x = 1 | $e^x$ = 2.718   |
+| x = 2 | $e^x$ = 7.389   |
+| x = 3 | $e^x$ = 20.086  |
+| x = 4 | $e^x$ = 54.598  |
+| x = 5 | $e^x$ = 148.413 |
+| x = 6 | $e^x$ = 403.429 |
+| x = 7 | $e^x$ = 1096.63 |
 
+In addition to a large collection of the usual mathematical functions, the `math` package has functions for creating and detecting the special values defined by IEEE 754: the positive and negative infinities, which represent numbers of excessive magnitude and the result of division by zero; and NaN ("not a number"), the result of such mathematically dubious operations as `0/0` or `Sqrt(-1)`.
+```go
+  var z float64
+  fmt.Println(z, -z, 1/z, -1/z, z/z) //  "0 -0 +Inf -Inf NaN"
+```
 
+The function `math.IsNaN` tests whether its argument is a not-a-number value, and `math.NaN` returns such a value. It’s tempting to use NaN as a sentinel value in a numeric computation, but testing whether a specific computational result is equal to NaN is fraught with peril because any comparison with NaN always yields false:
+```go
+  nan := math.NaN()
+  fmt.Println(nan == nan, nan < nan, nan > nan) // "false false false"
+```
 
+If a function that returns a floating-point result might fail, it’s better to report the failure separately, like this:
+```go
+  func compute() (value float64, ok bool) {
+      // ...
+      if failed {
+          return 0, false
+      }
+      return result, true
+  }
+```
 
-
-
-
-
-
-
-
-
-
-
-
+The next program illustrates floating-point graphics computation. It plots a function of two variables `z = f(x, y)` as a wire mesh 3-D surface, using Scalable Vector Graphics (SVG), a standard XML notation for line drawings. Figure 3.1 shows an example of its output for the function `sin(r)/r`, where `r` is `sqrt(x*x+y*y)`.
 ![Figure 3.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.1.png)
+```go
+// tgpl.io/ch3/surface
+
+```
+
+Notice that the function corner returns two values, the coordinates of the corner of the cell.
+
+The explanation of how the program works requires only basic geometry, but it’s fine to skip over it, since the point is to illustrate floating-point computation. The essence of the program is mapping between three different coordinate systems, shown in Figure 3.2. The first is a 2-D grid of 100&100 cells identified by integer coordinates (i, j), starting at (0, 0) in the far back corner. We plot from the back to the front so that background polygons may be obscured by foreground ones.
+
+The second coordinate system is a mesh of 3-D floating-point coordinates (x, y, z), where x and y are linear functions of i and j, translated so that the origin is in the center, and scaled by the constant xyrange. The height z is the value of the surface function f (x, y).
+
+The third coordinate system is the 2-D image canvas, with (0, 0) in the top left corner. Points in this plane are denoted (sx, sy). We use an isometric projection to map each 3-D point (x, y, z) onto the 2-D canvas. A point appears farther to the right on the canvas the greater its x value or the smaller its y value. And a point appears farther down the canvas the greater its x value or y value, and the smaller its z value. The vertical and horizontal scale factors for x and y are derived from the sine and cosine of a 30° angle. The scale factor for z, 0.4, is an arbitrary parameter.
+
+For each cell in the 2-D grid, the main function computes the coordinates on the image canvas of the four corners of the polygon ABCD, where B corresponds to (i, j) and A, C, and D are its neighbors, then prints an SVG instruction to draw it.
+
 ![Figure 3.2](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.2.png)
+
+### Exercises
+- **Exercise 3.1**: If the function `f` returns a non-finite `float64` value, the SVG file will contain invalid `<polygon>` elements (although many SVG renderers handle this gracefully). Modify the program to skip invalid polygons.
+- **Exercise 3.2**: Experiment with visualizations of other functions from the `math` package. Can you produce an egg box, moguls, or a saddle?
+- **Exercise 3.3**: Color each polygon based on its height, so that the peaks are colored red (`#ff0000`) and the valleys blue (`#0000ff`).
+- **Exercise 3.4**: Following the approach of the Lissajous example in Section 1.7, construct a web server that computes surfaces and writes SVG data to the client. The server must set the `Content-Type` header like this:
+```go
+  w.Header().Set("Content-Type", "image/svg+xml")
+```
+(This step was not required in the Lissajous example because the server uses standard heuristics to recognize common formats like PNG from the first 512 bytes of the response and generates the proper header.) Allow the client to specify values like height, width, and color as HTTP request parameters.
+
+
 ## 3.3. Complex Numbers 
 ![Figure 3.3](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.3.png)
 ## 3.4. Booleans 
