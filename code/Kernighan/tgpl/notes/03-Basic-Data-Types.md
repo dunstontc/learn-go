@@ -175,20 +175,68 @@ Rune literals are written as a character within single quotes. The simplest exam
 Runes are printed with `%c`, or with `%q` if quoting is desired:
 ```go
   ascii := 'a'
-  unicode := 'D'
+  unicode := '⾙'
   newline := '\n'
   fmt.Printf("%d %[1]c %[1]q\n", ascii)   // "97 a 'a'" 
-  fmt.Printf("%d %[1]c %[1]q\n", unicode) // "22269 D 'D'" 
+  fmt.Printf("%d %[1]c %[1]q\n", unicode) // "22269 ⾙ '⾙'" 
   fmt.Printf("%d %[1]q\n", newline)       // "10 '\n'"
 ```
 
 ## 3.2. Floating-Point Numbers 
+
+Go provides two sizes of floating-point numbers, `float32` and `float64`. Their arithmetic properties are governed by the [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) standard implemented by all modern CPUs.
+
+Values of these numeric types range from tiny to huge. The limits of floating-point values can be found in the [`math`](https://golang.org/pkg/math) package. The constant `math.MaxFloat32`, the largest `float32`, is about `3.4e38`, and `math.MaxFloat64` is about `1.8e308`. The smallest positive values are near `1.4e-45` and `4.9e-324`, respectively.
+
+A `float32` provides approximately six decimal digits of precision, whereas a `float64` provides about 15 digits; `float64` should be preferred for most purposes because `float32` computations accumulate error rapidly unless one is quite careful, and the smallest positive integer that cannot be exactly represented as a `float32` is not large:
+```go
+  var f float32 = 16777216 // 1 << 24
+  fmt.Println(f == f+1)    // "true"!
+```
+Floating-point numbers can be written literally using decimals, like this:
+```go
+  const e = 2.71828 // (approximately)
+```
+Digits may be omitted before the decimal point (`.707`) or after it (`1.`). Very small or very large numbers are better written in scientific notation, with the letter `e` or `E` preceding the decimal exponent:
+```go
+  const Avogadro = 6.02214129e23
+  const Planck   = 6.62606957e-34
+```
+Floating-point values are conveniently printed with `Printf’s` `%g` verb, which chooses the most compact representation that has adequate precision, but for tables of data, the `%e` (exponent) or `%f` (no exponent) forms may be more appropriate. All three verbs allow field width and numeric precision to be controlled.
+```go
+  for x := 0; x < 8; x++ {
+      fmt.Printf("x = %d eA = %8.3f\n", x, math.Exp(float64(x)))
+  }
+```
+The code above prints the powers of *e* with three decimal digits of precision, aligned in an eight-character field:
+|   `x`   |      $e^x$      |
+| ------- | --------------- |
+| `x = 0` | $e^x$ = 1.000   |
+| `x = 1` | $e^x$ = 2.718   |
+| `x = 2` | $e^x$ = 7.389   |
+| `x = 3` | $e^x$ = 20.086  |
+| `x = 4` | $e^x$ = 54.598  |
+| `x = 5` | $e^x$ = 148.413 |
+| `x = 6` | $e^x$ = 403.429 |
+| `x = 7` | $e^x$ = 1096.63 |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ![Figure 3.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.1.png)
 ![Figure 3.2](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.2.png)
-
-
 ## 3.3. Complex Numbers 
-
 ![Figure 3.3](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.3.png)
 ## 3.4. Booleans 
 ## 3.5. Strings 
