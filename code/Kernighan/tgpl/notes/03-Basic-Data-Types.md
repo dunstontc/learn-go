@@ -37,7 +37,7 @@ Finally, there is an unsigned integer type `uintptr`, whose width is not specifi
 
 Regardless of their size, `int`, `uint`, and `uintptr` are different types from their explicitly sized siblings. Thus `int` is not the same type as `int32`, even if the natural size of integers is 32 bits, and an explicit conversion is required to use an `int` value where an `int32` is needed, and vice versa.
 
-Signed numbers are represented in *Two's-complement* [*1*](https://www.reddit.com/r/compsci/comments/26jnqu/im_having_trouble_understanding_twos_compliment/) [*2*](https://stackoverflow.com/a/1049880/7687024)  form, in which the high-order bit is reserved for the sign of the number and the range of values of an *n*-bit number is from $−2^{n−1}$ to $2^{n−1}−1$. Unsigned integers use the full range of bits for non-negative values and thus have the range 0 to $2^n−1$. For instance, the range of `int8` is −128 to 127, whereas the range of `uint8` is 0 to 255.
+Signed numbers are represented in *Two's-complement* [*0*](https://www.youtube.com/watch?v=lKTsv6iVxV4&t=188s) [*1*](https://www.reddit.com/r/compsci/comments/26jnqu/im_having_trouble_understanding_twos_compliment/) [*2*](https://stackoverflow.com/a/1049880/7687024)  form, in which the high-order bit is reserved for the sign of the number and the range of values of an *n*-bit number is from $−2^{n−1}$ to $2^{n−1}−1$. Unsigned integers use the full range of bits for non-negative values and thus have the range 0 to $2^n−1$. For instance, the range of `int8` is −128 to 127, whereas the range of `uint8` is 0 to 255.
 
 Go’s binary [operators](https://golang.org/ref/spec#Operators) for arithmetic, logic, and comparison are listed here in order of decreasing precedence:
 ```
@@ -244,7 +244,8 @@ If a function that returns a floating-point result might fail, it’s better to 
 ```
 
 The next program illustrates floating-point graphics computation. It plots a function of two variables `z = f(x, y)` as a wire mesh 3-D surface, using Scalable Vector Graphics (SVG), a standard XML notation for line drawings. Figure 3.1 shows an example of its output for the function `sin(r)/r`, where `r` is `sqrt(x*x+y*y)`.
-![Figure 3.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.1.png)
+![Figure 3.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/mandelbrot.png)
+<img src="" alt="">
 ```go
 // tgpl.io/ch3/surface
 // Surface computes an SVG rendering of a 3-D surface function.
@@ -418,7 +419,50 @@ The two nested loops iterate over each point in a 1024x1024 grayscale raster ima
 - **Exercise 3.9**: Write a web server that renders fractals and writes the image data to the client. Allow the client to specify the *x*, *y*, and zoom values as parameters to the HTTP request.
 
 ## 3.4. Booleans 
+
+A value of type `bool`, or *boolean*, has only two possible values, `true` and `false`. The conditions in `if` and `for` statements are booleans, and comparison operators like `==` and `<` produce a boolean result. The unary operator `!` is logical negation, so `!true` is `false`, or, one might say, `(!true==false)==true`, although as a matter of style, we always simplify redundant boolean expressions like `x==true` to `x`.
+
+Boolean values can be combined with the `&&` (AND) and `||` (OR) operators, which have *shortcircuit* behavior: if the answer is already determined by the value of the left operand, the right operand is not evaluated, making it safe to write expressions like this:
+```go
+  s != "" && s[0] == 'x'
+```
+where `s[0]` would panic if applied to an empty string.
+
+Since `&&` has higher precedence than `||` (mnemonic: `&&` is boolean multiplication, `||` is boolean addition), no parentheses are required for conditions of this form:
+```go
+  if 'a' <= c && c <= 'z' ||
+     'A' <= c && c <= 'Z' ||
+     '0' <= c && c <= '9' {
+     // ...ASCII letter or digit...
+  }
+```
+There is no implicit conversion from a boolean value to a numeric value like 0 or 1, or vice versa. It’s necessary to use an explicit `if`, as in
+```go
+  i := 0 if b {
+      i=1
+  }
+```
+It might be worth writing a conversion function if this operation were needed often:
+```go
+  // btoi returns 1 if b is true and 0 if false.
+  func btoi(b bool) int {
+      if b { 
+          return 1
+      }
+      return 0
+  }
+```
+The inverse operation is so simple that it doesn’t warrant a function, but for symmetry here it is:
+```go
+
+  // itob reports whether i is non-zero.
+  func itob(i int) bool { return i != 0 }
+```
+
+
 ## 3.5. Strings 
+
+
 ### 3.5.1 String Literals 
 ![Figure 3.4](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.4.png)
 ### 3.5.2 Unicode
