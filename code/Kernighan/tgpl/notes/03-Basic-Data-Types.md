@@ -825,6 +825,34 @@ The `bytes.Buffer` type is extremely versatile, and when we discuss interfaces i
 
 
 ### 3.5.5 Conversions between Strings and Numbers
+
+In addition to conversions between strings, runes, and bytes, it’s often necessary to convert between numeric values and their string representations. This is done with functions from the `strconv` package.
+
+
+To convert an integer to a string, one option is to use `fmt.Sprintf`; another is to use the func- tion `strconv.Itoa` ("integer to ASCII"):
+```go
+  x := 123
+  y := fmt.Sprintf("%d", x)
+  fmt.Println(y, strconv.Itoa(x)) // "123 123"
+```
+`FormatInt` and `FormatUint` can be used to format numbers in a different base:
+```go
+  fmt.Println(strconv.FormatInt(int64(x), 2)) // "1111011"
+```
+The `fmt.Printf` verbs `%b`, `%d`, `%u`, and `%x` are often more convenient than `Format` functions, especially if we want to include additional information besides the number:
+```go
+  s := fmt.Sprintf("x=%b", x) // "x=1111011"
+```
+To parse a string representing an integer, use the `strconv` functions `Atoi` or `ParseInt`, or `ParseUint` for unsigned integers
+```go
+  x, err := strconv.Atoi("123")             // x is an int
+  y, err := strconv.ParseInt("123", 10, 64) // base 10, up to 64 bits  
+```
+The third argument of `ParseInt` gives the size of the integer type that the result must fit into; for example, 16 implies `int16`, and the special value of 0 implies int. In any case, the type of the result y is always `int64`, which you can then convert to a smaller type.
+
+Sometimes `fmt.Scanf` is useful for parsing input that consists of orderly mixtures of strings and numbers all on a single line, but it can be inflexible, especially when handling incomplete or irregular input.
+
+
 ## 3.6. Constants
 ### 3.6.1 The Constant Generator `iota`
 ### 3.6.2 Untyped Constants
