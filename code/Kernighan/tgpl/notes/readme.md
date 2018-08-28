@@ -82,9 +82,10 @@
     - 7.1. Interfaces as Contracts 
     - 7.2. Interface Types 
     - 7.3. Interface Satisfaction 
-    - 7.4. Parsing Flags with flag.Value 
+    - 7.4. Parsing Flags with `flag.Value` 
     - 7.5. Interface Values
-    - 7.6. Sorting with sort.Interface 
+      - 7.5.1. Caveat: An Interface Containing a Nil Pointer Is Non-Nil
+    - 7.6. Sorting with `sort.Interface` 
     - 7.7. The http.Handler Interface 
     - 7.8. The error Interface 
     - 7.9. Example: Expression Evaluator 
@@ -98,21 +99,30 @@
     - 8.1. Goroutines 
     - 8.2. Example: Concurrent Clock Server 
     - 8.3. Example: Concurrent Echo Server 
-    - 8.4. Channels 225 8.5. Looping in Parallel 
+    - 8.4. Channels 
+      - 8.4.1. Unbuffered Channels
+      - 8.4.2. Pipelines
+      - 8.4.3. Unidirectional Channel Types
+      - 8.4.4. Buffered Channels
+    - 8.5. Looping in Parallel 
     - 8.6. Example: Concurrent Web Crawler 
-    - 8.7. Multiplexing with select 
+    - 8.7. Multiplexing with `select` 
     - 8.8. Example: Concurrent Directory Traversal 
     - 8.9. Cancellation 
     - 8.10. Example: Chat Server 
 9. Concurrency with Shared Variables
     - 9.1. Race Conditions 
-    - 9.2. Mutual Exclusion: sync.Mutex 
-    - 9.3. Read/Write Mutexes: sync.RWMutex 
+    - 9.2. Mutual Exclusion: `sync.Mutex` 
+    - 9.3. Read/Write Mutexes: `sync.RWMutex` 
     - 9.4. Memory Synchronization 
-    - 9.5. Lazy Initialization: sync.Once 
+    - 9.5. Lazy Initialization: `sync.Once` 
     - 9.6. The Race Detector 
     - 9.7. Example: Concurrent Non-Blocking Cache 
     - 9.8. Goroutines and Threads
+      - 9.8.1. Growable Stacks
+      - 9.8.2. Goroutine Scheduling
+      - 9.8.3. GOMAXPROCS
+      - 9.8.4. Goroutines Have No Identity
 10. Packages and the Go Tool
     - 10.1. Introduction
     - 10.2. Import Paths
@@ -121,9 +131,21 @@
     - 10.5. Blank Imports
     - 10.6. Packages and Naming 
     - 10.7. The Go Tool
+      - 10.7.1. Workspace Organization
+      - 10.7.2. Downloading Packages
+      - 10.7.3. Building Packages
+      - 10.7.4. Documenting Packages
+      - 10.7.5. Internal Packages
+      - 10.7.6. Querying Packages
 11. Testing
     - 11.1. The go test Tool 
     - 11.2. Test Functions 
+      - 11.2.1. Randomized Testing
+      - 11.2.2. Testing a Command
+      - 11.2.3. White-Box Testing
+      - 11.2.4. External Test Packages
+      - 11.2.5. Writing Effective Tests
+      - 11.2.6. Avoiding Brittle Tests
     - 11.3. Coverage 
     - 11.4. Benchmark Functions 
     - 11.5. Profiling 
@@ -140,7 +162,7 @@
     - 12.9. A Word of Caution 
 13. Low-Level Programming
     - 13.1. unsafe.Sizeof, Alignof, and Offsetof
-    - 13.2. unsafe.Pointer
+    - 13.2. `unsafe.Pointer`
     - 13.3. Example: Deep Equivalence 
     - 13.4. Calling C Code with cgo
     - 13.5. Another Word of Caution
