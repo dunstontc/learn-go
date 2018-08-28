@@ -365,7 +365,23 @@ The logic to expand `z`'s underlying array remains unchanged and is not shown.
 Let’s see more examples of functions that, like `rotate` and `reverse`, modify the elements of a slice in place. Given a list of strings, the nonempty function returns the non-empty ones:
 ```go
 // gopl.io/ch4/nonempty
+// Nonempty is an example of an in-place slice algorithm.
+package main
 
+import "fmt"
+
+// nonempty returns a slice holding only the non-empty strings.
+// The underlying array is modified during the call.
+func nonempty(strings []string) []string {
+	i := 0
+	for _, s := range strings {
+		if s != "" {
+			strings[i] = s
+			i++
+		}
+	}
+	return strings[:i]
+}
 ```
 
 The subtle part is that the input slice and the output slice share the same underlying array. This avoids the need to allocate another array, though of course the contents of `data` are partly overwritten, as evidenced by the second print statement:
@@ -440,18 +456,394 @@ And if we don’t need to preserve the order, we can just move the last element 
 
 ## 4.3. Maps 
 
+The hash table is one of the most ingenious and versatile of all data structures. It is an unordered collection of key/value pairs in which all the keys are distinct, and the value associated with a given key can be retrieved, updated, or removed using a constant number of key comparisons on the average, no matter how large the hash table.
 
+In Go, a *map* is a reference to a hash table, and a map type is written `map[K]V`, where `K` and `V` are the types of its keys and values. All of the keys in a given map are of the same type, and all of the values are of the same type, but the keys need not be of the same type as the values. The key type `K` must be comparable using `==`, so that the map can test whether a given key is equal to one already within it. Though floating-point numbers are comparable, it’s a bad idea to compare floats for equality and, as we mentioned in Chapter 3, especially bad if NaN is a possible value. There are no restrictions on the value type `V`.
 
+The built-in function `make` can be used to create a map:
+```go
+  ages := make(map[string]int) // mapping from strings to ints
+```
 
+We can also use a *map literal* to create a new map populated with some initial key/value pairs:
+```go
+  ages := map[string]int{
+      "alice":   31,
+      "charlie": 34,
+  }
+```
+This is equivalent to
+```go
+  ages := make(map[string]int)
+  ages["alice"] = 31
+  ages["charlie"] = 34
+```
+so an alternative expression for a new empty map is `map[string]int{}`.
 
+Map elements are accessed through the usual subscript notation:
+```go
+  ages["alice"] = 32
+  fmt.Println(ages["alice"]) // "32"
+```
 
+and removed with the built-in function `delete`:
+```go
+  delete(ages, "alice") // remove element ages["alice"]
+```
 
+All of these operations are safe even if the element isn’t in the map; a map lookup using a key that isn’t present returns the zero value for its type, so, for instance, the following works even when `"bob"` is not yet a key in the map because the value of `ages["bob"]` will be `0`.
+```go
+  ages["bob"] = ages["bob"] + 1 // happy birthday!
+```
+The shorthand assignment forms `x += y` and `x++` also work for map elements, so we can rewrite the statement above as
+```go
+  ages["bob"] += 1
+```
+or even more concisely as
+```go
+  ages["bob"]++
+```
+But a map element is not a variable, and we cannot take its address:
+```go
+  _ = &ages["bob"] // compile error: cannot take address of map element
+```
 
+One reason that we can’t take the address of a map element is that growing a map might cause rehashing of existing elements into new storage locations, thus potentially invalidating the address.
 
+To enumerate all the key/value pairs in the map, we use a `range-based` for loop similar to those we saw for slices. Successive iterations of the loop cause the `name` and `age` variables to be set to the next key/value pair:
+```go
+  for name, age := range ages {
+      fmt.Printf("%s\t%d\n", name, age)
+  }
+```
+
+The order of map iteration is unspecified, and different implementations might use a different hash function, leading to a different ordering. In practice, the order is random, varying from one execution to the next. This is intentional; making the sequence vary helps force programs to be robust across implementations. To enumerate the key/value pairs in order, we must sort the keys explicitly, for instance, using the `Strings` function from the sort package if the keys are strings. This is a common pattern:
+```go
+  import "sort"
+
+  var names []string
+
+  for name := range ages {
+      names = append(names, name)
+  }
+
+  sort.Strings(names)
+
+  for _, name := range names {
+      fmt.Printf("%s\t%d\n", name, ages[name])
+  }
+```
+Since we know the final size of `names` from the outset, it is more efficient to allocate an array of the required size up front. The statement below creates a slice that is initially empty but has sufficient capacity to hold all the keys of the `ages` map:
+```go
+  names := make([]string, 0, len(ages))
+```
+In the first `range` loop above, we require only the keys of the `ages` map, so we omit the second loop variable. In the second loop, we require only the elements of the `names` slice, so we use the blank identifier `_` to ignore the first variable, the index.
+
+The zero value for a map type is `nil`, that is, a reference to no hash table at all.
+```go
+  var ages map[string]int
+  fmt.Println(ages == nil)    // "true"
+  fmt.Println(len(ages) == 0) // "true"
+```
+Most operations on maps, including lookup, `delete`, `len`, and `range` loops, are safe to perform on a nil map reference, since it behaves like an empty map. But storing to a nil map causes a panic:
+```go
+  ages["carol"] = 21 // panic: assignment to entry in nil map
+```
+You must allocate the map before you can store into it.
+
+Accessing a map element by subscripting always yields a value. If the key is present in the map, you get the corresponding value; if not, you get the zero value for the element type, as we saw with `ages["bob"]`. For many purposes that’s fine, but sometimes you need to know whether the element was really there or not. For example, if the element type is numeric, you might have to distinguish between a nonexistent element and an element that happens to have the value zero, using a test like this:
+```go
+  age, ok := ages["bob"]
+  if !ok { /* "bob" is not a key in this map; age == 0. */ }
+```
+You’ll often see these two statements combined, like this:
+```go
+  if age, ok := ages["bob"]; !ok { /* ... */ }
+```
+
+Subscripting a map in this context yields two values; the second is a boolean that reports whether the element was present. The boolean variable is often called `ok`, especially if it is immediately used in an `if` condition.
+
+As with slices, maps cannot be compared to each other; the only legal comparison is with `nil`. To test whether two maps contain the same keys and the same associated values, we must write a loop:
+```go
+  func equal(x, y map[string]int) bool {
+      if len(x) != len(y) {
+          return false
+      }
+      for k, xv := range x {
+          if yv, ok := y[k]; !ok || yv != xv {
+              return false
+          }
+      } 
+      return true
+  }
+```
+Observe how we use !ok to distinguish the "missing" and "present but zero" cases. Had we naïvely written `xv != y[k]`, the call below would incorrectly report its arguments as equal:
+```go
+  // True if equal is written incorrectly.
+  equal(map[string]int{"A": 0}, map[string]int{"B": 42})
+```
+Go does not provide a `set` type, but since the keys of a map are distinct, a map can serve this purpose. To illustrate, the program `dedup` reads a sequence of lines and prints only the first occurrence of each distinct line. (It’s a variant of the `dup` program that we showed in Section 1.3.) The `dedup` program uses a map whose keys represent the set of lines that have already appeared to ensure that subsequent occurrences are not printed.
+```go
+// gopl.io/ch4/dedup
+func main() {
+	seen := make(map[string]bool) // a set of strings
+	input := bufio.NewScanner(os.Stdin)
+	for input.Scan() {
+		line := input.Text()
+		if !seen[line] {
+			seen[line] = true
+			fmt.Println(line)
+		}
+	}
+
+	if err := input.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "dedup: %v\n", err)
+		os.Exit(1)
+	}
+}
+```
+
+Go programmers often describe a map used in this fashion as a "set of strings" without further ado, but beware, not all `map[string]bool` values are simple sets; some may contain both `true` and `false` values.
+
+Sometimes we need a map or set whose keys are slices, but because a map’s keys must be comparable, this cannot be expressed directly. However, it can be done in two steps. First we define a helper function `k` that maps each key to a string, with the property that `k(x) == k(y)` if and only if we consider `x` and y equivalent. Then we create a map whose keys are strings, applying the helper function to each key before we access the map.
+
+The example below uses a map to record the number of times `Add` has been called with a given list of strings. It uses `fmt.Sprintf` to convert a slice of strings into a single string that is a suitable map key, quoting each slice element with `%q` to record string boundaries faithfully:
+```go
+  var m = make(map[string]int)
+  func k(list []string) string { return fmt.Sprintf("%q", list) }
+  func Add(list []string)       { m[k(list)]++ }
+  func Count(list []string) int { return m[k(list)] }
+```
+
+The same approach can be used for any non-comparable key type, not just slices. It’s even useful for comparable key types when you want a definition of equality other than ==, such as case-insensitive comparisons for strings. And the type of k(x) needn’t be a string; any comparable type with the desired equivalence property will do, such as integers, arrays, or structs.
+
+Here’s another example of maps in action, a program that counts the occurrences of each distinct Unicode code point in its input. Since there are a large number of possible characters, only a small fraction of which would appear in any particular document, a map is a natural way to keep track of just the ones that have been seen and their corresponding counts.
+```go
+// gopl.io/ch4/charcount
+// Charcount computes counts of Unicode characters.
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+	"unicode"
+	"unicode/utf8"
+)
+
+func main() {
+	counts := make(map[rune]int)    // counts of Unicode characters
+	var utflen [utf8.UTFMax + 1]int // count of lengths of UTF-8 encodings
+	invalid := 0                    // count of invalid UTF-8 characters
+
+	in := bufio.NewReader(os.Stdin)
+	for {
+		r, n, err := in.ReadRune() // returns rune, nbytes, error
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "charcount: %v\n", err)
+			os.Exit(1)
+		}
+		if r == unicode.ReplacementChar && n == 1 {
+			invalid++
+			continue
+		}
+		counts[r]++
+		utflen[n]++
+	}
+	fmt.Printf("rune\tcount\n")
+	for c, n := range counts {
+		fmt.Printf("%q\t%d\n", c, n)
+	}
+	fmt.Print("\nlen\tcount\n")
+	for i, n := range utflen {
+		if i > 0 {
+			fmt.Printf("%d\t%d\n", i, n)
+		}
+	}
+	if invalid > 0 {
+		fmt.Printf("\n%d invalid UTF-8 characters\n", invalid)
+	}
+}
+```
+
+The ReadRune method performs UTF-8 decoding and returns three values: the decoded rune, the length in bytes of its UTF-8 encoding, and an error value. The only error we expect is end-of-file. If the input was not a legal UTF-8 encoding of a rune, the returned rune is `unicode.ReplacementChar` and the length is 1.
+
+The charcount program also prints a count of the lengths of the UTF-8 encodings of the runes that appeared in the input. A map is not the best data structure for that; since encoding lengths range only from 1 to `utf8.UTFMax` (which has the value 4), an array is more compact.
+
+As an experiment, we ran charcount on this book itself at one point. Although it’s mostly in English, of course, it does have a fair number of non-ASCII characters. Here are the top ten:
+```
+  °27B 15F 14é13A 10< 5& 5D 4( 4+ 3
+```
+and here is the distribution of the lengths of all the UTF-8 encodings:
+```
+len count 
+1   765391 
+2   60
+3   70 
+4   0
+```
+
+The value type of a map can itself be a composite type, such as a map or slice. In the following code, the key type of `graph` is `string` and the value type is `map[string]bool`, representing a set of strings. Conceptually, `graph` maps a string to a set of related strings, its successors in a directed graph.
+```go
+// gopl.io/ch4/graph
+// Graph shows how to use a map of maps to represent a directed graph.
+var graph = make(map[string]map[string]bool)
+
+func addEdge(from, to string) {
+	edges := graph[from]
+	if edges == nil {
+		edges = make(map[string]bool)
+		graph[from] = edges
+	}
+	edges[to] = true
+}
+
+func hasEdge(from, to string) bool {
+	return graph[from][to]
+}
+```
+
+The `addEdge` function shows the idiomatic way to populate a map lazily, that is, to initialize each value as its key appears for the first time. The `hasEdge` function shows how the zero value of a missing map entry is often put to work: even if neither `from` nor `to` is present, `graph[from][to]` will always give a meaningful result.
+
+### Exercises
+- **Exercise 4.8**: Modify `charcount` to count letters, digits, and so on in their Unicode categories, using functions like `unicode.IsLetter`.
+- **Exercise 4.9**: Write a program `wordfreq` to report the frequency of each word in an input text file. `Callinput.Split(bufio.ScanWords)` before the first call to `Scan` to break the input into words instead of lines.
 
 
 ## 4.4. Structs 
+
+A *struct* is an aggregate data type that groups together zero or more named values of arbitrary types as a single entity. Each value is called a field. The classic example of a struct from data processing is the employee record, whose fields are a unique ID, the employee’s name, address, date of birth, position, salary, manager, and the like. All of these fields are collected into a single entity that can be copied as a unit, passed to functions and returned by them, stored in arrays, and so on.
+
+These two statements declare a struct type called `Employee` and a variable called `dilbert` that is an instance of an `Employee`:
+```go
+  type Employee struct {
+      ID        int
+      Name      string
+      Address   string
+      DoB       time.Time
+      Position  string
+      Salary    int
+      ManagerID int
+  }
+
+  var dilbert Employee
+```
+
+The individual fields of `dilbert` are accessed using *dot notation* like `dilbert.Name` and `dilbert.DoB`. Because `dilbert` is a variable, its fields are variables too, so we may assign to a field:
+```go
+  dilbert.Salary -= 5000 // demoted, for writing too few lines of code
+```
+or take its address and access it through a pointer:
+```go
+  position := &dilbert.Position
+  *position = "Senior " + *position // promoted, for outsourcing to Elbonia
+```
+The dot notation also works with a pointer to a struct:
+```go
+  var employeeOfTheMonth *Employee = &dilbert
+  employeeOfTheMonth.Position += " (proactive team player)"
+```
+The last statement is equivalent to
+```go
+  (*employeeOfTheMonth).Position += " (proactive team player)"
+```
+Given an employee's unique ID, the function `EmployeeByID` returns a pointer to an `Employee` struct. We can use the dot notation to access its fields:
+```go
+  func EmployeeByID(id int) *Employee { /* ... */ }
+  fmt.Println(EmployeeByID(dilbert.ManagerID).Position) // "Pointy-haired boss"
+  id := dilbert.ID
+  EmployeeByID(id).Salary = 0 // fired for... no real reason
+```
+The last statement updates the `Employee` struct that is pointed to by the result of the call to `EmployeeByID`. If the result type of `EmployeeByID` were changed to `Employee` instead of `*Employee`, the assignment statement would not compile since its left-hand side would not identify a variable.
+
+Fields are usually written one per line, with the field’s name preceding its type, but consecutive fields of the same type may be combined, as with `Name` and `Address` here:
+```go
+  type Employee struct {
+      ID            int
+      Name, Address string
+      Dob           time.Time
+      Position      string
+      Salary        int
+      ManagerID     int
+  }
+```
+Field order is significant to type identity. Had we also combined the declaration of the `Position` field (also a string), or interchanged `Name` and `Address`, we would be defining a different struct type. Typically we only combine the declarations of related fields.
+
+The name of a struct field is exported if it begins with a capital letter; this is Go’s main access control mechanism. A struct type may contain a mixture of exported and unexported fields.
+
+Struct types tend to be verbose because they often involve a line for each field. Although we could write out the whole type each time it is needed, the repetition would get tiresome. Instead, struct types usually appear within the declaration of a named type like `Employee`.
+
+A named struct type `S` can’t declare a field of the same type `S`: an aggregate value cannot contain itself. (An analogous restriction applies to arrays.) But `S` may declare a field of the pointer type `*S`, which lets us create recursive data structures like linked lists and trees. This is illustrated in the code below, which uses a binary tree to implement an insertion sort:
+```go
+// gopl.io/ch4/treesort
+// Package treesort provides insertion sort using an unbalanced binary tree.
+package treesort
+
+type tree struct {
+	value       int
+	left, right *tree
+}
+
+// Sort sorts values in place.
+func Sort(values []int) {
+	var root *tree
+	for _, v := range values {
+		root = add(root, v)
+	}
+	appendValues(values[:0], root)
+}
+
+// appendValues appends the elements of t to values in order and returns the resulting slice.
+func appendValues(values []int, t *tree) []int {
+	if t != nil {
+		values = appendValues(values, t.left)
+		values = append(values, t.value)
+		values = appendValues(values, t.right)
+	}
+	return values
+}
+
+func add(t *tree, value int) *tree {
+	if t == nil {
+		// Equivalent to return &tree{value: value}.
+		t = new(tree)
+		t.value = value
+		return t
+	}
+	if value < t.value {
+		t.left = add(t.left, value)
+	} else {
+		t.right = add(t.right, value)
+	}
+	return t
+}
+```
+
+The zero value for a struct is composed of the zero values of each of its fields. It is usually desirable that the zero value be a natural or sensible default. For example, in `bytes.Buffer`, the initial value of the struct is a ready-to-use empty buffer, and the zero value of `sync.Mutex`, which we’ll see in Chapter 9, is a ready-to-use unlocked mutex. Sometimes this sensible initial behavior happens for free, but sometimes the type designer has to work at it.
+
+The struct type with no fields is called the *empty struct*, written `struct{}`. It has size zero and carries no information but may be useful nonetheless. Some Go programmers use it instead of bool as the value type of a map that represents a set, to emphasize that only the keys are significant, but the space saving is marginal and the syntax more cumbersome, so we generally avoid it.
+```go
+  seen := make(map[string]struct{}) // set of strings
+  // ...
+  if _, ok := seen[s]; !ok {
+      seen[s] = struct{}{}
+      // ...first time seeing s...
+  }
+```
+
+
 ### 4.4.1. Struct Literals
+
+
+
+
+
+
+
 ### 4.4.2. Comparing Structs
 ### 4.4.3. Struct Embedding and Anonymous Fields
 ## 4.5. JSON 

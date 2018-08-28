@@ -17,3 +17,4 @@
 | object (oop)      | An object is simply a value or variable that has methods, and a method is a function associated with a particular type.  |
 | method            | A method is a function associated with a particular type.                                                                |
 | variadic function | A variadic function is one that can be called with varying numbers of arguments.                                         |
+| struct            | A struct is an aggregate data type that groups together zero or more named values of arbitrary types as a single entity. |
