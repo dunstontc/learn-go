@@ -48,7 +48,8 @@
 4. Composite Types
     - 4.1. Arrays 
     - 4.2. Slices 
-      - 4.2.1. TheappendFunction
+      - 4.2.1. The `append` Function
+      - 4.2.2. In-Place Slice Techniques
     - 4.3. Maps 
     - 4.4. Structs 
       - 4.4.1. Struct Literals
@@ -129,7 +130,7 @@
     - 11.6. Example Functions 
 12. Reflection
     - 12.1. Why Reflection? 
-    - 12.2. reflect.Type and reflect.Value 
+    - 12.2. `reflect.Type` and `reflect.Value` 
     - 12.3. Display, a Recursive Value Printer 
     - 12.4. Example: Encoding S-Expressions 
     - 12.5. Setting Variables with reflect.Value 
