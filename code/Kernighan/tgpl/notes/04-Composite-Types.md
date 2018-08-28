@@ -838,14 +838,186 @@ The struct type with no fields is called the *empty struct*, written `struct{}`.
 
 ### 4.4.1. Struct Literals
 
+A value of a struct type can be written using a *struct literal* that specifies values for its fields.
+```go
+  type Point struct{ X, Y int }
+  p := Point{1, 2}
+```
+There are two forms of struct literal. The first form, shown above, requires that a value be specified for *every* field, in the right order. It burdens the writer (and reader) with remembering exactly what the fields are, and it makes the code fragile should the set of fields later grow or be reordered. Accordingly, this form tends to be used only within the package that defines the struct type, or with smaller struct types for which there is an obvious field ordering convention, like `image.Point{x, y}` or `color.RGBA{red, green, blue, alpha}`.
 
+More often, the second form is used, in which a struct value is initialized by listing some or all of the field names and their corresponding values, as in this statement from the Lissajous program of Section 1.4:
+```go
+  anim := gif.GIF{LoopCount: nframes}
+```
+If a field is omitted in this kind of literal, it is set to the zero value for its type. Because names are provided, the order of fields doesn’t matter.
 
+The two forms cannot be mixed in the same literal. Nor can you use the (order-based) first form of literal to sneak around the rule that unexported identifiers may not be referred to from another package.
+```go
+  package p
+  type T struct{ a, b int } // a and b are not exported
+  package q
+  import "p"
+  var _ = p.T{a: 1, b: 2} // compile error: can't reference a, b
+  var _ = p.T{1, 2}       // compile error: can't reference a, b
+```
+Although the last line above doesn’t mention the unexported field identifiers, it’s really using them implicitly, so it’s not allowed.
 
-
+Struct values can be passed as arguments to functions and returned from them. For instance, this function scales a `Point` by a specified factor:
+```go
+  func Scale(p Point, factor int) Point {
+      return Point{p.X * factor, p.Y * factor}
+  }
+  fmt.Println(Scale(Point{1, 2}, 5)) // "{5 10}"
+```
+For efficiency, larger struct types are usually passed to or returned from functions indirectly using a pointer,
+```go
+  func Bonus(e *Employee, percent int) int {
+      return e.Salary * percent / 100
+  }
+```
+and this is required if the function must modify its argument, since in a call-by-value language like Go, the called function receives only a copy of an argument, not a reference to the original argument.
+```go
+  func AwardAnnualRaise(e *Employee) {
+      e.Salary = e.Salary * 105 / 100
+  }
+```
+Because structs are so commonly dealt with through pointers, it’s possible to use this shorthand notation to create and initialize a struct variable and obtain its address:
+```go
+  pp := &Point{1, 2}
+```
+It is exactly equivalent to
+```go
+  pp := new(Point)
+  *pp = Point{1, 2}
+```
+but `&Point{1, 2}` can be used directly within an expression, such as a function call.
 
 
 ### 4.4.2. Comparing Structs
+
+If all the fields of a struct are comparable, the struct itself is comparable, so two expressions of that type may be compared using `==` or `!=`. The `==` operation compares the corresponding fields of the two structs in order, so the two printed expressions below are equivalent:
+```go
+  type Point struct{ X, Y int }
+
+  p := Point{1, 2}
+  q := Point{2, 1}
+  fmt.Println(p.X == q.X && p.Y == q.Y) // "false"
+  fmt.Println(p == q)                   // "false"
+```
+Comparable struct types, like other comparable types, may be used as the key type of a map.
+```go
+  type address struct {
+      hostname string
+      port int
+  }
+
+  hits := make(map[address]int)
+  hits[address{"golang.org", 443}]++
+```
+
+
 ### 4.4.3. Struct Embedding and Anonymous Fields
+
+
+In this section, we’ll see how Go’s unusual *struct embedding* mechanism lets us use one named struct type as an *anonymous field* of another struct type, providing a convenient syntactic shortcut so that a simple dot expression like `x.f` can stand for a chain of fields like `x.d.e.f`.
+
+Consider a 2-D drawing program that provides a library of shapes, such as rectangles, ellipses, stars, and wheels. Here are two of the types it might define:
+```go
+  type Circle struct {
+      X, Y, Radius int
+  }
+
+  type Wheel struct {
+      X, Y, Radius, Spokes int
+  }
+```
+A `Circle` has fields for the `X` and `Y` coordinates of its center, and a Radius. A Wheel has all the features of a `Circle`, plus `Spokes`, the number of inscribed radial spokes. Let’s create a wheel:
+```go
+  var w Wheel
+  w.X = 8
+  w.Y = 8
+  w.Radius = 5
+  w.Spokes = 20
+```
+
+As the set of shapes grows, we’re bound to notice similarities and repetition among them, so it may be convenient to factor out their common parts:
+```go
+  type Point struct {
+      X, Y int
+  }
+
+  type Circle struct {
+      Center Point
+      Radius int
+  }
+
+  type Wheel struct {
+      Circle Circle
+      Spokes int
+  }
+```
+The application may be clearer for it, but this change makes accessing the fields of a `Wheel` more verbose:
+```go
+  var w Wheel
+  w.Circle.Center.X = 8
+  w.Circle.Center.Y = 8
+  w.Circle.Radius = 5
+  w.Spokes = 20
+```
+Go lets us declare a field with a type but no name; such fields are called *anonymous fields*. The type of the field must be a named type or a pointer to a named type. Below, `Circle` and `Wheel` have one anonymous field each. We say that a `Point` is *embedded* within `Circle`, and a `Circle` is embedded within `Wheel`.
+```go
+  type Point struct {
+      X, Y int
+  }
+
+  type Circle struct {
+      Point
+      Radius int
+  }
+
+  type Wheel struct {
+      Circle
+      Spokes int
+  }
+```
+Thanks to embedding, we can refer to the names at the leaves of the implicit tree without giving the intervening names:
+```go
+  var w Wheel
+  w.X = 8       // equivalent to w.Circle.Point.X = 8
+  w.Y = 8       // equivalent to w.Circle.Point.Y = 8
+  w.Radius = 5  // equivalent to w.Circle.Radius = 5
+  w.Spokes = 20
+```
+The explicit forms shown in the comments above are still valid, however, showing that "anonymous field" is something of a misnomer. The fields `Circle` and `Point` do have names (that of the named type) but those names are optional in dot expressions. We may omit any or all of the anonymous fields when selecting their subfields.
+
+Unfortunately, there’s no corresponding shorthand for the struct literal syntax, so neither of these will compile:
+```go
+  w = Wheel{8, 8, 5, 20}                       // compile error: unknown fields
+  w = Wheel{X: 8, Y: 8, Radius: 5, Spokes: 20} // compile error: unknown fields
+```
+The struct literal must follow the shape of the type declaration, so we must use one of the two forms below, which are equivalent to each other:
+```go
+// gopl.io/ch4/embed
+
+```
+Notice how the # adverb causes `Printf`'s `%v` verb to display values in a form similar to Go syntax. For struct values, this form includes the name of each field.
+
+Because "anonymous" fields do have implicit names, you can’t have two anonymous fields of the same type since their names would conflict. And because the name of the field is implicitly determined by its type, so too is the visibility of the field. In the examples above, the `Point` and `Circle` anonymous fields are exported. Had they been unexported (`point` and `circle`), we could still use the shorthand form
+```go
+  w.X = 8 // equivalent to w.circle.point.X = 8
+```
+but the explicit long form shown in the comment would be forbidden outside the declaring package because `circle` and `point` would be inaccessible.
+
+What we’ve seen so far of struct embedding is just a sprinkling of syntactic sugar on the dot notation used to select struct fields. Later, we’ll see that anonymous fields need not be struct types; any named type or pointer to a named type will do. But why would you want to embed a type that has no subfields?
+
+The answer has to do with methods. The shorthand notation used for selecting the fields of an embedded type works for selecting its methods as well. In effect, the outer struct type gains not just the fields of the embedded type but its methods too. This mechanism is the main way that complex object behaviors are composed from simpler ones. *Composition* is central to object-oriented programming in Go, and we’ll explore it further in Section 6.3.
+
+
 ## 4.5. JSON 
+
+
+
+
+
 ## 4.6. Text and HTML Templates
 
