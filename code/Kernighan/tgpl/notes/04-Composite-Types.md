@@ -998,7 +998,27 @@ Unfortunately, there’s no corresponding shorthand for the struct literal synta
 The struct literal must follow the shape of the type declaration, so we must use one of the two forms below, which are equivalent to each other:
 ```go
 // gopl.io/ch4/embed
+func main() {
+	w = Wheel{Circle{Point{8, 8}, 5}, 20}
 
+	w = Wheel{
+		Circle: Circle{
+			Point:  Point{X: 8, Y: 8},
+			Radius: 5,
+		},
+		Spokes: 20, // NOTE: trailing comma necessary here (and at Radius)
+	}
+
+	fmt.Printf("%#v\n", w)
+	// Output:
+	// Wheel{Circle:Circle{Point:Point{X:8, Y:8}, Radius:5}, Spokes:20}
+
+	w.X = 42
+
+	fmt.Printf("%#v\n", w)
+	// Output:
+	// Wheel{Circle:Circle{Point:Point{X:42, Y:8}, Radius:5}, Spokes:20}
+}
 ```
 Notice how the # adverb causes `Printf`'s `%v` verb to display values in a form similar to Go syntax. For struct values, this form includes the name of each field.
 
@@ -1015,8 +1035,252 @@ The answer has to do with methods. The shorthand notation used for selecting the
 
 ## 4.5. JSON 
 
+JavaScript Object Notation (JSON) is a standard notation for sending and receiving structured information. JSON is not the only such notation. XML (§7.14), ASN.1, and Google’s Protocol Buffers serve similar purposes and each has its niche, but because of its simplicity, readability, and universal support, JSON is the most widely used.
 
+Go has excellent support for encoding and decoding these formats, provided by the standard library packages encoding/json, encoding/xml, encoding/asn1, and so on, and these pack- ages all have similar APIs. This section gives a brief overview of the most important parts of the encoding/json package.
 
+JSON is an encoding of JavaScript values—strings, numbers, booleans, arrays, and objects—as Unicode text. It’s an efficient yet readable representation for the basic data types of Chapter 3 and the composite types of this chapter—arrays, slices, structs, and maps.
+
+The basic JSON types are numbers (in decimal or scientific notation), booleans (true or false), and strings, which are sequences of Unicode code points enclosed in double quotes, with backslash escapes using a similar notation to Go, though JSON’s \Uhhhh numeric escapes denote UTF-16 codes, not runes.
+
+These basic types may be combined recursively using JSON arrays and objects. A JSON array is an ordered sequence of values, written as a comma-separated list enclosed in square brack- ets; JSON arrays are used to encode Go arrays and slices. A JSON object is a mapping from strings to values, written as a sequence of name:value pairs separated by commas and sur- rounded by braces; JSON objects are used to encode Go maps (with string keys) and structs. For example:
+```
+boolean       true
+number        -273.15
+string        "She said \"Hello, 世界\"" 
+array         ["gold", "silver", "bronze"] 
+object        {"year": 1980,
+               "event": "archery",
+               "medals": ["gold", "silver", "bronze"]}
+```
+
+Consider an application that gathers movie reviews and offers recommendations. Its `Movie` data type and a typical list of values are declared below. (The string literals after the `Year` and `Color` field declarations are *field tags*; we’ll explain them in a moment.)
+```go
+// gopl.io/ch4/movie
+type Movie struct {
+	Title  string
+	Year   int  `json:"released"`
+	Color  bool `json:"color,omitempty"`
+	Actors []string
+}
+
+var movies = []Movie{
+	{Title: "Casablanca", Year: 1942, Color: false,
+		Actors: []string{"Humphrey Bogart", "Ingrid Bergman"}},
+	{Title: "Cool Hand Luke", Year: 1967, Color: true,
+		Actors: []string{"Paul Newman"}},
+	{Title: "Bullitt", Year: 1968, Color: true,
+		Actors: []string{"Steve McQueen", "Jacqueline Bisset"}},
+	// ...
+}
+```
+
+Data structures like this are an excellent fit for JSON, and it’s easy to convert in both directions. Converting a Go data structure like movies to JSON is called *marshaling*. Marshaling is done by `json.Marshal`:
+```go
+  data, err := json.Marshal(movies)
+  if err != nil {
+      log.Fatalf("JSON marshaling failed: %s", err)
+  }
+  fmt.Printf("%s\n", data)
+```
+`Marshal` produces a byte slice containing a very long string with no extraneous white space; we’ve folded the lines so it fits:
+```
+[{"Title":"Casablanca","released":1942,"Actors":["Humphrey Bogart","Ingr id Bergman"]},{"Title":"Cool Hand Luke","released":1967,"color":true,"Ac tors":["Paul Newman"]},{"Title":"Bullitt","released":1968,"color":true," Actors":["Steve McQueen","Jacqueline Bisset"]}]
+```
+This compact representation contains all the information but it’s hard to read. For human consumption, a variant called `json.MarshalIndent` produces neatly indented output. Two additional arguments define a prefix for each line of output and a string for each level of indentation:
+```go
+  data, err := json.MarshalIndent(movies, "", "    ")
+  if err != nil {
+      log.Fatalf("JSON marshaling failed: %s", err)
+  }
+  fmt.Printf("%s\n", data)
+```
+The code above prints
+```json
+[
+    {
+        "Title": "Casablanca",
+        "released": 1942,
+        "Actors": [
+            "Humphrey Bogart",
+            "Ingrid Bergman"
+        ]
+    },
+    {
+        "Title": "Cool Hand Luke",
+        "released": 1967,
+        "color": true,
+        "Actors": [
+            "Paul Newman"
+        ]
+    },
+    {
+        "Title": "Bullitt",
+        "released": 1968,
+        "color": true,
+        "Actors": [
+            "Steve McQueen",
+            "Jacqueline Bisset"
+        ]
+    }
+]
+```
+Marshaling uses the Go struct field names as the field names for the JSON objects (through *reflection*, as we’ll see in Section 12.6). Only exported fields are marshaled, which is why we chose capitalized names for all the Go field names.
+
+You may have noticed that the name of the `Year` field changed to released in the output, and Color changed to color. That’s because of the *field tags*. A field tag is a string of metadata associated at compile time with the field of a struct:
+```
+  Year  int  `json:"released"`
+  Color bool `json:"color,omitempty"`
+```
+A field tag may be any literal string, but it is conventionally interpreted as a space-separated list of `key:"value"` pairs; since they contain double quotation marks, field tags are usually written with raw string literals. The `json` key controls the behavior of the `encoding/json` package, and other `encoding/...` packages follow this convention. The first part of the `json` field tag specifies an alternative JSON name for the Go field. Field tags are often used to specify an idiomatic JSON name like `total_count` for a Go field named `TotalCount`. The tag for `Color` has an additional option, `omitempty`, which indicates that no JSON output should be produced if the field has the zero value for its type (`false`, here) or is otherwise empty. Sure enough, the JSON output for *Casablanca*, a black-and-white movie, has no `color` field.
+
+The inverse operation to marshaling, decoding JSON and populating a Go data structure, is called *unmarshaling*, and it is done by `json.Unmarshal`. The code below unmarshals the JSON movie data into a slice of structs whose only field is `Title`. By defining suitable Go data structures in this way, we can select which parts of the JSON input to decode and which to discard. When `Unmarshal` returns, it has filled in the slice with the `Title` information; other names in the JSON are ignored.
+```go
+  var titles []struct{ Title string }
+  if err := json.Unmarshal(data, &titles); err != nil {
+      log.Fatalf("JSON unmarshaling failed: %s", err)
+  }
+  fmt.Println(titles) // "[{Casablanca} {Cool Hand Luke} {Bullitt}]"
+```
+Many web services provide a JSON interface—make a request with HTTP and back comes the desired information in JSON format. To illustrate, let’s query the GitHub issue tracker using its web-service interface. First we’ll define the necessary types and constants:
+```go
+// gopl.io/ch4/github
+// Package github provides a Go API for the GitHub issue tracker.
+// See https://developer.github.com/v3/search/#search-issues.
+package github
+
+import "time"
+
+const IssuesURL = "https://api.github.com/search/issues"
+
+type IssuesSearchResult struct {
+	TotalCount int `json:"total_count"`
+	Items      []*Issue
+}
+
+type Issue struct {
+	Number    int
+	HTMLURL   string `json:"html_url"`
+	Title     string
+	State     string
+	User      *User
+	CreatedAt time.Time `json:"created_at"`
+	Body      string    // in Markdown format
+}
+
+type User struct {
+	Login   string
+	HTMLURL string `json:"html_url"`
+}
+```
+As before, the names of all the struct fields must be capitalized even if their JSON names are not. However, the matching process that associates JSON names with Go struct names during unmarshaling is case-insensitive, so it’s only necessary to use a field tag when there’s an underscore in the JSON name but not in the Go name. Again, we are being selective about which fields to decode; the GitHub search response contains considerably more information than we show here.
+
+The `SearchIssues` function makes an HTTP request and decodes the result as JSON. Since the query terms presented by a user could contain characters like `?` and `&` that have special meaning in a URL, we use `url.QueryEscape` to ensure that they are taken literally.
+```go
+package github
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+)
+
+// SearchIssues queries the GitHub issue tracker.
+func SearchIssues(terms []string) (*IssuesSearchResult, error) {
+	q := url.QueryEscape(strings.Join(terms, " "))
+	resp, err := http.Get(IssuesURL + "?q=" + q)
+	if err != nil {
+		return nil, err
+	}
+	//!-
+	// For long-term stability, instead of http.Get, use the
+	// variant below which adds an HTTP request header indicating
+	// that only version 3 of the GitHub API is acceptable.
+	//
+	//   req, err := http.NewRequest("GET", IssuesURL+"?q="+q, nil)
+	//   if err != nil {
+	//       return nil, err
+	//   }
+	//   req.Header.Set(
+	//       "Accept", "application/vnd.github.v3.text-match+json")
+	//   resp, err := http.DefaultClient.Do(req)
+	//!+
+
+	// We must close resp.Body on all execution paths.
+	// (Chapter 5 presents 'defer', which makes this simpler.)
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, fmt.Errorf("search query failed: %s", resp.Status)
+	}
+
+	var result IssuesSearchResult
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		resp.Body.Close()
+		return nil, err
+	}
+	resp.Body.Close()
+	return &result, nil
+}
+```
+
+The earlier examples used `json.Unmarshal` to decode the entire contents of a byte slice as a single JSON entity. For variety, this example uses the *streaming* decoder, `json.Decoder`, which allows several JSON entities to be decoded in sequence from the same stream, although we don’t need that feature here. As you might expect, there is a corresponding streaming encoder called `json.Encoder`.
+
+The call to `Decode` populates the variable `result`. There are various ways we can format its value nicely. The simplest, demonstrated by the `issues` command below, is as a text table with fixed-width columns, but in the next section we’ll see a more sophisticated approach based on templates.
+```go
+// gopl.io/ch4/issues
+// Issues prints a table of GitHub issues matching the search terms.
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"gopl.io/ch4/github"
+)
+
+func main() {
+	result, err := github.SearchIssues(os.Args[1:])
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%d issues:\n", result.TotalCount)
+	for _, item := range result.Items {
+		fmt.Printf("#%-5d %9.9s %.55s\n",
+			item.Number, item.User.Login, item.Title)
+	}
+}
+```
+
+The command-line arguments specify the search terms. The command below queries the Go project’s issue tracker for the list of open bugs related to JSON decoding:
+```
+$ go build gopl.io/ch4/issues
+     $ ./issues repo:golang/go is:open json decoder
+     13 issues:
+     #5680    eaigner encoding/json: set key converter on en/decoder
+     #6050  gopherbot encoding/json: provide tokenizer
+     #8658  gopherbot encoding/json: use bufio
+     #8462  kortschak encoding/json: UnmarshalText confuses json.Unmarshal
+     #5901        rsc encoding/json: allow override type marshaling
+     #9812  klauspost encoding/json: string tag not symmetric
+     #7872  extempora encoding/json: Encoder internally buffers full output
+     #9650    cespare encoding/json: Decoding gives errPhase when unmarshalin
+     #6716  gopherbot encoding/json: include field name in unmarshal error me
+     #6901  lukescott encoding/json, encoding/xml: option to treat unknown fi
+     #6384    joeshaw encoding/json: encode precise floating point integers u
+     #6647    btracey x/tools/cmd/godoc: display type kind of each named type
+     #4237  gjemiller encoding/base64: URLEncoding padding is optional
+```
+
+The GitHub web-service interface at https://developer.github.com/v3/ has many more features than we have space for here.
+
+### Exercises 
+- **Exercise 4.10**: Modify `issues` to report the results in age categories, say less than a month old, less than a year old, and more than a year old.
+- **Exercise 4.11**: Build a tool that lets users create, read, update, and delete GitHub issues from the command line, invoking their preferred text editor when substantial text input is required.
+- **Exercise 4.12**: The popular web comic *xkcd* has a JSON interface. For example, a request to `https://xkcd.com/571/info.0.json` produces a detailed description of comic 571, one of many favorites. Download each URL (once!) and build an offline index. Write a tool `xkcd` that, using this index, prints the URL and transcript of each comic that matches a search term provided on the command line.
+- **Exercise 4.13**: The JSON-based web service of the Open Movie Database lets you search `https://omdbapi.com/` for a movie by name and download its poster image. Write a tool `poster` that downloads the poster image for the movie named on the command line.
 
 
 ## 4.6. Text and HTML Templates
