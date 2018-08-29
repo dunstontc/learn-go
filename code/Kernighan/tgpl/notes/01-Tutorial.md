@@ -36,7 +36,7 @@ Go is a compiled language. The Go toolchain converts a source program and the th
 ```
 Not surprisingly, this prints
 ```
-Hello, 世界
+  Hello, 世界
 ```
 Go natively handles Unicode, so it can process text in all the world's languages.
 If the program is more than a one-shot experiment, it's likely that you would want to compile it once and save the compiled result for later use. That is done with go build:
@@ -49,7 +49,7 @@ This creates an executable binary file called helloworld that can be run any tim
 ```
 We have labeled each significant example as a reminder that you can obtain the code from the book's source code repository at gopl.io:
 ```
-gopl.io/ch1/helloworld
+  gopl.io/ch1/helloworld
 ```
 If you run `go get gopl.io/ch1/helloworld`, it will fetch the source code and place it in the corresponding directory. There's more about this topic in Section 2.6 and Section 10.7.   
 
@@ -115,15 +115,15 @@ The `var` declaration declares two variables `s` and `sep`, of type `string`. A 
 
 For numbers, Go provides the usual arithmetic and logical operators. When applied to strings, however, the `+` operator *concatenates* the values, so the expression  
 ```go
-sep + os.Args[i]
+  sep + os.Args[i]
 ```
 represents the concatenation of the strings `sep` and `os.Args[i]`. The statement we used in the program,
 ```go
-s += sep + os.Args[i]
+  s += sep + os.Args[i]
 ```
 is an *assignment statement* that concatenates the old value of `s` with `sep` and `os.Args[i]` and assigns it back to `s`; it is equivalent to
 ```go
-s = s + sep + os.Args[i]
+  s = s + sep + os.Args[i]
 ```
 The operator `+=` is an assignment operator. Each arithmetic and logical operator like `+` or `*` has a corresponding assignment operator.
 
@@ -135,9 +135,9 @@ The *increment* statement `i++` adds `1` to `i`; it's equivalent to `i += 1` whi
 
 The `for` loop is the only loop statement in Go. It has a number of forms, one of which is illustrated here:
 ```go
-for initialization; condition; post { 
-  // zero or more statements
-}
+  for initialization; condition; post { 
+    // zero or more statements
+  }
 ```
 Parentheses are never used around the three components of a for loop. The braces are mandatory, however, and the opening brace must be on the same line as the post statement.
 
@@ -145,17 +145,17 @@ The optional `initialization` statement is executed before the loop starts. If i
 
 Any of these parts may be omitted. If there is no initialization and no post, the semicolons may also be omitted:
 ```go
-// a traditional "while" loop 
-for condition {
-  // ...
-}
+  // a traditional "while" loop 
+  for condition {
+    // ...
+  }
 ```
 If the condition is omitted entirely in any of these forms, for example in
 ```go
-// a traditional infinite loop
-for {
-  // ...
-}
+  // a traditional infinite loop
+  for {
+    // ...
+  }
 ```
 the loop is infinite, though loops of this form may be terminated in some other way, like a `break` or `return` statement.
 
@@ -185,10 +185,10 @@ The solution is to use the *blank identifier*, whose name is `_` (that is, an un
 
 This version of the program uses a short variable declaration to declare and initialize `s` and `sep`, but we could equally well have declared the variables separately. There are several ways to declare a string variable; these are all equivalent:  
 ```go
-s := ""
-var s string
-var s = ""
-var s string = ""
+  s := ""
+  var s string
+  var s = ""
+  var s string = ""
 ```
 
 Why should you prefer one form to another? 
@@ -203,14 +203,14 @@ As noted above, each time around the loop, the string `s` gets completely new co
 
 If the amount of data involved is large, this could be costly. A simpler and more efficient solution would be to use the `Join` function from the `strings` package:
 ```go
-// gopl.io/ch1/echo3
-func main() {
-	fmt.Println(strings.Join(os.Args[1:], " "))
-}
+  // gopl.io/ch1/echo3
+  func main() {
+    fmt.Println(strings.Join(os.Args[1:], " "))
+  }
 ```
 Finally, if we don't care about format but just want to see the values, perhaps for debugging, we can let Println format the results for us:
 ```go
-fmt.Println(os.Args[1:])
+  fmt.Println(os.Args[1:])
 ```
 The output of this statement is like what we would get from `strings.Join`, but with surrounding brackets. Any slice may be printed this way.
 
@@ -258,8 +258,8 @@ As with `for`, parentheses are never used around the condition in an `if` statem
 A *map* holds a set of key/value pairs and provides constant-time operations to store, retrieve, or test for an item in the set. The key may be of any type whose values can compared with `==`, strings being the most common example; the value may be of any type at all. In this example, the keys are `string`s and the values are `int`s. The built-in function make creates a new empty map; it has other uses too. Maps are discussed at length in Section 4.3.  
 Each time `dup` reads a line of input, the line is used as a key into the map and the corresponding value is incremented. The statement `counts[input.Text()]++` is equivalent to these two statements:  
 ```go
-line := input.Text()
-counts[line] = counts[line] + 1
+  line := input.Text()
+  counts[line] = counts[line] + 1
 ```
 It's not a problem if the map doesn't yet contain that key. The first time a new line is seen, the expression `counts[line]` on the right-hand side evaluates to the zero value for its type, which is `0` for `int`.  
 
@@ -269,7 +269,7 @@ Onward to the `bufio` package, which helps make input and output efficient and c
 
 The program uses a short variable declaration to create a new variable input that refers to a `bufio.Scanner`:  
 ```go
-input := bufio.NewScanner(os.Stdin)
+  input := bufio.NewScanner(os.Stdin)
 ```
 The scanner reads from the program's standard input. Each call to `input.Scan()` reads the next line and removes the newline character from the end; the result can be retrieved by calling `input.Text()`. The `Scan` function returns `true` if there is a line and `false` when there is no more input.
 The function `fmt.Printf`, like `printf` in C and other languages, produces formatted output from a list of expressions. Its first argument is a format string that specifies how subsequent arguments should be formatted. The format of each argument is determined by a conversion character, a letter following a percent sign. For example, `%d` formats an integer operand using decimal notation, and `%s` expands to the value of a string operand.

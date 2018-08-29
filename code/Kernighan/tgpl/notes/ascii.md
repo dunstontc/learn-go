@@ -1,3 +1,143 @@
+# ASCII
+
+|  DEC  |  BIN  | Symbol |         Description          |
+| :---: | :---: | :----: | :--------------------------- |
+|   0   |   0   |  NUL   | Null char                    |
+|   1   |   1   |  SOH   | Start of Heading             |
+|   2   |  10   |  STX   | Start of Text                |
+|   3   |  11   |  ETX   | End of Text                  |
+|   4   |  100  |  EOT   | End of Transmission          |
+|   5   |  101  |  ENQ   | Enquiry                      |
+|   6   |  110  |  ACK   | Acknowledgment               |
+|   7   |  111  |  BEL   | Bell                         |
+|   8   | 1000  |   BS   | Back Space                   |
+|   9   | 1001  |   HT   | Horizontal Tab               |
+|  10   | 1010  |   LF   | Line Feed                    |
+|  11   | 1011  |   VT   | Vertical Tab                 |
+|  12   | 1100  |   FF   | Form Feed                    |
+|  13   | 1101  |   CR   | Carriage Return              |
+|  14   | 1110  |   SO   | Shift Out / X-On             |
+|  15   | 1111  |   SI   | Shift In / X-Off             |
+|  16   | 10000 |  DLE   | Data Line Escape             |
+|  17   | 10001 |  DC1   | Device Control 1 (oft. XON)  |
+|  18   | 10010 |  DC2   | Device Control 2             |
+|  19   | 10011 |  DC3   | Device Control 3 (oft. XOFF) |
+|  20   | 10100 |  DC4   | Device Control 4             |
+|  21   | 10101 |  NAK   | Negative Acknowledgement     |
+|  22   | 10110 |  SYN   | Synchronous Idle             |
+|  23   | 10111 |  ETB   | End of Transmit Block        |
+|  24   | 11000 |  CAN   | Cancel                       |
+|  25   | 11001 |   EM   | End of Medium                |
+|  26   | 11010 |  SUB   | Substitute                   |
+|  27   | 11011 |  ESC   | Escape                       |
+|  28   | 11100 |   FS   | File Separator               |
+|  29   | 11101 |   GS   | Group Separator              |
+|  30   | 11110 |   RS   | Record Separator             |
+|  31   | 11111 |   US   | Unit Separator               |
+
+|  DEC  |   BIN   | Symbol |              Description               |
+| :---: | :-----: | :----: | :------------------------------------- |
+|  32   | 100000  |        | Space                                  |
+|  33   | 100001  |   !    | Exclamation mark                       |
+|  34   | 100010  |   "    | Double quotes (or speech marks)        |
+|  35   | 100011  |   #    | Number                                 |
+|  36   | 100100  |   $    | Dollar                                 |
+|  37   | 100101  |   %    | Per cent sign                          |
+|  38   | 100110  |   &    | Ampersand                              |
+|  39   | 100111  |   '    | Single quote                           |
+|  40   | 101000  |   (    | Open parenthesis (or open bracket)     |
+|  41   | 101001  |   )    | Close parenthesis (or close bracket)   |
+|  42   | 101010  |   *    | Asterisk                               |
+|  43   | 101011  |   +    | Plus                                   |
+|  44   | 101100  |   ,    | Comma                                  |
+|  45   | 101101  |   -    | Hyphen                                 |
+|  46   | 101110  |   .    | Period, dot or full stop               |
+|  47   | 101111  |   /    | Slash or divide                        |
+|  48   | 110000  |   0    | Zero                                   |
+|  49   | 110001  |   1    | One                                    |
+|  50   | 110010  |   2    | Two                                    |
+|  51   | 110011  |   3    | Three                                  |
+|  52   | 110100  |   4    | Four                                   |
+|  53   | 110101  |   5    | Five                                   |
+|  54   | 110110  |   6    | Six                                    |
+|  55   | 110111  |   7    | Seven                                  |
+|  56   | 111000  |   8    | Eight                                  |
+|  57   | 111001  |   9    | Nine                                   |
+|  58   | 111010  |   :    | Colon                                  |
+|  59   | 111011  |   ;    | Semicolon                              |
+|  60   | 111100  |   <    | Less than (or open angled bracket)     |
+|  61   | 111101  |   =    | Equals                                 |
+|  62   | 111110  |   >    | Greater than (or close angled bracket) |
+|  63   | 111111  |   ?    | Question mark                          |
+|  64   | 1000000 |   @    | At symbol                              |
+|  65   | 1000001 |   A    | Uppercase A                            |
+|  66   | 1000010 |   B    | Uppercase B                            |
+|  67   | 1000011 |   C    | Uppercase C                            |
+|  68   | 1000100 |   D    | Uppercase D                            |
+|  69   | 1000101 |   E    | Uppercase E                            |
+|  70   | 1000110 |   F    | Uppercase F                            |
+|  71   | 1000111 |   G    | Uppercase G                            |
+|  72   | 1001000 |   H    | Uppercase H                            |
+|  73   | 1001001 |   I    | Uppercase I                            |
+|  74   | 1001010 |   J    | Uppercase J                            |
+|  75   | 1001011 |   K    | Uppercase K                            |
+|  76   | 1001100 |   L    | Uppercase L                            |
+|  77   | 1001101 |   M    | Uppercase M                            |
+|  78   | 1001110 |   N    | Uppercase N                            |
+|  79   | 1001111 |   O    | Uppercase O                            |
+|  80   | 1010000 |   P    | Uppercase P                            |
+|  81   | 1010001 |   Q    | Uppercase Q                            |
+|  82   | 1010010 |   R    | Uppercase R                            |
+|  83   | 1010011 |   S    | Uppercase S                            |
+|  84   | 1010100 |   T    | Uppercase T                            |
+|  85   | 1010101 |   U    | Uppercase U                            |
+|  86   | 1010110 |   V    | Uppercase V                            |
+|  87   | 1010111 |   W    | Uppercase W                            |
+|  88   | 1011000 |   X    | Uppercase X                            |
+|  89   | 1011001 |   Y    | Uppercase Y                            |
+|  90   | 1011010 |   Z    | Uppercase Z                            |
+|  91   | 1011011 |   [    | Opening bracket                        |
+|  92   | 1011100 |   \    | Backslash                              |
+|  93   | 1011101 |   ]    | Closing bracket                        |
+|  94   | 1011110 |   ^    | Caret - circumflex                     |
+|  95   | 1011111 |   _    | Underscore                             |
+|  96   | 1100000 |   \`   | Grave accent                           |
+|  97   | 1100001 |   a    | Lowercase a                            |
+|  98   | 1100010 |   b    | Lowercase b                            |
+|  99   | 1100011 |   c    | Lowercase c                            |
+|  100  | 1100100 |   d    | Lowercase d                            |
+|  101  | 1100101 |   e    | Lowercase e                            |
+|  102  | 1100110 |   f    | Lowercase f                            |
+|  103  | 1100111 |   g    | Lowercase g                            |
+|  104  | 1101000 |   h    | Lowercase h                            |
+|  105  | 1101001 |   i    | Lowercase i                            |
+|  106  | 1101010 |   j    | Lowercase j                            |
+|  107  | 1101011 |   k    | Lowercase k                            |
+|  108  | 1101100 |   l    | Lowercase l                            |
+|  109  | 1101101 |   m    | Lowercase m                            |
+|  110  | 1101110 |   n    | Lowercase n                            |
+|  111  | 1101111 |   o    | Lowercase o                            |
+|  112  | 1110000 |   p    | Lowercase p                            |
+|  113  | 1110001 |   q    | Lowercase q                            |
+|  114  | 1110010 |   r    | Lowercase r                            |
+|  115  | 1110011 |   s    | Lowercase s                            |
+|  116  | 1110100 |   t    | Lowercase t                            |
+|  117  | 1110101 |   u    | Lowercase u                            |
+|  118  | 1110110 |   v    | Lowercase v                            |
+|  119  | 1110111 |   w    | Lowercase w                            |
+|  120  | 1111000 |   x    | Lowercase x                            |
+|  121  | 1111001 |   y    | Lowercase y                            |
+|  122  | 1111010 |   z    | Lowercase z                            |
+|  123  | 1111011 |   {    | Opening brace                          |
+|  124  | 1111100 |  \|    | Vertical bar                           |
+|  125  | 1111101 |   }    | Closing brace                          |
+|  126  | 1111110 |   ~    | Equivalency sign - tilde               |
+|  127  | 1111111 |        | Delete                                 |
+
+
+
+---
+
 | DEC  | OCT  | HEX  |  BIN  | Symbol |         Description          |
 | :--- | :--- | :--- | :---- | :----- | :--------------------------- |
 | 0    | 0    | 0    | 0     | NUL    | Null char                    |
@@ -131,103 +271,3 @@
 | 125  | 175  | 7D   | 1111101 | }      | }           | Closing brace                          |
 | 126  | 176  | 7E   | 1111110 | ~      | ~           | Equivalency sign - tilde               |  
 | 127  | 177  | 7F   | 1111111 |        |             | Delete                                 | 
-
-
-|  DEC  |   BIN   | Symbol |              Description               |
-| :---: | :-----: | :----: | :------------------------------------- |
-|  32   | 100000  |        | Space                                  |
-|  33   | 100001  |   !    | Exclamation mark                       |
-|  34   | 100010  |   "    | Double quotes (or speech marks)        |
-|  35   | 100011  |   #    | Number                                 |
-|  36   | 100100  |   $    | Dollar                                 |
-|  37   | 100101  |   %    | Per cent sign                          |
-|  38   | 100110  |   &    | Ampersand                              |
-|  39   | 100111  |   '    | Single quote                           |
-|  40   | 101000  |   (    | Open parenthesis (or open bracket)     |
-|  41   | 101001  |   )    | Close parenthesis (or close bracket)   |
-|  42   | 101010  |   *    | Asterisk                               |
-|  43   | 101011  |   +    | Plus                                   |
-|  44   | 101100  |   ,    | Comma                                  |
-|  45   | 101101  |   -    | Hyphen                                 |
-|  46   | 101110  |   .    | Period, dot or full stop               |
-|  47   | 101111  |   /    | Slash or divide                        |
-|  48   | 110000  |   0    | Zero                                   |
-|  49   | 110001  |   1    | One                                    |
-|  50   | 110010  |   2    | Two                                    |
-|  51   | 110011  |   3    | Three                                  |
-|  52   | 110100  |   4    | Four                                   |
-|  53   | 110101  |   5    | Five                                   |
-|  54   | 110110  |   6    | Six                                    |
-|  55   | 110111  |   7    | Seven                                  |
-|  56   | 111000  |   8    | Eight                                  |
-|  57   | 111001  |   9    | Nine                                   |
-|  58   | 111010  |   :    | Colon                                  |
-|  59   | 111011  |   ;    | Semicolon                              |
-|  60   | 111100  |   <    | Less than (or open angled bracket)     |
-|  61   | 111101  |   =    | Equals                                 |
-|  62   | 111110  |   >    | Greater than (or close angled bracket) |
-|  63   | 111111  |   ?    | Question mark                          |
-|  64   | 1000000 |   @    | At symbol                              |
-|  65   | 1000001 |   A    | Uppercase A                            |
-|  66   | 1000010 |   B    | Uppercase B                            |
-|  67   | 1000011 |   C    | Uppercase C                            |
-|  68   | 1000100 |   D    | Uppercase D                            |
-|  69   | 1000101 |   E    | Uppercase E                            |
-|  70   | 1000110 |   F    | Uppercase F                            |
-|  71   | 1000111 |   G    | Uppercase G                            |
-|  72   | 1001000 |   H    | Uppercase H                            |
-|  73   | 1001001 |   I    | Uppercase I                            |
-|  74   | 1001010 |   J    | Uppercase J                            |
-|  75   | 1001011 |   K    | Uppercase K                            |
-|  76   | 1001100 |   L    | Uppercase L                            |
-|  77   | 1001101 |   M    | Uppercase M                            |
-|  78   | 1001110 |   N    | Uppercase N                            |
-|  79   | 1001111 |   O    | Uppercase O                            |
-|  80   | 1010000 |   P    | Uppercase P                            |
-|  81   | 1010001 |   Q    | Uppercase Q                            |
-|  82   | 1010010 |   R    | Uppercase R                            |
-|  83   | 1010011 |   S    | Uppercase S                            |
-|  84   | 1010100 |   T    | Uppercase T                            |
-|  85   | 1010101 |   U    | Uppercase U                            |
-|  86   | 1010110 |   V    | Uppercase V                            |
-|  87   | 1010111 |   W    | Uppercase W                            |
-|  88   | 1011000 |   X    | Uppercase X                            |
-|  89   | 1011001 |   Y    | Uppercase Y                            |
-|  90   | 1011010 |   Z    | Uppercase Z                            |
-|  91   | 1011011 |   [    | Opening bracket                        |
-|  92   | 1011100 |   \    | Backslash                              |
-|  93   | 1011101 |   ]    | Closing bracket                        |
-|  94   | 1011110 |   ^    | Caret - circumflex                     |
-|  95   | 1011111 |   _    | Underscore                             |
-|  96   | 1100000 |   \`   | Grave accent                           |
-|  97   | 1100001 |   a    | Lowercase a                            |
-|  98   | 1100010 |   b    | Lowercase b                            |
-|  99   | 1100011 |   c    | Lowercase c                            |
-|  100  | 1100100 |   d    | Lowercase d                            |
-|  101  | 1100101 |   e    | Lowercase e                            |
-|  102  | 1100110 |   f    | Lowercase f                            |
-|  103  | 1100111 |   g    | Lowercase g                            |
-|  104  | 1101000 |   h    | Lowercase h                            |
-|  105  | 1101001 |   i    | Lowercase i                            |
-|  106  | 1101010 |   j    | Lowercase j                            |
-|  107  | 1101011 |   k    | Lowercase k                            |
-|  108  | 1101100 |   l    | Lowercase l                            |
-|  109  | 1101101 |   m    | Lowercase m                            |
-|  110  | 1101110 |   n    | Lowercase n                            |
-|  111  | 1101111 |   o    | Lowercase o                            |
-|  112  | 1110000 |   p    | Lowercase p                            |
-|  113  | 1110001 |   q    | Lowercase q                            |
-|  114  | 1110010 |   r    | Lowercase r                            |
-|  115  | 1110011 |   s    | Lowercase s                            |
-|  116  | 1110100 |   t    | Lowercase t                            |
-|  117  | 1110101 |   u    | Lowercase u                            |
-|  118  | 1110110 |   v    | Lowercase v                            |
-|  119  | 1110111 |   w    | Lowercase w                            |
-|  120  | 1111000 |   x    | Lowercase x                            |
-|  121  | 1111001 |   y    | Lowercase y                            |
-|  122  | 1111010 |   z    | Lowercase z                            |
-|  123  | 1111011 |   {    | Opening brace                          |
-|  124  | 1111100 |  \|    | Vertical bar                           |
-|  125  | 1111101 |   }    | Closing brace                          |
-|  126  | 1111110 |   ~    | Equivalency sign - tilde               |
-|  127  | 1111111 |        | Delete                                 |
