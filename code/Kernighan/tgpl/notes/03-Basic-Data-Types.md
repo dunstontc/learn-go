@@ -21,7 +21,7 @@
 
 It’s all bits at the bottom, of course, but computers operate fundamentally on fixed-size numbers called *words*, which are interpreted as integers, floating-point numbers, bit sets, or memory addresses, then combined into larger aggregates that represent packets, pixels, portfolios, poetry, and everything else. Go offers a variety of ways to organize data, with a spectrum of data types that at one end match the features of the hardware and at the other end provide what programmers need to conveniently represent complicated data structures.
 
-Go’s types fall into four categories: *basic types*, *aggregate types*, *reference types*, and *interface types*. Basic types, the topic of this chapter, include numbers, strings, and booleans. Aggregate types—arrays (§4.1) and structs (§4.4)—form more complicated data types by combining val- ues of several simpler ones. Reference types are a diverse group that includes pointers (§2.3.2), slices (§4.2), maps (§4.3), functions (Chapter 5), and channels (Chapter 8), but what they have in common is that they all refer to program variables or state indirectly, so that the effect of an operation applied to one reference is observed by all copies of that reference. Finally, we’ll talk about interface types in Chapter 7.
+Go’s types fall into four categories: *basic types*, *aggregate types*, *reference types*, and *interface types*. Basic types, the topic of this chapter, include numbers, strings, and booleans. Aggregate types—arrays (§4.1) and structs (§4.4)—form more complicated data types by combining values of several simpler ones. Reference types are a diverse group that includes pointers (§2.3.2), slices (§4.2), maps (§4.3), functions (Chapter 5), and channels (Chapter 8), but what they have in common is that they all refer to program variables or state indirectly, so that the effect of an operation applied to one reference is observed by all copies of that reference. Finally, we’ll talk about interface types in Chapter 7.
 
 ## 3.1. Integers 
 
@@ -404,7 +404,7 @@ func mandelbrot(z complex128) color.Color {
 }
 ```
 
-The two nested loops iterate over each point in a 1024x1024 grayscale raster image represent- ing the −2 to +2 portion of the complex plane. The program tests whether repeatedly squar- ing and adding the number that point represents eventually "escapes" the circle of radius 2. If so, the point is shaded by the number of iterations it took to escape. If not, the value belongs to the Mandelbrot set, and the point remains black. Finally, the program writes to its standard output the PNG-encoded image of the iconic fractal, shown in Figure 3.3.
+The two nested loops iterate over each point in a 1024x1024 grayscale raster image representing the −2 to +2 portion of the complex plane. The program tests whether repeatedly squaring and adding the number that point represents eventually "escapes" the circle of radius 2. If so, the point is shaded by the number of iterations it took to escape. If not, the value belongs to the Mandelbrot set, and the point remains black. Finally, the program writes to its standard output the PNG-encoded image of the iconic fractal, shown in Figure 3.3.
 
 ### Exercises
 
@@ -415,7 +415,6 @@ The two nested loops iterate over each point in a 1024x1024 grayscale raster ima
 ![Figure 3.3](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/mandelbrot.png)
 
 - **Exercise 3.8**: Rendering fractals at high zoom levels demands great arithmetic precision. Implement the same fractal using four different representations of numbers: `complex64`, `complex128`, `big.Float`, and `big.Rat`. (The latter two types are found in the `math/big` package. `Float` uses arbitrary but bounded-precision floating-point; `Rat` uses unbounded-precision rational numbers.) How do they compare in performance and memory usage? At what zoom levels do rendering artifacts become visible?
-
 - **Exercise 3.9**: Write a web server that renders fractals and writes the image data to the client. Allow the client to specify the *x*, *y*, and zoom values as parameters to the HTTP request.
 
 ## 3.4. Booleans 
@@ -552,7 +551,7 @@ Raw string literals are a convenient way to write regular expressions, which ten
 
 ### 3.5.2 Unicode
 
-Long ago, life was simple and there was, at least in a parochial view, only one character set to deal with: ASCII, the American Standard Code for Information Interchange. ASCII, or more precisely US-ASCII, uses 7 bits to represent 128 ‘‘characters’’: the upper- and lower-case letters of English, digits, and a variety of punctuation and device-control characters. For much of the early days of computing, this was adequate, but it left a very large fraction of the world’s population unable to use their own writing systems in computers. With the growth of the Internet, data in myriad languages has become much more common. How can this rich vari- ety be dealt with at all and, if possible, efficiently?
+Long ago, life was simple and there was, at least in a parochial view, only one character set to deal with: ASCII, the American Standard Code for Information Interchange. ASCII, or more precisely US-ASCII, uses 7 bits to represent 128 ‘‘characters’’: the upperand lower-case letters of English, digits, and a variety of punctuation and device-control characters. For much of the early days of computing, this was adequate, but it left a very large fraction of the world’s population unable to use their own writing systems in computers. With the growth of the Internet, data in myriad languages has become much more common. How can this rich variety be dealt with at all and, if possible, efficiently?
 
 The answer is [Unicode](https://unicode.org/), which collects all of the characters in all of the world’s writing systems, plus accents and other diacritical marks, control codes like tab and carriage return, and plenty of esoterica, and assigns each one a standard number called a *Unicode code point* or, in Go terminology, a *rune*.
 
@@ -759,7 +758,7 @@ func comma(s string) string {
 	return comma(s[:n-3]) + "," + s[n-3:]
 }
 ```
-The argument to `comma` is a string. If its length is less than or equal to 3, no comma is necessary. Otherwise, `comma` calls itself recursively with a substring consisting of all but the last three characters, and appends a comma and the last three characters to the result of the recur- sive call.
+The argument to `comma` is a string. If its length is less than or equal to 3, no comma is necessary. Otherwise, `comma` calls itself recursively with a substring consisting of all but the last three characters, and appends a comma and the last three characters to the result of the recursive call.
 
 A string contains an array of bytes that, once created, is immutable. By contrast, the elements of a byte slice can be freely modified.
 
@@ -829,7 +828,7 @@ The `bytes.Buffer` type is extremely versatile, and when we discuss interfaces i
 In addition to conversions between strings, runes, and bytes, it’s often necessary to convert between numeric values and their string representations. This is done with functions from the `strconv` package.
 
 
-To convert an integer to a string, one option is to use `fmt.Sprintf`; another is to use the func- tion `strconv.Itoa` ("integer to ASCII"):
+To convert an integer to a string, one option is to use `fmt.Sprintf`; another is to use the function `strconv.Itoa` ("integer to ASCII"):
 ```go
   x := 123
   y := fmt.Sprintf("%d", x)
@@ -871,9 +870,9 @@ As with variables, a sequence of constants can appear in one declaration; this w
 
 Many computations on constants can be completely evaluated at compile time, reducing the work necessary at run time and enabling other compiler optimizations. Errors ordinarily detected at run time can be reported at compile time when their operands are constants, such as integer division by zero, string indexing out of bounds, and any floating-point operation that would result in a non-finite value.
 
-The results of all arithmetic, logical, and comparison operations applied to constant operands are themselves constants, as are the results of conversions and calls to certain built-in func- tions such as `len`, `cap`, `real`, `imag`, `complex`, and `unsafe.Sizeof` (§13.1).
+The results of all arithmetic, logical, and comparison operations applied to constant operands are themselves constants, as are the results of conversions and calls to certain built-in functions such as `len`, `cap`, `real`, `imag`, `complex`, and `unsafe.Sizeof` (§13.1).
 
-Since their values are known to the compiler, constant expressions may appear in types, specif- ically as the length of an array type:
+Since their values are known to the compiler, constant expressions may appear in types, specifically as the length of an array type:
 ```go
   const IPv4Len = 4
 
@@ -999,7 +998,7 @@ Constants in Go are a bit unusual. Although a constant can have any of the basic
 - untyped complex
 - untyped string
 
-By deferring this commitment, untyped constants not only retain their higher precision until later, but they can participate in many more expressions than committed constants without requiring conversions. For example, the values ZiB and YiB in the example above are too big to store in any integer variable, but they are legitimate constants that may be used in expres- sions like this one:
+By deferring this commitment, untyped constants not only retain their higher precision until later, but they can participate in many more expressions than committed constants without requiring conversions. For example, the values ZiB and YiB in the example above are too big to store in any integer variable, but they are legitimate constants that may be used in expressions like this one:
 ```go
   fmt.Println(YiB/ZiB) // "1024"
 ```
@@ -1043,7 +1042,7 @@ The statements above are thus equivalent to these:
   f = float64('a')
 ```
 
-Whether implicit or explicit, converting a constant from one type to another requires that the target type can represent the original value. Rounding is allowed for real and complex float- ing-point numbers:
+Whether implicit or explicit, converting a constant from one type to another requires that the target type can represent the original value. Rounding is allowed for real and complex floating-point numbers:
 ```go
   const (
       deadbeef = 0xdeadbeef // untyped int with value 3735928559
