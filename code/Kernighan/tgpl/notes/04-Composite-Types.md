@@ -1037,13 +1037,13 @@ The answer has to do with methods. The shorthand notation used for selecting the
 
 JavaScript Object Notation (JSON) is a standard notation for sending and receiving structured information. JSON is not the only such notation. XML (§7.14), ASN.1, and Google’s Protocol Buffers serve similar purposes and each has its niche, but because of its simplicity, readability, and universal support, JSON is the most widely used.
 
-Go has excellent support for encoding and decoding these formats, provided by the standard library packages encoding/json, encoding/xml, encoding/asn1, and so on, and these pack- ages all have similar APIs. This section gives a brief overview of the most important parts of the encoding/json package.
+Go has excellent support for encoding and decoding these formats, provided by the standard library packages `encoding/json`, `encoding/xml`, `encoding/asn1`, and so on, and these packages all have similar APIs. This section gives a brief overview of the most important parts of the `encoding/json` package.
 
-JSON is an encoding of JavaScript values—strings, numbers, booleans, arrays, and objects—as Unicode text. It’s an efficient yet readable representation for the basic data types of Chapter 3 and the composite types of this chapter—arrays, slices, structs, and maps.
+JSON is an encoding of JavaScript values (strings, numbers, booleans, arrays, and objects) as Unicode text. It’s an efficient yet readable representation for the basic data types of Chapter 3 and the composite types of this chapter — arrays, slices, structs, and maps.
 
-The basic JSON types are numbers (in decimal or scientific notation), booleans (true or false), and strings, which are sequences of Unicode code points enclosed in double quotes, with backslash escapes using a similar notation to Go, though JSON’s \Uhhhh numeric escapes denote UTF-16 codes, not runes.
+The basic JSON types are numbers (in decimal or scientific notation), booleans (`true` or `false`), and strings, which are sequences of Unicode code points enclosed in double quotes, with backslash escapes using a similar notation to Go, though JSON’s *\Uhhhh* numeric escapes denote UTF-16 codes, not runes.
 
-These basic types may be combined recursively using JSON arrays and objects. A JSON array is an ordered sequence of values, written as a comma-separated list enclosed in square brack- ets; JSON arrays are used to encode Go arrays and slices. A JSON object is a mapping from strings to values, written as a sequence of name:value pairs separated by commas and sur- rounded by braces; JSON objects are used to encode Go maps (with string keys) and structs. For example:
+These basic types may be combined recursively using JSON arrays and objects. A JSON array is an ordered sequence of values, written as a comma-separated list enclosed in square brackets; JSON arrays are used to encode Go arrays and slices. A JSON object is a mapping from strings to values, written as a sequence of `name:value` pairs separated by commas and surrounded by braces; JSON objects are used to encode Go maps (with string keys) and structs. For example:
 ```
 boolean       true
 number        -273.15
