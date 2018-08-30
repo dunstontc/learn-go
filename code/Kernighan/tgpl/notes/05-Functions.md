@@ -503,13 +503,690 @@ The caller can detect this condition using a simple comparison, as in the loop b
 Since in an end-of-file condition there is no information to report besides the fact of it, `io.EOF` has a fixed error message, `"EOF"`. For other errors, we may need to report both the quality and quantity of the error, so to speak, so a fixed error value will not do. In Section 7.11, we’ll present a more systematic way to distinguish certain error values from others.
 
 
-
 ## 5.5. Function Values 
+
+Functions are *first-class values* in Go: like other values, function values have types, and they may be assigned to variables or passed to or returned from functions. A function value may be called like any other function. For example:
+```go
+  func square(n int) int     { return n * n }
+  func negative(n int) int   { return -n }
+  func product(m, n int) int { return m * n }
+
+  f := square
+  fmt.Println(f(3)) // "9"
+
+  f = negative
+  fmt.Println(f(3))     // "-3"
+  fmt.Printf("%T\n", f) // "func(int) int"
+
+  f = product // compile error: can't assign f(int, int) int to f(int) int
+```
+The zero value of a function type is `nil`. Calling a nil function value causes a panic:
+```go
+  var f func(int) int
+  f(3) // panic: call of nil function
+```
+Function values may be compared with nil:
+```go
+  var f func(int) int
+  if f != nil {
+    f(3)
+  }
+```
+but they are not comparable, so they may not be compared against each other or used as keys in a map.
+
+Function values let us parameterize our functions over not just data, but behavior too. The standard libraries contain many examples. For instance, `strings.Map` applies a function to each character of a string, joining the results to make another string.
+```go
+  func add1(r rune) rune { return r + 1 }
+  fmt.Println(strings.Map(add1, "HAL-9000")) // "IBM.:111"
+  fmt.Println(strings.Map(add1, "VMS"))      // "WNT"
+  fmt.Println(strings.Map(add1, "Admix"))    // "Benjy"
+```
+The `findLinks` function from Section 5.2 uses a helper function, `visit`, to visit all the nodes in an HTML document and apply an action to each one. Using a function value, we can separate the logic for tree traversal from the logic for the action to be applied to each node, letting us reuse the traversal with different actions.
+```go
+// gopl.io/ch5/outline2
+// forEachNode calls the functions pre(x) and post(x) for each node
+// x in the tree rooted at n. Both functions are optional.
+// pre is called before the children are visited (preorder) and
+// post is called after (postorder).
+func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
+	if pre != nil {
+		pre(n)
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		forEachNode(c, pre, post)
+	}
+
+	if post != nil {
+		post(n)
+	}
+}
+```
+The `forEachNode` function accepts two function arguments, one to call before a node’s children are visited and one to call after. This arrangement gives the caller a great deal of flexibility. For example, the functions `startElement` and `endElement` print the start and end tags of an HTML element like `<b>...</b>`:
+```go
+  var depth int
+
+  func startElement(n *html.Node) {
+      if n.Type == html.ElementNode {
+          fmt.Printf("%*s<%s>\n", depth*2, "", n.Data)
+          depth++
+      } 
+  }
+
+  func endElement(n *html.Node) {
+      if n.Type == html.ElementNode {
+          depth--
+          fmt.Printf("%*s</%s>\n", depth*2, "", n.Data)
+      }
+  }
+```
+The functions also indent the output using another `fmt.Printf` trick. The `*` adverb in `%*s` prints a string padded with a variable number of spaces. The width and the string are provided by the arguments `depth*2` and `""`.
+
+If we call `forEachNode` on an HTML document, like this:
+```go
+  forEachNode(doc, startElement, endElement)
+```
+we get a more elaborate variation on the output of our earlier outline program:
+```
+  $ go build gopl.io/ch5/outline2
+  $ ./outline2 http://gopl.io
+  <html>
+    <head>
+      <meta>
+      </meta>
+      <title>
+      </title>
+      <style>
+      </style>
+    </head>
+    <body>
+      <table>
+        <tbody>
+        <tr> 
+          <td>
+            <a> 
+              <img>
+              </img>
+  ...
+```
+
+### Exercises
+- **Exercise 5.7**: Develop `startElement` and `endElement` into a general HTML pretty-printer. Print comment nodes, text nodes, and the attributes of each element (`<a href='...'>`). Use short forms like `<img/>` instead of `<img></img>` when an element has no children. Write a test to ensure that the output can be parsed successfully. (See Chapter 11.)
+- **Exercise 5.8**: Modify `forEachNode` so that the `pre` and `post` functions return a boolean result indicating whether to continue the traversal. Use it to write a function `ElementByID` with the following signature that finds the first HTML element with the specified `id` attribute. The function should stop the traversal as soon as a match is found.
+```go
+  func ElementByID(doc *html.Node, id string) *html.Node
+```
+- **Exercise 5.9**: Write a function `expand(s string, f func(string) string) string` that
+replaces each substring `"$foo"` within `s` by the text returned by `f("foo")`.
+
+
 ## 5.6. Anonymous Functions 
+
+Named functions can be declared only at the package level, but we can use a *function literal* to denote a function value within any expression. A function literal is written like a function declaration, but without a name following the func keyword. It is an expression, and its value is called an *anonymous function*.
+
+Function literals let us define a function at its point of use. As an example, the earlier call to `strings.Map` can be rewritten as
+```go
+  strings.Map(func(r rune) rune { return r + 1 }, "HAL-9000")
+```
+More importantly, functions defined in this way have access to the entire lexical environment, so the inner function can refer to variables from the enclosing function, as this example shows:
+```go
+// gopl.io/ch5/squares
+// squares returns a function that returns
+// the next square number each time it is called.
+func squares() func() int {
+	var x int
+	return func() int {
+		x++
+		return x * x
+	}
+}
+
+func main() {
+	f := squares()
+	fmt.Println(f()) // "1"
+	fmt.Println(f()) // "4"
+	fmt.Println(f()) // "9"
+	fmt.Println(f()) // "16"
+}
+```
+
+The function squares returns another function, of type `func() int`. A call to squares creates a local variable `x` and returns an anonymous function that, each time it is called, increments `x` and returns its square. A second call to `squares` would create a second variable `x` and return a new anonymous function which increments that variable.
+
+The `squares` example demonstrates that function values are not just code but can have state. The anonymous inner function can access and update the local variables of the enclosing function `squares`. These hidden variable references are why we classify functions as reference types and why function values are not comparable. Function values like these are imple- mented using a technique called *closures*, and Go programmers often use this term for func- tion values.
+
+Here again we see an example where the lifetime of a variable is not determined by its scope: the variable `x` exists after `squares` has returned within `main`, even though `x` is hidden inside `f`.
+
+As a somewhat academic example of anonymous functions, consider the problem of computing a sequence of computer science courses that satisfies the prerequisite requirements of each one. The prerequisites are given in the `prereqs` table below, which is a mapping from each course to the list of courses that must be completed before it.
+```go
+// gopl.io/ch5/toposort
+// prereqs maps computer science courses to their prerequisites.
+var prereqs = map[string][]string{
+	"algorithms": {"data structures"},
+	"calculus":   {"linear algebra"},
+
+	"compilers": {
+		"data structures",
+		"formal languages",
+		"computer organization",
+	},
+
+	"data structures":       {"discrete math"},
+	"databases":             {"data structures"},
+	"discrete math":         {"intro to programming"},
+	"formal languages":      {"discrete math"},
+	"networks":              {"operating systems"},
+	"operating systems":     {"data structures", "computer organization"},
+	"programming languages": {"data structures", "computer organization"},
+}
+```
+This kind of problem is known as *topological sorting*. Conceptually, the prerequisite information forms a directed graph with a node for each course and edges from each course to the courses that it depends on. The graph is acyclic: there is no path from a course that leads back to itself. We can compute a valid sequence using depth-first search through the graph with the code below:
+```go
+func main() {
+	for i, course := range topoSort(prereqs) {
+		fmt.Printf("%d:\t%s\n", i+1, course)
+	}
+}
+
+func topoSort(m map[string][]string) []string {
+	var order []string
+	seen := make(map[string]bool)
+	var visitAll func(items []string)
+
+	visitAll = func(items []string) {
+		for _, item := range items {
+			if !seen[item] {
+				seen[item] = true
+				visitAll(m[item])
+				order = append(order, item)
+			}
+		}
+	}
+
+	var keys []string
+	for key := range m {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+	visitAll(keys)
+	return order
+}
+```
+When an anonymous function requires recursion, as in this example, we must first declare a variable, and then assign the anonymous function to that variable. Had these two steps been combined in the declaration, the function literal would not be within the scope of the variable visitAll so it would have no way to call itself recursively:
+```go
+  visitAll := func(items []string) {
+      // ...
+      visitAll(m[item]) // compile error: undefined: visitAll
+      // ...
+  }
+```
+The output of the `toposort` program is shown below. It is deterministic, an often-desirable property that doesn’t always come for free. Here, the values of the prereqs map are slices, not more maps, so their iteration order is deterministic, and we sorted the keys of `prereqs` before making the initial calls to `visitAll`.
+```
+  1:      intro to programming
+  2:      discrete math
+  3:      data structures
+  4:      algorithms
+  5:      linear algebra
+  6:      calculus
+  7:      formal languages
+  8:      computer organization
+  9:      compilers
+  10:     databases
+  11:     operating systems
+  12:     networks
+  13:     programming languages
+```
+Let’s return to our `findLinks` example. We’ve moved the link-extraction function `links.Extract` to its own package, since we’ll use it again in Chapter 8. We replaced the `visit` function with an anonymous function that appends to the `links` slice directly, and used `forEachNode` to handle the traversal. Since Extract needs only the `pre` function, it passes `nil` for the `post` argument.
+```go
+// gopl/ch5/links
+// Package links provides a link-extraction function.
+package links
+
+import (
+	"fmt"
+	"net/http"
+
+	"golang.org/x/net/html"
+)
+
+// Extract makes an HTTP GET request to the specified URL, parses
+// the response as HTML, and returns the links in the HTML document.
+func Extract(url string) ([]string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, fmt.Errorf("getting %s: %s", url, resp.Status)
+	}
+
+	doc, err := html.Parse(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, fmt.Errorf("parsing %s as HTML: %v", url, err)
+	}
+
+	var links []string
+	visitNode := func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "a" {
+			for _, a := range n.Attr {
+				if a.Key != "href" {
+					continue
+				}
+				link, err := resp.Request.URL.Parse(a.Val)
+				if err != nil {
+					continue // ignore bad URLs
+				}
+				links = append(links, link.String())
+			}
+		}
+	}
+	forEachNode(doc, visitNode, nil)
+	return links, nil
+}
+```
+Instead of appending the raw `href` attribute value to the `links` slice, this version parses it as a URL relative to the base URL of the document, `resp.Request.URL`. The resulting `link` is in absolute form, suitable for use in a call to `http.Get`.
+
+Crawling the web is, at its heart, a problem of graph traversal. The `topoSort` example showed a depth-first traversal; for our web crawler, we’ll use breadth-first traversal, at least initially. In Chapter 8, we’ll explore concurrent traversal.
+
+The function below encapsulates the essence of a breadth-first traversal. The caller provides an initial list `worklist` of items to visit and a function value `f` to call for each item. Each item is identified by a string. The function `f` returns a list of new items to append to the worklist. The `breadthFirst` function returns when all items have been visited. It maintains a set of strings to ensure that no item is visited twice.
+```go
+// gopl.io/ch5/findlinks3
+// breadthFirst calls f for each item in the worklist.
+// Any items returned by f are added to the worklist.
+// f is called at most once for each item.
+func breadthFirst(f func(item string) []string, worklist []string) {
+	seen := make(map[string]bool)
+	for len(worklist) > 0 {
+		items := worklist
+		worklist = nil
+		for _, item := range items {
+			if !seen[item] {
+				seen[item] = true
+				worklist = append(worklist, f(item)...)
+			}
+		}
+	}
+}
+```
+As we explained in passing in Chapter 3, the argument `"f(item)..."` causes all the items in the list returned by `f` to be appended to the `worklist`.
+
+In our crawler, items are URLs. The crawl function we’ll supply to `breadthFirst` prints the URL, extracts its links, and returns them so that they too are visited.
+```go
+  func crawl(url string) []string {
+      fmt.Println(url)
+      list, err := links.Extract(url)
+      if err != nil {
+          log.Print(err)
+      }
+      return list
+  }
+```
+To start the crawler off, we’ll use the command-line arguments as the initial URLs.
+```go
+  func main() {
+      // Crawl the web breadth-first,
+      // starting from the command-line arguments.
+      breadthFirst(crawl, os.Args[1:])
+  }
+```
+Let’s crawl the web starting from `https://golang.org`. Here are some of the resulting links:
+```
+  $ go build gopl.io/ch5/findlinks3
+  $ ./findlinks3 https://golang.org
+  https://golang.org/
+  https://golang.org/doc/
+  https://golang.org/pkg/
+  https://golang.org/project/
+  https://code.google.com/p/go-tour/
+  https://golang.org/doc/code.html
+  https://www.youtube.com/watch?v=XCsL89YtqCs
+  http://research.swtch.com/gotour
+  https://vimeo.com/53221560
+  ...
+```
+The process ends when all reachable web pages have been crawled or the memory of the computer is exhausted.
+
+### Exercises
+- **Exercise 5.10**: Rewrite `topoSort` to use maps instead of slices and eliminate the initial sort. Verify that the results, though nondeterministic, are valid topological orderings.
+- **Exercise 5.11**: The instructor of the linear algebra course decides that calculus is now a prerequisite. Extend the `topoSort` function to report cycles.
+- **Exercise 5.12**: The `startElement` and `endElement` functions in `gopl.io/ch5/outline2` (§5.5) share a global variable, `depth`. Turn them into anonymous functions that share a variable local to the `outline` function.
+- **Exercise 5.13**: Modify `crawl` to make local copies of the pages it finds, creating directories as necessary. Don’t make copies of pages that come from a different domain. For example, if the original page comes from `golang.org`, save all files from there, but exclude ones from `vimeo.com`.
+- **Exercise 5.14**: Use the `breadthFirst` function to explore a different structure. For example, you could use the course dependencies from the `topoSort` example (a directed graph), the file system hierarchy on your computer (a tree), or a list of bus or subway routes downloaded from your city government’s web site (an undirected graph).
+
+
 ### 5.6.1. Caveat: Capturing Iteration Variables
+
+In this section, we’ll look at a pitfall of Go’s lexical scope rules that can cause surprising results. We urge you to understand the problem before proceeding, because the trap can ensnare even experienced programmers.
+
+Consider a program that must create a set of directories and later remove them. We can use a slice of function values to hold the clean-up operations. (For brevity, we have omitted all error handling in this example.)
+```go
+  var rmdirs []func()
+  for _, d := range tempDirs() {
+      dir := d               // NOTE: necessary!
+      os.MkdirAll(dir, 0755) // creates parent directories too
+      rmdirs = append(rmdirs, func() {
+          os.RemoveAll(dir)
+      })
+  }
+  // ...do some work...
+  for _, rmdir := range rmdirs {
+      rmdir() // clean up
+  }
+```
+You may be wondering why we assigned the loop variable `d` to a new local variable `dir` within the loop body, instead of just naming the loop variable `dir` as in this subtly incorrect variant:
+```go
+  var rmdirs []func()
+  for _, dir := range tempDirs() {
+      os.MkdirAll(dir, 0755)
+      rmdirs = append(rmdirs, func() {
+          os.RemoveAll(dir) // NOTE: incorrect!
+      }) 
+  }
+```
+The reason is a consequence of the scope rules for loop variables. In the program immediately above, the `for` loop introduces a new lexical block in which the variable `dir` is declared. All function values created by this loop "capture" and share the same variable; an addressable storage location, not its value at that particular moment. The value of `dir` is updated in successive iterations, so by the time the cleanup functions are called, the dir variable has been updated several times by the now-completed `for` loop. Thus `dir` holds the value from the final iteration, and consequently all calls to `os.RemoveAll` will attempt to remove the same directory.
+
+Frequently, the inner variable introduced to work around this problem (`dir` in our example) is given the exact same name as the outer variable of which it is a copy, leading to odd-looking but crucial variable declarations like this:
+```go
+  for _, dir := range tempDirs() {
+      dir := dir // declares inner dir, initialized to outer dir
+      // ...
+  }
+```
+The risk is not unique to `range`-based `for` loops. The loop in the example below suffers from the same problem due to unintended capture of the index variable `i`.
+```go
+  var rmdirs []func()
+  dirs := tempDirs()
+  for i := 0; i < len(dirs); i++ {
+      os.MkdirAll(dirs[i], 0755) // OK
+      rmdirs = append(rmdirs, func() {
+          os.RemoveAll(dirs[i]) // NOTE: incorrect!
+      }) 
+  }
+```
+The problem of iteration variable capture is most often encountered when using the `go` statement (Chapter 8) or with `defer` (which we will see in a moment) since both may delay the execution of a function value until after the loop has finished. But the problem is not inherent to `go` or `defer`.
+
+
 ## 5.7. Variadic Functions 
+
+A *variadic function* is one that can be called with varying numbers of arguments. The most familiar examples are `fmt.Printf` and its variants. `Printf` requires one fixed argument at the beginning, then accepts any number of subsequent arguments.
+
+To declare a variadic function, the type of the final parameter is preceded by an ellipsis, "...", which indicates that the function may be called with any number of arguments of this type.
+```go
+// gopl.io/ch5/sum
+func sum(vals ...int) int {
+	total := 0
+	for _, val := range vals {
+		total += val
+	}
+	return total
+}
+```
+The `sum` function above returns the sum of zero or more `int` arguments. Within the body of the function, the type of `vals` is an `[]int` slice. When `sum` is called, any number of values may be provided for its `vals` parameter.
+```go
+  fmt.Println(sum())           //  "0"
+  fmt.Println(sum(3))          //  "3"
+  fmt.Println(sum(1, 2, 3, 4)) //  "10"
+```
+Implicitly, the caller allocates an array, copies the arguments into it, and passes a slice of the entire array to the function. The last call above thus behaves the same as the call below, which shows how to invoke a variadic function when the arguments are already in a slice: place an ellipsis after the final argument.
+```go
+  values := []int{1, 2, 3, 4}
+  fmt.Println(sum(values...)) // "10"
+```
+
+Although the `...int` parameter behaves like a slice within the function body, the type of a variadic function is distinct from the type of a function with an ordinary slice parameter.
+```go
+  func f(...int) {}
+  func g([]int)  {}
+  fmt.Printf("%T\n", f) // "func(...int)"
+  fmt.Printf("%T\n", g) // "func([]int)"
+```
+Variadic functions are often used for string formatting. The `errorf` function below constructs a formatted error message with a line number at the beginning. The suffix `f` is a widely followed naming convention for variadic functions that accept a `Printf`-style format string.
+```go
+  func errorf(linenum int, format string, args ...interface{}) {
+      fmt.Fprintf(os.Stderr, "Line %d: ", linenum)
+      fmt.Fprintf(os.Stderr, format, args...)
+      fmt.Fprintln(os.Stderr)
+  }
+  linenum, name := 12, "count"
+  errorf(linenum, "undefined: %s", name) // "Line 12: undefined: count"
+```
+The `interface{}` type means that this function can accept any values at all for its final arguments, as we’ll explain in Chapter 7.
+
+#### Exercises
+- **Exercise 5.15**: Write variadic functions `max` and `min`, analogous to sum. What should these functions do when called with no arguments? Write variants that require at least one argument.
+- **Exercise 5.16**: Write a variadic version of `strings.Join`.
+- **Exercise 5.17**: Write a variadic function `ElementsByTagName` that, given an HTML node tree and zero or more names, returns all the elements that match one of those names. Here are two example calls:
+```go
+  func ElementsByTagName(doc *html.Node, name ...string) []*html.Node
+
+  images := ElementsByTagName(doc, "img")
+  headings := ElementsByTagName(doc, "h1", "h2", "h3", "h4")
+```
+
+
 ## 5.8. Deferred Function Calls 
+Our `findLinks` examples used the output of `http.Get` as the input to `html.Parse`. This works well if the content of the requested URL is indeed HTML, but many pages contain images, plain text, and other file formats. Feeding such files into an HTML parser could have undesirable effects.
+
+The program below fetches an HTML document and prints its title. The `title` function inspects the `Content-Type` header of the server’s response and returns an error if the document is not HTML.
+```go
+// gopl.io/ch5/title1
+// Title1 prints the title of an HTML document specified by a URL.
+func title(url string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	// Check Content-Type is HTML (e.g., "text/html; charset=utf-8").
+	ct := resp.Header.Get("Content-Type")
+	if ct != "text/html" && !strings.HasPrefix(ct, "text/html;") {
+		resp.Body.Close()
+		return fmt.Errorf("%s has type %s, not text/html", url, ct)
+	}
+
+	doc, err := html.Parse(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return fmt.Errorf("parsing %s as HTML: %v", url, err)
+	}
+
+	visitNode := func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "title" &&
+			n.FirstChild != nil {
+			fmt.Println(n.FirstChild.Data)
+		}
+	}
+	forEachNode(doc, visitNode, nil)
+	return nil
+}
+```
+Here’s a typical session, slightly edited to fit:
+```
+  $ go build gopl.io/ch5/title1
+  $ ./title1 http://gopl.io
+  The Go Programming Language
+  $ ./title1 https://golang.org/doc/effective_go.html
+  Effective Go - The Go Programming Language
+  $ ./title1 https://golang.org/doc/gopher/frontpage.png
+  title: https://golang.org/doc/gopher/frontpage.png
+      has type image/png, not text/html
+```
+Observe the duplicated `resp.Body.Close()` call, which ensures that `title` closes the network connection on all execution paths, including failures. As functions grow more complex and have to handle more errors, such duplication of clean-up logic may become a maintenance problem. Let’s see how Go’s novel `defer` mechanism makes things simpler.
+
+Syntactically, a `defer` statement is an ordinary function or method call prefixed by the keyword `defer`. The function and argument expressions are evaluated when the statement is executed, but the actual call is *deferred* until the function that contains the `defer` statement has finished, whether normally, by executing a return statement or falling off the end, or abnormally, by panicking. Any number of calls may be deferred; they are executed in the reverse of the order in which they were deferred.
+
+A `defer` statement is often used with paired operations like open and close, connect and disconnect, or lock and unlock to ensure that resources are released in all cases, no matter how complex the control flow. The right place for a `defer` statement that releases a resource is immediately after the resource has been successfully acquired. In the title function below, a single deferred call replaces both previous calls to `resp.Body.Close()`:
+```go
+// gopl.io/ch5/title2
+func title(url string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	ct := resp.Header.Get("Content-Type")
+	if ct != "text/html" && !strings.HasPrefix(ct, "text/html;") {
+		return fmt.Errorf("%s has type %s, not text/html", url, ct)
+	}
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return fmt.Errorf("parsing %s as HTML: %v", url, err)
+	}
+
+  // ...print doc's title element...
+
+	return nil
+}
+```
+The same pattern can be used for other resources beside network connections, for instance to close an open file:
+```go
+  // io/ioutil
+  package ioutil
+
+  func ReadFile(filename string) ([]byte, error) {
+      f, err := os.Open(filename)
+      if err != nil {
+          return nil, err
+      }
+      defer f.Close()
+      return ReadAll(f)
+  }
+```
+or to unlock a mutex (§9.2):
+```go
+  var mu sync.Mutex
+  var m = make(map[string]int)
+
+  func lookup(key string) int {
+      mu.Lock()
+      defer mu.Unlock()
+      return m[key]
+  }
+```
+The `defer` statement can also be used to pair "on entry" and "on exit" actions when debugging a complex function. The `bigSlowOperation` function below calls `trace` immediately, which does the "on entry" action then returns a function value that, when called, does the corresponding "on exit" action. By deferring a call to the returned function in this way, we can instrument the entry point and all exit points of a function in a single statement and even pass values, like the `start` time, between the two actions. But don’t forget the final parentheses in the `defer` statement, or the "on entry" action will happen on exit and the on-exit action won’t happen at all!
+```go
+// gopl.io/ch5/trace
+// The trace program uses defer to add entry/exit diagnostics to a function.
+func bigSlowOperation() {
+	defer trace("bigSlowOperation")() // don't forget the extra parentheses
+	// ...lots of work...
+	time.Sleep(10 * time.Second) // simulate slow operation by sleeping
+}
+
+func trace(msg string) func() {
+	start := time.Now()
+	log.Printf("enter %s", msg)
+	return func() { log.Printf("exit %s (%s)", msg, time.Since(start)) }
+}
+```
+Each time `bigSlowOperation` is called, it logs its entry and exit and the elapsed time between them. (We used `time.Sleep` to simulate a slow operation.)
+```
+  $ go build gopl.io/ch5/trace
+  $ ./trace
+  2015/11/18 09:53:26 enter bigSlowOperation
+  2015/11/18 09:53:36 exit bigSlowOperation (10.000589217s)
+```
+Deferred functions run *after* return statements have updated the function’s result variables. Because an anonymous function can access its enclosing function’s variables, including named results, a deferred anonymous function can observe the function’s results.
+
+Consider the function `double`:
+```go
+  func double(x int) int {
+      return x + x
+  }
+```
+By naming its result variable and adding a `defer` statement, we can make the function print its arguments and results each time it is called.
+```go
+  func double(x int) (result int) {
+      defer func() { fmt.Printf("double(%d) = %d\n", x, result) }()
+      return x + x
+  }
+
+  _ = double(4)
+  // Output:
+  // "double(4) = 8"
+```
+This trick is overkill for a function as simple as `double` but may be useful in functions with many return statements.
+
+A deferred anonymous function can even change the values that the enclosing function returns to its caller:
+```go
+  func triple(x int) (result int) {
+      defer func() { result += x }()
+      return double(x)
+  }
+
+  fmt.Println(triple(4)) // "12"
+```
+Because deferred functions aren’t executed until the very end of a function’s execution, a `defer` statement in a loop deserves extra scrutiny. The code below could run out of file descriptors since no file will be closed until all files have been processed:
+```go
+  for _, filename := range filenames {
+      f, err := os.Open(filename)
+      if err != nil {
+          return err
+      }
+      defer f.Close() // NOTE: risky; could run out of file descriptors
+      // ...process f...
+  }
+```
+One solution is to move the loop body, including the `defer` statement, into another function that is called on each iteration.
+```go
+  for _, filename := range filenames {
+      if err := doFile(filename); err != nil {
+          return err
+      }
+  }
+
+  func doFile(filename string) error {
+      f, err := os.Open(filename)
+      if err != nil {
+          return err
+      }
+      defer f.Close()
+      // ...process f...
+  }
+```
+The example below is an improved `fetch` program (§1.5) that writes the HTTP response to a local file instead of to the standard output. It derives the file name from the last component of the URL path, which it obtains using the `path.Base` function.
+```go
+//gopl.io/ch5/fetch
+// Fetch downloads the URL and returns the
+// name and length of the local file.
+func fetch(url string) (filename string, n int64, err error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", 0, err
+	}
+	defer resp.Body.Close()
+
+	local := path.Base(resp.Request.URL.Path)
+	if local == "/" {
+		local = "index.html"
+	}
+	f, err := os.Create(local)
+	if err != nil {
+		return "", 0, err
+	}
+	n, err = io.Copy(f, resp.Body)
+	// Close file, but prefer error from Copy, if any.
+	if closeErr := f.Close(); err == nil {
+		err = closeErr
+	}
+	return local, n, err
+}
+```
+The deferred call to `resp.Body.Close` should be familiar by now. It’s tempting to use a second deferred call, to `f.Close`, to close the local file, but this would be subtly wrong because `os.Create` opens a file for writing, creating it as needed. On many file systems, notably NFS, write errors are not reported immediately but may be postponed until the file is closed. Failure to check the result of the close operation could cause serious data loss to go unnoticed. However, if both `io.Copy` and `f.Close` fail, we should prefer to report the error from `io.Copy` since it occurred first and is more likely to tell us the root cause.
+
+### Exercises
+- **Exercise 5.18**: Without changing its behavior, rewrite the `fetch` function to use `defer` to close the writable file.
+
+
 ## 5.9. Panic 
+
+
+
+
 ## 5.10. Recover
 
 
