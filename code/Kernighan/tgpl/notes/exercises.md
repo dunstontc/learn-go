@@ -72,3 +72,19 @@ Use short forms like `<img/>` instead of `<img></img>` when an element has no ch
 ```
 - **Exercise 5.9**: Write a function `expand(s string, f func(string) string) string` that
 replaces each substring `"$foo"` within `s` by the text returned by `f("foo")`.
+- **Exercise 5.10**: Rewrite `topoSort` to use maps instead of slices and eliminate the initial sort. Verify that the results, though nondeterministic, are valid topological orderings.
+- **Exercise 5.11**: The instructor of the linear algebra course decides that calculus is now a prerequisite. Extend the `topoSort` function to report cycles.
+- **Exercise 5.12**: The `startElement` and `endElement` functions in `gopl.io/ch5/outline2` (§5.5) share a global variable, `depth`. Turn them into anonymous functions that share a variable local to the `outline` function.
+- **Exercise 5.13**: Modify `crawl` to make local copies of the pages it finds, creating directories as necessary. Don’t make copies of pages that come from a different domain. For example, if the original page comes from `golang.org`, save all files from there, but exclude ones from `vimeo.com`.
+- **Exercise 5.14**: Use the `breadthFirst` function to explore a different structure. For example, you could use the course dependencies from the `topoSort` example (a directed graph), the file system hierarchy on your computer (a tree), or a list of bus or subway routes downloaded from your city government’s web site (an undirected graph).
+- **Exercise 5.15**: Write variadic functions `max` and `min`, analogous to sum. What should these functions do when called with no arguments? Write variants that require at least one argument.
+- **Exercise 5.16**: Write a variadic version of `strings.Join`.
+- **Exercise 5.17**: Write a variadic function `ElementsByTagName` that, given an HTML node tree and zero or more names, returns all the elements that match one of those names. Here are two example calls:
+```go
+  func ElementsByTagName(doc *html.Node, name ...string) []*html.Node
+
+  images := ElementsByTagName(doc, "img")
+  headings := ElementsByTagName(doc, "h1", "h2", "h3", "h4")
+```
+- **Exercise 5.18**: Without changing its behavior, rewrite the `fetch` function to use `defer` to close the writable file.
+- **Exercise 5.19**: Use `panic` and `recover` to write a function that contains no `return` statement yet returns a non-zero value.
