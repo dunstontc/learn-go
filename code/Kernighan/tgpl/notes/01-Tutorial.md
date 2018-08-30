@@ -611,7 +611,7 @@ When one goroutine attempts a send or receive on a channel, it blocks until anot
 
 #### Exercises
 - **Exercise 1.10**: Find a web site that produces a large amount of data. Investigate caching by running `fetchall` twice in succession to see whether the reported time changes much. Do you get the same content each time? Modify `fetchall` to print its output to a file so it can be examined.
-- **Exercise 1.11**: Try `fetchall` with longer argument lists, such as samples from the top million web sites available at `alexa.com`. How does the program behave if a web site just doesn’t respond? (Section 8.9 describes mechanisms for coping in such cases.)
+- **Exercise 1.11**: Try `fetchall` with longer argument lists, such as samples from the top million web sites available at `alexa.com`. How does the program behave if a web site just doesn't respond? (Section 8.9 describes mechanisms for coping in such cases.)
 
 ## 1.7. A Web Server
 
@@ -640,7 +640,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 The program is only a handful of lines long because library functions do most of the work. The main function connects a handler function to incoming URLs that begin with `/`, which is all URLs, and starts a server listening for incoming requests on port 8000. A request is represented as a struct of type `http.Request`, which contains a number of related fields, one of which is the URL of the incoming request. When a request arrives, it is given to the handler function, which extracts the path component (`/hello`) from the request URL and sends it back as the response, using `fmt.Fprintf`. Web servers will be explained in detail in Section 7.7.  
 
-Let’s start the server in the background. On Mac OS X or Linux, add an ampersand (`&`) to the command; on Microsoft Windows, you will need to run the command without the ampersand in a separate command window.  
+Let's start the server in the background. On Mac OS X or Linux, add an ampersand (`&`) to the command; on Microsoft Windows, you will need to run the command without the ampersand in a separate command window.  
 ```
   $ go run src/gopl.io/ch1/server1/main.go &
 ```
@@ -656,7 +656,7 @@ We can then make client requests from the command line:
 
 Alternatively, we can access the server from a web browser.
 
-It’s easy to add features to the server. One useful addition is a specific URL that returns a status of some sort. For example, this version does the same echo but also counts the number of requests; a request to the URL `/count` returns the count so far, excluding `/count` requests themselves:
+It's easy to add features to the server. One useful addition is a specific URL that returns a status of some sort. For example, this version does the same echo but also counts the number of requests; a request to the URL `/count` returns the count so far, excluding `/count` requests themselves:
 ```go
 // gopl.io/ch1/server2
 // Server2 is a minimal "echo" and counter server.
@@ -703,9 +703,77 @@ As a richer example, the handler function can report on the headers and form dat
 - **Exercise 1.12**: Modify the Lissajous server to read parameter values from the URL. For example, you might arrange it so that a URL like `http://localhost:8000/?cycles=20` sets the number of cycles to 20 instead of the default 5. Use the `strconv.Atoi` function to convert the string parameter into an integer. You can see its documentation with go doc `strconv.Atoi`.
 
 ## 1.8. Loose Ends
-- Control flow
-- Named types
-- Pointers
-- Methods and interfaces
-- Packages
-- Comments
+
+There is a lot more to Go than we've covered in this quick introduction. Here are some topics we've barely touched upon or omitted entirely, with just enough discussion that they will be familiar when they make brief appearances before the full treatment.
+
+### *Control flow:*
+We covered the two fundamental control-flow statements, `if` and `for`, but not the switch statement, which is a multi-way branch. Here's a small example:
+```go
+  switch coinflip() {
+      case "heads":
+          heads++
+      case "tails":
+          tails++
+      default:
+          fmt.Println("landed on edge!")
+  }
+```
+The result of calling `coinflip` is compared to the value of each case. Cases are evaluated from top to bottom, so the first matching one is executed. The optional default case matches if none of the other cases does; it may be placed anywhere. Cases do not fall through from one to the next as in C-like languages (though there is a rarely used `fallthrough` statement that overrides this behavior).
+
+A `switch` does not need an operand; it can just list the cases, each of which is a boolean expression:
+```go
+  func Signum(x int) int {
+      switch {
+          case x > 0:
+              return +1
+          default:
+              return 0
+          case x < 0:
+              return -1
+      } 
+  }
+```
+This form is called a *tagless switch*; it's equivalent to switch true.
+
+Like the `for` and `if` statements, a `switch` may include an optional simple statement (a short variable declaration, an increment or assignment statement, or a function call) that can be used to set a value before it is tested.
+
+The `break` and `continue` statements modify the flow of control. A `break` causes control to resume at the next statement after the innermost `for`, `switch`, or `select` statement (which we'll see later), and as we saw in Section 1.3, a `continue` causes the innermost `for` loop to start its next iteration. Statements may be labeled so that `break` and `continue` can refer to them, for instance to break out of several nested loops at once or to start the next iteration of the outermost loop. There is even a goto statement, though it's intended for machine-gener- ated code, not regular use by programmers.
+
+
+### *Named types:*
+A `type` declaration makes it possible to give a name to an existing type. Since struct types are often long, they are nearly always named. A familiar example is the definition of a `Point` type for a 2-D graphics system:
+```go
+  type Point struct {
+      X, Y int
+  }
+  var p Point
+```
+Type declarations and named types are covered in Chapter 2.
+
+
+### *Pointers:*
+Go provides pointers, that is, values that contain the address of a variable. In some languages, notably C, pointers are relatively unconstrained. In other languages, pointers are disguised as "references," and there's not much that can be done with them except pass them around. Go takes a position somewhere in the middle. Pointers are explicitly visible. The `&` operator yields the address of a variable, and the `*` operator retrieves the variable that the pointer refers to, but there is no pointer arithmetic. We'll explain pointers in Section 2.3.2.
+
+
+### *Methods and interfaces:*
+A method is a function associated with a named type; Go is unusual in that methods may be attached to almost any named type. Methods are covered in Chapter 6. Interfaces are abstract types that let us treat different concrete types in the same way based on what methods they have, not how they are represented or implemented. Interfaces are the subject of Chapter 7.
+
+### *Packages:*
+Go comes with an extensive standard library of useful packages, and the Go community has created and shared many more. Programming is often more about using existing packages than about writing original code of one's own. Throughout the book, we will point out a couple of dozen of the most important standard packages, but there are many more we don't have space to mention, and we cannot provide anything remotely like a complete reference for any package.
+
+Before you embark on any new program, it's a good idea to see if packages already exist that might help you get your job done more easily. You can find an index of the standard library packages at `https://golang.org/pkg` and the packages contributed by the community at `https://godoc.org`. The `go doc tool` makes these documents easily accessible from the command line:
+```go
+  $ go doc http.ListenAndServe
+  package http // import "net/http"
+
+  func ListenAndServe(addr string, handler Handler) error
+      ListenAndServe listens on the TCP network address addr and then
+      calls Serve with handler to handle requests on incoming connections.
+  ...
+```
+
+
+### *Comments:*
+We have already mentioned documentation comments at the beginning of a program or package. It's also good style to write a comment before the declaration of each function to specify its behavior. These conventions are important, because they are used by tools like go doc and godoc to locate and display documentation (§10.7.4).
+
+For comments that span multiple lines or appear within an expression or statement, there is also the `/* ... */` notation familiar from other languages. Such comments are sometimes used at the beginning of a file for a large block of explanatory text to avoid a `//` on every line. Within a comment, `//` and `/*` have no special meaning, so comments do not nest.
