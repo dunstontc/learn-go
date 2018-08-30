@@ -1184,10 +1184,193 @@ The deferred call to `resp.Body.Close` should be familiar by now. It’s temptin
 
 ## 5.9. Panic 
 
+Go’s type system catches many mistakes at compile time, but others, like an out-of-bounds array access or nil pointer dereference, require checks at run time. When the Go runtime detects these mistakes, it *panics*.
 
+During a typical panic, normal execution stops, all deferred function calls in that goroutine are executed, and the program crashes with a log message. This log message includes the *panic value*, which is usually an error message of some sort, and, for each goroutine, a *stack trace* showing the stack of function calls that were active at the time of the panic. This log message often has enough information to diagnose the root cause of the problem without running the program again, so it should always be included in a bug report about a panicking program.
+
+Not all panics come from the runtime. The built-in panic function may be called directly; it accepts any value as an argument. A panic is often the best thing to do when some "impossible" situation happens, for instance, execution reaches a case that logically can’t happen:
+```go
+  switch s := suit(drawCard()); s {
+      case "Spades":   // ...
+      case "Hearts":   // ...
+      case "Diamonds": // ...
+      case "Clubs":    // ...
+      default:
+          panic(fmt.Sprintf("invalid suit %q", s)) // Joker?
+  }
+```
+It’s good practice to assert that the preconditions of a function hold, but this can easily be done to excess. Unless you can provide a more informative error message or detect an error sooner, there is no point asserting a condition that the runtime will check for you.
+```go
+  func Reset(x *Buffer) {
+      if x == nil {
+          panic("x is nil") // unnecessary!
+      }
+      x.elements = nil
+  }
+```
+
+Although Go’s panic mechanism resembles exceptions in other languages, the situations in which panic is used are quite different. Since a panic causes the program to crash, it is generally used for grave errors, such as a logical inconsistency in the program; diligent programmers consider any crash to be proof of a bug in their code. In a robust program, "expected" errors, the kind that arise from incorrect input, misconfiguration, or failing I/O, should be handled gracefully; they are best dealt with using error values.
+
+Consider the function regexp.Compile, which compiles a regular expression into an efficient form for matching. It returns an error if called with an ill-formed pattern, but checking this error is unnecessary and burdensome if the caller knows that a particular call cannot fail. In such cases, it’s reasonable for the caller to handle an error by panicking, since it is believed to be impossible.
+
+Since most regular expressions are literals in the program source code, the `regexp` package provides a wrapper function `regexp.MustCompile` that does this check:
+```go
+  package regexp
+
+  func Compile(expr string) (*Regexp, error) { /* ... */ }
+
+  func MustCompile(expr string) *Regexp {
+      re, err := Compile(expr)
+      if err != nil {
+          panic(err)
+      }
+      return re
+  }
+```
+The wrapper function makes it convenient for clients to initialize a package-level variable with a compiled regular expression, like this:
+```go
+  var httpSchemeRE = regexp.MustCompile(`^https?:`) // "http:" or "https:"
+```
+Of course, `MustCompile` should not be called with untrusted input values. The `Must` prefix is a common naming convention for functions of this kind, like `template.Must` in Section 4.6.
+
+When a panic occurs, all deferred functions are run in reverse order, starting with those of the topmost function on the stack and proceeding up to `main`, as the program below demonstrates:
+```go
+// gopl.io/ch5/defer1
+// Defer1 demonstrates a deferred call being invoked during a panic.
+func main() {
+	f(3)
+}
+
+func f(x int) {
+	fmt.Printf("f(%d)\n", x+0/x) // panics if x == 0
+	defer fmt.Printf("defer %d\n", x)
+	f(x - 1)
+}
+```
+When run, the program prints the following to the standard output:
+```
+  f(3)
+  f(2)
+  f(1)
+  defer 1
+  defer 2
+  defer 3
+```
+A panic occurs during the call to `f(0)`, causing the three deferred calls to `fmt.Printf` to run. Then the runtime terminates the program, printing the panic message and a stack dump to the standard error stream (simplified for clarity):
+```
+  panic: runtime error: integer divide by zero
+  main.f(0)
+      src/gopl.io/ch5/defer1/defer.go:14
+  main.f(1)
+      src/gopl.io/ch5/defer1/defer.go:16
+  main.f(2)
+      src/gopl.io/ch5/defer1/defer.go:16
+  main.f(3)
+      src/gopl.io/ch5/defer1/defer.go:16
+  main.main()
+      src/gopl.io/ch5/defer1/defer.go:10
+```
+As we will see soon, it is possible for a function to recover from a panic so that it does not terminate the program.
+
+For diagnostic purposes, the `runtime` package lets the programmer dump the stack using the samemachinery. By deferring a call to `printStack` in `main`,
+```go
+// gopl.io/ch5/defer2
+func main() {
+	defer printStack()
+	f(3)
+}
+
+func printStack() {
+	var buf [4096]byte
+	n := runtime.Stack(buf[:], false)
+	os.Stdout.Write(buf[:n])
+}
+```
+the following additional text (again simplified for clarity) is printed to the standard output:
+```
+  goroutine 1 [running]:
+  main.printStack()
+      src/gopl.io/ch5/defer2/defer.go:20
+  main.f(0)
+      src/gopl.io/ch5/defer2/defer.go:27
+  main.f(1)
+      src/gopl.io/ch5/defer2/defer.go:29
+  main.f(2)
+      src/gopl.io/ch5/defer2/defer.go:29
+  main.f(3)
+      src/gopl.io/ch5/defer2/defer.go:29
+  main.main()
+      src/gopl.io/ch5/defer2/defer.go:15
+```
+Readers familiar with exceptions in other languages may be surprised that `runtime.Stack` can print information about functions that seem to have already been "unwound." Go’s panic mechanism runs the deferred functions *before* it unwinds the stack.
 
 
 ## 5.10. Recover
 
+Giving up is usually the right response to a panic, but not always. It might be possible to recover in some way, or at least clean up the mess before quitting. For example, a web server that encounters an unexpected problem could close the connection rather than leave the client hanging, and during development, it might report the error to the client too.
 
+If the built-in `recover` function is called within a deferred function and the function containing the `defer` statement is panicking, `recover` ends the current state of panic and returns the panic value. The function that was panicking does not continue where it left off but returns normally. If `recover` is called at any other time, it has no effect and returns `nil`.
 
+To illustrate, consider the development of a parser for a language. Even when it appears to be working well, given the complexity of its job, bugs may still lurk in obscure corner cases. We might prefer that, instead of crashing, the parser turns these panics into ordinary parse errors, perhaps with an extra message exhorting the user to file a bug report.
+```go
+  func Parse(input string) (s *Syntax, err error) {
+      defer func() {
+          if p := recover(); p != nil {
+              err = fmt.Errorf("internal error: %v", p)
+          }
+      }()
+      // ...parser...
+  } 
+```
+The deferred function in `Parse` recovers from a panic, using the panic value to construct an error message; a fancier version might include the entire call stack using `runtime.Stack`. The deferred function then assigns to the err result, which is returned to the caller.
+
+Recovering indiscriminately from panics is a dubious practice because the state of a package’s variables after a panic is rarely well defined or documented. Perhaps a critical update to a data structure was incomplete, a file or network connection was opened but not closed, or a lock was acquired but not released. Furthermore, by replacing a crash with, say, a line in a log file, indiscriminate recovery may cause bugs to go unnoticed.
+
+Recovering from a panic within the same package can help simplify the handling of complex or unexpected errors, but as a general rule, you should not attempt to recover from another package’s panic. Public APIs should report failures as `error`s. Similarly, you should not recover from a panic that may pass through a function you do not maintain, such as a caller-provided callback, since you cannot reason about its safety.
+
+For example, the `net/http` package provides a web server that dispatches incoming requests to user-provided handler functions. Rather than let a panic in one of these handlers kill the process, the server calls `recover`, prints a stack trace, and continues serving. This is convenient in practice, but it does risk leaking resources or leaving the failed handler in an unspecified state that could lead to other problems.
+
+For all the above reasons, it’s safest to recover selectively if at all. In other words, recover only from panics that were intended to be recovered from, which should be rare. This intention can be encoded by using a distinct, unexported type for the panic value and testing whether the value returned by `recover` has that type. (We’ll see one way to do this in the next example.) If so, we report the panic as an ordinary `error`; if not, we call `panic` with the same value to resume the state of panic.
+
+The example below is a variation on the `title` program that reports an error if the HTML document contains multiple `<title>` elements. If so, it aborts the recursion by calling `panic` with a value of the special type bailout.
+```go
+// gopl.io/ch5/title3
+// soleTitle returns the text of the first non-empty title element
+// in doc, and an error if there was not exactly one.
+func soleTitle(doc *html.Node) (title string, err error) {
+	type bailout struct{}
+
+	defer func() {
+		switch p := recover(); p {
+		case nil:
+			// no panic
+		case bailout{}:
+			// "expected" panic
+			err = fmt.Errorf("multiple title elements")
+		default:
+			panic(p) // unexpected panic; carry on panicking
+		}
+	}()
+
+	// Bail out of recursion if we find more than one non-empty title.
+	forEachNode(doc, func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "title" &&
+			n.FirstChild != nil {
+			if title != "" {
+				panic(bailout{}) // multiple title elements
+			}
+			title = n.FirstChild.Data
+		}
+	}, nil)
+	if title == "" {
+		return "", fmt.Errorf("no title element")
+	}
+	return title, nil
+}
+```
+The deferred handler function calls recover, checks the panic value, and reports an ordinary error if the value was `bailout{}`. All other non-nil values indicate an unexpected panic, in which case the handler calls `panic` with that value, undoing the effect of `recover` and resuming the original state of panic. (This example does somewhat violate our advice about not using panics for "expected" errors, but it provides a compact illustration of the mechanics.)
+
+From some conditions there is no recovery. Running out of memory, for example, causes the Go runtime to terminate the program with a fatal error.
+
+### Exercises
+- **Exercise 5.19**: Use `panic` and `recover` to write a function that contains no `return` statement yet returns a non-zero value.
