@@ -33,7 +33,23 @@ A method is declared with a variant of the ordinary function declaration in whic
 
 Let’s write our first method in a simple package for plane geometry:
 ```go
+// gopl.io/ch6/geometry
+// Package geometry defines simple types for plane geometry.
+package geometry
 
+import "math"
+
+type Point struct{ X, Y float64 }
+
+// traditional function
+func Distance(p, q Point) float64 {
+	return math.Hypot(q.X-p.X, q.Y-p.Y)
+}
+
+// same thing, but as a method of the Point type
+func (p Point) Distance(q Point) float64 {
+	return math.Hypot(q.X-p.X, q.Y-p.Y)
+}
 ```
 The extra parameter p is called the method’s *receiver*, a legacy from early object-oriented languages that described calling a method as "sending a message to an object."
 
@@ -86,7 +102,13 @@ All methods of a given type must have unique names, but different types can use 
 ```go
   import "gopl.io/ch6/geometry"
 
-  perim := geometry.Path{{1, 1}, {5, 1}, {5, 4}, {1, 1}}
+  perim := geometry.Path{
+      {1, 1}, 
+      {5, 1}, 
+      {5, 4}, 
+      {1, 1},
+  }
+
   fmt.Println(geometry.PathDistance(perim)) // "12", standalone function
   fmt.Println(perim.Distance())             // "12", method of geometry.Pat
 ```
@@ -94,6 +116,15 @@ All methods of a given type must have unique names, but different types can use 
 
 ## 6.2. Methods with a Pointer Receiver 
 
+Because calling a function makes a copy of each argument value, if a function needs to update a variable, or if an argument is so large that we wish to avoid copying it, we must pass the address of the variable using a pointer. The same goes for methods that need to update the receiver variable: we attach them to the pointer type, such as `*Point`.
+
+```go
+  func (p *Point) ScaleBy(factor float64) {
+      p.X *= factor
+      p.Y *= factor
+  }
+
+```
 
 ## 6.3. Composing Types by Struct Embedding 
 ## 6.4. Method Values and Expressions 
