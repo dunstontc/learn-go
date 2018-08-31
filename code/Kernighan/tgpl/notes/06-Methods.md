@@ -43,12 +43,12 @@ type Point struct{ X, Y float64 }
 
 // traditional function
 func Distance(p, q Point) float64 {
-	return math.Hypot(q.X-p.X, q.Y-p.Y)
+	return math.Hypot((q.X - p.X), (q.Y - p.Y))
 }
 
 // same thing, but as a method of the Point type
 func (p Point) Distance(q Point) float64 {
-	return math.Hypot(q.X-p.X, q.Y-p.Y)
+	return math.Hypot((q.X-p.X), ((q.Y-p.Y))
 }
 ```
 The extra parameter p is called the method’s *receiver*, a legacy from early object-oriented languages that described calling a method as "sending a message to an object."
@@ -123,10 +123,125 @@ Because calling a function makes a copy of each argument value, if a function ne
       p.X *= factor
       p.Y *= factor
   }
+```
+The name of this method is `(*Point).ScaleBy`. The parentheses are necessary; without them, the expression would be parsed as `*(Point.ScaleBy)`.
+
+In a realistic program, convention dictates that if any method of Point has a pointer receiver, then all methods of Point should have a pointer receiver, even ones that don’t strictly need it. We’ve broken this rule for `Point` so that we can show both kinds of method.
+
+Named types (`Point`) and pointers to them (`*Point`) are the only types that may appear in a receiver declaration. Furthermore, to avoid ambiguities, method declarations are not permitted on named types that are themselves pointer types:
+```go
+  type P *int
+  func (P) f() { /* ... */ } // compile error: invalid receiver type
+```
+The `(*Point).ScaleBy` method can be called by providing a `*Point` receiver, like this:
+```go
+  r := &Point{1, 2}
+  r.ScaleBy(2)
+  fmt.Println(*r) // "{2, 4}"
+```
+or this:
+```go
+  p := Point{1, 2}
+  pptr := &p
+  pptr.ScaleBy(2)
+  fmt.Println(p) // "{2, 4}"
+```
+or this:
+```go
+  p := Point{1, 2}
+  (&p).ScaleBy(2)
+  fmt.Println(p) // "{2, 4}"
+```
+But the last two cases are ungainly. Fortunately, the language helps us here. If the receiver `p` is a *variable* of type `Point` but the method requires a `*Point` receiver, we can use this shorthand:
+```go
+  p.ScaleBy(2)
+```
+and the compiler will perform an implicit `&p` on the variable. This works only for variables, including struct fields like `p.X` and array or slice elements like `perim[0]`. We cannot call a `*Point` method on a non-addressable `Point` receiver, because there’s no way to obtain the address of a temporary value.
+```go
+  Point{1, 2}.ScaleBy(2) // compile error: can't take address of Point literal
+```
+But we can call a `Point` method like `Point.Distance` with a `*Point` receiver, because there is a way to obtain the value from the address: just load the value pointed to by the receiver. The compiler inserts an implicit `*` operation for us. These two function calls are equivalent:
+```go
+  pptr.Distance(q)
+  (*pptr).Distance(q)
+```
+Let’s summarize these three cases again, since they are a frequent point of confusion. In every valid method call expression, exactly one of these three statements is true.
+
+Either the receiver argument has the same type as the receiver parameter, for example both have type `T` or both have type `*T`:
+```go
+  Point{1, 2}.Distance(q) //  Point
+  pptr.ScaleBy(2)         // *Point
+```
+Or the receiver argument is a variable of type `T` and the receiver parameter has type `*T`. The compiler implicitly takes the address of the variable:
+```go
+  p.ScaleBy(2) // implicit (&p)
+```
+Or the receiver argument has type `*T` and the receiver parameter has type `T`. The compiler implicitly dereferences the receiver, in other words, loads the value:
+```go
+  pptr.Distance(q) // implicit (*pptr)
+```
+If all the methods of a named type `T` have a receiver type of `T` itself (not `*T`), it is safe to copy instances of that type; calling any of its methods necessarily makes a copy. For example, `time.Duration` values are liberally copied, including as arguments to functions. But if any method has a pointer receiver, you should avoid copying instances of `T` because doing so may violate internal invariants. For example, copying an instance of `bytes.Buffer` would cause the original and the copy to alias (§2.3.2) the same underlying array of bytes. Subsequent method calls would have unpredictable effects.
+
+### 6.2.1 Nil Is a Valid Receiver Value
+
+Just as some functions allow nil pointers as arguments, so do some methods for their receiver, especially if `nil` is a meaningful zero value of the type, as with maps and slices. In this simple linked list of integers, `nil` represents the empty list:
+```go
+  // An IntList is a linked list of integers.
+  // A nil *IntList represents the empty list.
+  type IntList struct {
+      Value int
+      Tail  *IntList
+  }
+  
+  // Sum returns the sum of the list elements.
+  func (list *IntList) Sum() int {
+      if list == nil {
+          return 0
+      }
+      return list.Value + list.Tail.Sum()
+  }
+```
+When you define a type whose methods allow nil as a receiver value, it’s worth pointing this
+out explicitly in its documentation comment, as we did above.
+
+Here’s part of the definition of the `Values` type from the `net/url` package:
+```go
+  // net/url
+  package url
+
+  // Values maps a string key to a list of values.
+  type Values map[string][]string
+
+  // Get returns the first value associated with the given key,
+  // or "" if there are none.
+  func (v Values) Get(key string) string {
+      if vs := v[key]; len(vs) > 0 {
+          return vs[0]
+      }
+      return ""
+  }
+
+  // Add adds the value to key.
+  // It appends to any existing values associated with key.
+  func (v Values) Add(key, value string) {
+      v[key] = append(v[key], value)
+  }
+```
+It exposes its representation as a map but also provides methods to simplify access to the map, whose values are slices of strings—it’s a *multimap*. Its clients can use its intrinsic operators (`make`, slice literals, `m[key]`, and so on), or its methods, or both, as they prefer:
+```go
+// gopl.io/ch6/urlvalues
 
 ```
+In the final call to `Get`, the nil receiver behaves like an empty map. We could equivalently have written it as `Values(nil).Get("item"))`, but `nil.Get("item")` will not compile because the type of `nil` has not been determined. By contrast, the final call to `Add` panics as it tries to update a nil map.
+
+Because `url.Values` is a map type and a map refers to its key/value pairs indirectly, any updates and deletions that `url.Values.Add` makes to the map elements are visible to the caller. However, as with ordinary functions, any changes a method makes to the reference itself, like setting it to n il or making it refer to a different map data structure, will not be reflected in the caller.
+
 
 ## 6.3. Composing Types by Struct Embedding 
+
+Consider the type `ColoredPoint`:
+
+
 ## 6.4. Method Values and Expressions 
 ## 6.5. Example: Bit Vector Type 
 ## 6.6. Encapsulation

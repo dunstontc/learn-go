@@ -15,6 +15,10 @@
 <!-- /TOC -->
 
 
+Go provides a mechanism to update variables and inspect their values at run time, to call their methods, and to apply the operations intrinsic to their representation, all without knowing their types at compile time. This mechanism is called *reflection*. Reflection also lets us treat types themselves as first-class values.
+
+In this chapter, we’ll explore Go’s reflection features to see how they increase the expressiveness of the language, and in particular how they are crucial to the implementation of two important APIs: string formatting provided by `fmt`, and protocol encoding provided by packages like `encoding/json` and `encoding/xml`. Reflection is also essential to the template mechanism provided by the `text/template` and `html/template` packages we saw in Section 4.6. However, reflection is complex to reason about and not for casual use, so although these packages are implemented using reflection, they do not expose reflection in their own APIs.
+
 ## 12.1. Why Reflection? 
 ## 12.2. reflect.Type and reflect.Value 
 ## 12.3. Display, a Recursive Value Printer 
