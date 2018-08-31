@@ -4,6 +4,7 @@
 
 - [6.1. Method Declarations](#61-method-declarations)
 - [6.2. Methods with a Pointer Receiver](#62-methods-with-a-pointer-receiver)
+  - [6.2.1 Nil Is a Valid Receiver Value](#621-nil-is-a-valid-receiver-value)
 - [6.3. Composing Types by Struct Embedding](#63-composing-types-by-struct-embedding)
 - [6.4. Method Values and Expressions](#64-method-values-and-expressions)
 - [6.5. Example: Bit Vector Type](#65-example-bit-vector-type)
@@ -240,8 +241,191 @@ Because `url.Values` is a map type and a map refers to its key/value pairs indir
 ## 6.3. Composing Types by Struct Embedding 
 
 Consider the type `ColoredPoint`:
+```go
+// gopl.io/ch6/coloredpoint
+import "image/color"
+
+type Point struct{ X, Y float64 }
+
+type ColoredPoint struct {
+	Point
+	Color color.RGBA
+}
+```
+
+We could have defined `ColoredPoint` as a struct of three fields, but instead we *embedded* a `Point` to provide the `X` and `Y` fields. As we saw in Section 4.4.3, embedding lets us take a syntactic shortcut to defining a `ColoredPoint` that contains all the fields of `Point`, plus some more. If we want, we can select the fields of `ColoredPoint` that were contributed by the embedded `Point` without mentioning `Point`:
+```go
+  var cp ColoredPoint
+  cp.X = 1
+  fmt.Println(cp.Point.X) // "1"
+  cp.Point.Y = 2
+  fmt.Println(cp.Y) // "2"
+```
+
+A similar mechanism applies to the *methods* of `Point`. We can call methods of the embedded `Point` field using a receiver of type `ColoredPoint`, even though `ColoredPoint` has no declared methods:
+```go
+	red := color.RGBA{255, 0, 0, 255}
+	blue := color.RGBA{0, 0, 255, 255}
+	var p = ColoredPoint{Point{1, 1}, red}
+	var q = ColoredPoint{Point{5, 4}, blue}
+	fmt.Println(p.Distance(q.Point)) // "5"
+	p.ScaleBy(2)
+	q.ScaleBy(2)
+	fmt.Println(p.Distance(q.Point)) // "10"
+```
+The methods of Point have been *promoted* to ColoredPoint. In this way, embedding allows complex types with many methods to be built up by the *composition* of several fields, each providing a few methods.
+
+Readers familiar with class-based object-oriented languages may be tempted to view `Point` as a base class and `ColoredPoint` as a subclass or derived class, or to interpret the relationship between these types as if a `ColoredPoint` *"is a"* `Point`. But that would be a mistake. Notice the calls to `Distance` above. `Distance` has a parameter of type `Point`, and `q` is not a `Point`, so although `q` does have an embedded field of that type, we must explicitly select it. Attempting to pass `q` would be an error:
+```go
+  p.Distance(q) // compile error: cannot use q (ColoredPoint) as Point
+```
+A `ColoredPoint` is not a `Point`, but it *"has a"* `Point`, and it has two additional methods `Distance` and `ScaleBy` promoted from `Point`. If you prefer to think in terms of implementation, the embedded field instructs the compiler to generate additional wrapper methods that delegate to the declared methods, equivalent to these:
+```go
+  func (p ColoredPoint) Distance(q Point) float64 {
+      return p.Point.Distance(q)
+  }
+
+  func (p *ColoredPoint) ScaleBy(factor float64) {
+      p.Point.ScaleBy(factor)
+  }
+```
+When `Point.Distance` is called by the first of these wrapper methods, its receiver value is `p.Point`, not `p`, and there is no way for the method to access the `ColoredPoint` in which the `Point` is embedded.
+
+The type of an anonymous field may be a *pointer* to a named type, in which case fields and methods are promoted indirectly from the pointed-to object. Adding another level of indirection lets us share common structures and vary the relationships between objects dynamically. The declaration of `ColoredPoint` below embeds a `*Point`:
+```go
+	type ColoredPoint struct {
+		*Point
+		Color color.RGBA
+	}
+
+	p := ColoredPoint{&Point{1, 1}, red}
+	q := ColoredPoint{&Point{5, 4}, blue}
+	fmt.Println(p.Distance(*q.Point)) // "5"
+	q.Point = p.Point                 // p and q now share the same Point
+	p.ScaleBy(2)
+	fmt.Println(*p.Point, *q.Point) // "{2 2} {2 2}"
+```
+A struct type may have more than one anonymous field. Had we declared `ColoredPoint` as
+```go
+	type ColoredPoint struct {
+		Point
+		Color color.RGBA
+	}
+```
+then a value of this type would have all the methods of Point, all the methods of RGBA, and any additional methods declared on `ColoredPoint` directly. When the compiler resolves a selector such as `p.ScaleBy` to a method, it first looks for a directly declared method named `ScaleBy`, then for methods promoted once from `ColoredPoint`'s embedded fields, then for methods promoted twice from embedded fields within `Point` and `RGBA`, and so on. The compiler reports an error if the selector was ambiguous because two methods were promoted from the same rank.
+
+Methods can be declared only on named types (like `Point`) and pointers to them (`*Point`), but thanks to embedding, it’s possible and sometimes useful for unnamed struct types to have methods too.
+
+Here’s a nice trick to illustrate. This example shows part of a simple cache implemented using two package-level variables, a mutex (§9.2) and the map that it guards:
+```go
+  var (
+      mu sync.Mutex // guards mapping
+      mapping = make(map[string]string)
+  )
+
+  func Lookup(key string) string {
+      mu.Lock()
+      v := mapping[key]
+      mu.Unlock()
+      return v
+  }
+```
+The version below is functionally equivalent but groups together the two related variables in a single package-level variable, `cache`:
+```go
+  var cache = struct {
+      sync.Mutex
+      mapping map[string]string 
+  } {
+      mapping: make(map[string]string),
+  }
+
+  func Lookup(key string) string {
+      cache.Lock()
+      v := cache.mapping[key]
+      cache.Unlock()
+      return v
+  }
+```
+The new variable gives more expressive names to the variables related to the cache, and because the `sync.Mutex` field is embedded within it, its `Lock` and `Unlock` methods are promoted to the unnamed struct type, allowing us to lock the `cache` with a self-explanatory syntax.
 
 
 ## 6.4. Method Values and Expressions 
+
+Usually we select and call a method in the same expression, as in `p.Distance()`, but it’s possible to separate these two operations. The selector `p.Distance` yields a *method value*, a function that binds a method (`Point.Distance`) to a specific receiver value `p`. This function can then be invoked without a receiver value; it needs only the non-receiver arguments.
+```go
+  p := Point{1, 2}
+  q := Point{4, 6}
+
+  distanceFromP := p.Distance        // method value          
+  fmt.Println(distanceFromP(q))      // "5"            
+  var origin Point                   // {0, 0}
+  fmt.Println(distanceFromP(origin)) // "2.23606797749979", ;5                 
+
+scaleP := p.ScaleBy // method value
+scaleP(2)           // p becomes (2, 4)
+scaleP(3)           //      then (6, 12)
+scaleP(10)          //      then (60, 120)
+```
+
+Method values are useful when a package’s API calls for a function value, and the client’s desired behavior for that function is to call a method on a specific receiver. For example, the function time.AfterFunc calls a function value after a specified delay. This program uses it to launch the rocket r after 10 seconds:
+```go
+  type Rocket struct { /* ... */ }
+  func (r *Rocket) Launch() { /* ... */ }
+
+  r := new(Rocket)
+  time.AfterFunc(10 * time.Second, func() { r.Launch() })
+```
+The method value syntax is shorter:
+```go
+  time.AfterFunc(10 * time.Second, r.Launch)
+```
+Related to the method value is the *method expression*. When calling a method, as opposed to an ordinary function, we must supply the receiver in a special way using the selector syntax. A method expression, written `T.f` or `(*T).f` where `T` is a type, yields a function value with a regular first parameter taking the place of the receiver, so it can be called in the usual way.
+```go
+  p := Point{1, 2}
+  q := Point{4, 6}
+
+  distance := Point.Distance   // method expression
+  fmt.Println(distance(p, q))  // "5"
+  fmt.Printf("%T\n", distance) // "func(Point, Point) float64"
+
+  scale := (*Point).ScaleBy
+  scale(&p, 2)
+  fmt.Println(p)            // "{2 4}"
+  fmt.Printf("%T\n", scale) // "func(*Point, float64)"
+```
+Method expressions can be helpful when you need a value to represent a choice among several methods belonging to the same type so that you can call the chosen method with many different receivers. In the following example, the variable op represents either the addition or the subtraction method of type `Point`, and `Path.TranslateBy` calls it for each point in the `Path`:
+```go
+  type Point struct{ X, Y float64 }
+
+  func (p Point) Add(q Point) Point { return Point{p.X + q.X, p.Y + q.Y} }
+  func (p Point) Sub(q Point) Point { return Point{p.X - q.X, p.Y - q.Y} }
+
+  type Path []Point
+    
+  func (path Path) TranslateBy(offset Point, add bool) {
+      var op func(p, q Point) Point
+      if add {
+          op = Point.Add
+      } else {
+          op = Point.Sub
+      }
+      for i := range path {
+          // Call either path[i].Add(offset) or path[i].Sub(offset).
+          path[i] = op(path[i], offset)
+      } 
+  }
+```
+
+
 ## 6.5. Example: Bit Vector Type 
+
+Sets in Go are usually implemented as a `map[T]bool`, where `T` is the element type. A set represented by a map is very flexible but, for certain problems, a specialized representation may outperform it. For example, in domains such as dataflow analysis where set elements are small non-negative integers, sets have many elements, and set operations like union and intersection are common, a *bit vector* is ideal.
+
+A bit vector uses a slice of unsigned integer values or "words", each bit of which represents a possible element of the set. The set contains *i* if the *i*-th bit is set. The following program demonstrates a simple bit vector type with three methods:
+
+
+
+
+
+
 ## 6.6. Encapsulation
