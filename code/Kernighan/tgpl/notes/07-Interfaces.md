@@ -27,7 +27,15 @@ Many object-oriented languages have some notion of interfaces, but what makes Go
 In this chapter, we’ll start by looking at the basic mechanics of interface types and their values. Along the way, we’ll study several important interfaces from the standard library. Many Go programs make as much use of standard interfaces as they do of their own ones. Finally, we’ll look at *type assertions* (§7.10) and *type switches* (§7.13) and see how they enable a different kind of generality.
 
 
-## 7.1. Interfaces as Contracts 
+## 7.1. Interfaces as Contracts
+
+All the types we’ve looked at so far have been *concrete types*. A concrete type specifies the exact representation of its values and exposes the intrinsic operations of that representation, such as arithmetic for numbers, or indexing, append, and range for slices. A concrete type may also provide additional behaviors through its methods. When you have a value of a concrete type, you know exactly what it is and what you can do with it.
+
+There is another kind of type in Go called an *interface type*. An interface is an *abstract type*. It doesn’t expose the representation or internal structure of its values, or the set of basic operations they support; it reveals only some of their methods. When you have a value of an interface type, you know nothing about what it is; you know only what it can do, or more precisely, what behaviors are provided by its methods.
+
+Throughout the book, we’ve been using two similar functions for string formatting: fmt.Printf, which writes the result to the standard output (a file), and fmt.Sprintf, which returns the result as a string. It would be unfortunate if the hard part, formatting the result, had to be duplicated because of these superficial differences in how the result is used. Thanks to interfaces, it does not. Both of these functions are, in effect, wrappers around a third function, fmt.Fprintf, that is agnostic about what happens to the result it computes:
+
+
 ## 7.2. Interface Types 
 ## 7.3. Interface Satisfaction 
 ## 7.4. Parsing Flags with flag.Value 
