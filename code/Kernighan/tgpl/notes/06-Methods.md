@@ -228,7 +228,7 @@ Here’s part of the definition of the `Values` type from the `net/url` package:
       v[key] = append(v[key], value)
   }
 ```
-It exposes its representation as a map but also provides methods to simplify access to the map, whose values are slices of strings—it’s a *multimap*. Its clients can use its intrinsic operators (`make`, slice literals, `m[key]`, and so on), or its methods, or both, as they prefer:
+It exposes its representation as a map but also provides methods to simplify access to the map, whose values are slices of strings; it’s a *multimap*. Its clients can use its intrinsic operators (`make`, slice literals, `m[key]`, and so on), or its methods, or both, as they prefer:
 ```go
 // gopl.io/ch6/urlvalues
 
@@ -422,10 +422,136 @@ Method expressions can be helpful when you need a value to represent a choice am
 Sets in Go are usually implemented as a `map[T]bool`, where `T` is the element type. A set represented by a map is very flexible but, for certain problems, a specialized representation may outperform it. For example, in domains such as dataflow analysis where set elements are small non-negative integers, sets have many elements, and set operations like union and intersection are common, a *bit vector* is ideal.
 
 A bit vector uses a slice of unsigned integer values or "words", each bit of which represents a possible element of the set. The set contains *i* if the *i*-th bit is set. The following program demonstrates a simple bit vector type with three methods:
+```go
+// gopl.io/ch6/intset
 
+```
+Since each word has 64 bits, to locate the bit for x, we use the quotient x/64 as the word index and the remainder x%64 as the bit index within that word. The UnionWith operation uses the bitwise OR operator | to compute the union 64 elements at a time. (We’ll revisit the choice of 64-bit words in Exercise 6.5.)
 
+This implementation lacks many desirable features, some of which are posed as exercises below, but one is hard to live without: way to print an IntSet as a string. Let’s give it a String method as we did with Celsius in Section 2.5:
+```go
 
+```
 
+Notice the similarity of the String method above with intsToString in Section 3.5.4; bytes.BufferisoftenusedthiswayinStringmethods. Thefmtpackagetreatstypeswitha String method specially so that values of complicated types can display themselves in a user- friendly manner. Instead of printing the raw representation of the value (a struct in this case), fmt calls the String method. The mechanism relies on interfaces and type assertions, which we’ll explain in Chapter 7.
+
+We can now demonstrate IntSet in action:
+```go
+  var x, y IntSet
+  x.Add(1)
+  x.Add(144)
+  x.Add(9)
+  fmt.Println(x.String()) // "{1 9 144}"
+
+  y.Add(9)
+  y.Add(42)
+  fmt.Println(y.String()) // "{9 42}"
+
+  x.UnionWith(&y)
+  fmt.Println(x.String()) // "{1 9 42 144}"
+
+  fmt.Println(x.Has(9), x.Has(123)) // "true false"
+```
+A word of caution: we declared String and Has as methods of the pointer type *IntSet not out of necessity, but for consistency with the other two methods, which need a pointer receiver because they assign to s.words. Consequently, an IntSet value does not have a String method, occasionally leading to surprises like this:
+```go
+  fmt.Println(&x)         // "{1 9 42 144}"
+  fmt.Println(x.String()) // "{1 9 42 144}"
+  fmt.Println(x)          // "{[4398046511618 0 65536]}"
+```
+In the first case, we print an `*IntSet` pointer, which does have a `String` method. In the second case, we call `String()` on an `IntSet` variable; the compiler inserts the implicit & operation, giving us a pointer, which has the `String` method. But in the third case, because the `IntSet` value does not have a `String` method, `fmt.Println` prints the representation of the struct instead. It’s important not to forget the & operator. Making String a method of `IntSet`, not `*IntSet`, might be a good idea, but this is a case-by-case judgment.
+
+### Exercises
+- **Exercise 6.1**: Implement these additional methods:
+```go
+  func (*IntSet) Len() int      // return the number of elements
+  func (*IntSet) Remove(x int)  // remove x from the set
+  func (*IntSet) Clear()        // remove all elements from the set
+  func (*IntSet) Copy() *IntSet // return a copy of the set
+```
+- **Exercise 6.2**: Define a variadic (*IntSet).AddAll(...int) method that allows a list of values to be added, such as `s.AddAll(1, 2, 3)`.
+- **Exercise 6.3**: `(*IntSet).UnionWith` computes the union of two sets using |, the word-parallel bitwise OR operator. Implement methods for `IntersectWith`, `DifferenceWith`, and `SymmetricDifference` for the corresponding set operations. (The symmetric difference of two sets contains the elements present in one set or the other but not both.)
+- **Exercise 6.4**: Add a method `Elems` that returns a slice containing the elements of the set, sui
+able for iterating over with a `range` loop.
+- **Exercise 6.5**: The type of each word used by `IntSet` is `uint64`, but 64-bit arithmetic may be inefficient on a 32-bit platform. Modify the program to use the uint type, which is the most efficient unsigned integer type for the platform. Instead of dividing by 64, define a constant holding the effective size of `uint` in bits, 32 or 64. You can use the perhaps too-clever expression `32 << (^uint(0) >> 63)` for this purpose.
 
 
 ## 6.6. Encapsulation
+
+A variable or method of an object is said to be encapsulated if it is inaccessible to clients of the object. *Encapsulation*, sometimes called information hiding, is a key aspect of object-oriented programming.
+
+Go has only one mechanism to control the visibility of names: capitalized identifiers are exported from the package in which they are defined, and uncapitalized names are not. The same mechanism that limits access to members of a package also limits access to the fields of a struct or the methods of a type. As a consequence, to encapsulate an object, we must make it a struct.
+
+That’s the reason the `IntSet` type from the previous section was declared as a struct type even though it has only a single field:
+```go
+  type IntSet struct {
+      words []uint64
+  }
+```
+We could instead define `IntSet` as a slice type as follows, though of course we’d have to replace each occurrence of `s.words` by `*s` in its methods:
+```go
+  type IntSet []uint64
+```
+Although this version of `IntSet` would be essentially equivalent, it would allow clients from other packages to read and modify the slice directly. Put another way, whereas the expression `*s` could be used in any package, `s.words` may appear only in the package that defines `IntSet`.
+
+Another consequence of this name-based mechanism is that the unit of encapsulation is the package, not the type as in many other languages. The fields of a struct type are visible to all code within the same package. Whether the code appears in a function or a method makes no difference.
+
+Encapsulation provides three benefits. First, because clients cannot directly modify the object's variables, one need inspect fewer statements to understand the possible values of those variables.
+
+Second, hiding implementation details prevents clients from depending on things that might change, which gives the designer greater freedom to evolve the implementation without breaking API compatibility.
+
+As an example, consider the `bytes.Buffer` type. It is frequently used to accumulate very short strings, so it is a profitable optimization to reserve a little extra space in the object to avoid memory allocation in this common case. Since `Buffer` is a struct type, this space takes the form of an extra field of type `[64]byte` with an uncapitalized name. When this field was added, because it was not exported, clients of `Buffer` outside the `bytes` package were unaware of any change except improved performance. `Buffer` and its `Grow` method are shown below, simplified for clarity:
+```go
+  type Buffer struct {
+      buf     []byte
+      initial [64]byte
+      /* ... */
+  }
+
+  // Grow expands the buffer's capacity, if necessary,
+  // to guarantee space for another n bytes. [...]
+  func (b *Buffer) Grow(n int) {
+      if b.buf == nil {
+          b.buf = b.initial[:0] // use preallocated space initially
+      }
+      if len(b.buf)+n > cap(b.buf) {
+          buf := make([]byte, b.Len(), 2*cap(b.buf) + n)
+          copy(buf, b.buf)
+          b.buf = buf
+      } 
+  }
+```
+The third benefit of encapsulation, and in many cases the most important, is that it prevents clients from setting an object’s variables arbitrarily. Because the object's variables can be set only by functions in the same package, the author of that package can ensure that all those functions maintain the object’s internal invariants. For example, the `Counter` type below permits clients to increment the counter or to reset it to zero, but not to set it to some arbitrary value:
+```go
+  type Counter struct { n int }
+
+  func (c *Counter) N() int     { return c.n }
+  func (c *Counter) Increment() { c.n++ }
+  func (c *Counter) Reset()     { c.n = 0 }
+```
+Functions that merely access or modify internal values of a type, such as the methods of the `Logger` type from `log` package, below, are called *getters* and *setters*. However, when naming a getter method, we usually omit the `Get` prefix. This preference for brevity extends to all methods, not just field accessors, and to other redundant prefixes as well, such as `Fetch`, `Find`, and `Lookup`.
+```go
+  package log
+
+  type Logger struct {
+      flags  int
+      prefix string
+      // ...
+  }
+
+  func (l *Logger) Flags() int
+  func (l *Logger) SetFlags(flag int)
+  func (l *Logger) Prefix() string
+  func (l *Logger) SetPrefix(prefix string)
+```
+Go style does not forbid exported fields. Of course, once exported, a field cannot be unexported without an incompatible change to the API, so the initial choice should be deliberate and should consider the complexity of the invariants that must be maintained, the likelihood of future changes, and the quantity of client code that would be affected by a change.
+
+Encapsulation is not always desirable. By revealing its representation as an int64 number of nanoseconds, time.Duration lets us use all the usual arithmetic and comparison operations with durations, and even to define constants of this type:
+```go
+  const day = 24 * time.Hour
+  fmt.Println(day.Seconds()) // "86400"
+```
+As another example, contrast `IntSet` with the `geometry.Path` type from the beginning of this chapter. `Path` was defined as a slice type, allowing its clients to construct instances using the slice literal syntax, to iterate over its points using a `range` loop, and so on, whereas these operations are denied to clients of `IntSet`.
+
+Here’s the crucial difference: `geometry.Path` is intrinsically a sequence of points, no more and no less, and we don’t foresee adding new fields to it, so it makes sense for the `geometry` package to reveal that `Path` is a slice. In contrast, an `IntSet` merely happens to be represented as a `[]uint64` slice. It could have been represented using `[]uint`, or something completely different for sets that are sparse or very small, and it might perhaps benefit from additional features like an extra field to record the number of elements in the set. For these reasons, it makes sense for `IntSet` to be opaque.
+
+In this chapter, we learned how to associate methods with named types, and how to call those methods. Although methods are crucial to object-oriented programming, they’re only half the picture. To complete it, we need *interfaces*, the subject of the next chapter.
