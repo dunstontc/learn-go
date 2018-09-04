@@ -88,9 +88,67 @@ Besides io.Writer, there is another interface of great importance to the fmt pac
 We’ll explain how the fmt package discovers which values satisfy this interface in Section 7.10.
 
 ### Exercises
+- **Exercise 7.1**: Using the ideas from `ByteCounter`, implement counters for words and for lines. You will find `bufio.ScanWords` useful.
+- **Exercise 7.2**: Write a function `CountingWriter` with the signature below that, given an `io.Writer`, returns a new Writer that wraps the original, and a pointer to an int64 variable that at any moment contains the number of bytes written to the new `Writer`.
+```go
+  func CountingWriter(w io.Writer) (io.Writer, *int64)
+```
+- **Exercise 7.3**: Write a `String` method for the `*tree` type in `gopl.io/ch4/treesort` (§4.4) that reveals the sequence of values in the tree.
 
 
 ## 7.2. Interface Types 
+
+An interface type specifies a set of methods that a concrete type must possess to be considered an instance of that interface.
+
+The io.Writer type is one of the most widely used interfaces because it provides an abstraction of all the types to which bytes can be written, which includes files, memory buffers, network connections, HTTP clients, archivers, hashers, and so on. The `io` package defines many other useful interfaces. A `Reader` represents any type from which you can read bytes, and a `Closer` is any value that you can close, such as a file or a network connection. (By now you’ve probably noticed the naming convention for many of Go’s single-method interfaces.)
+```go
+  package io
+
+  type Reader interface {
+      Read(p []byte) (n int, err error)
+  }
+      
+  type Closer interface {
+      Close() error
+  }
+```
+Looking farther, we find declarations of new interface types as combinations of existing ones. Here are two examples:
+```go
+  type ReadWriter interface {
+      Reader
+      Writer
+  }
+      
+  type ReadWriteCloser interface {
+      Reader
+      Writer
+      Closer
+  }
+```
+The syntax used above, which resembles struct embedding, lets us name another interface as a shorthand for writing out all of its methods. This is called *embedding* an interface. We could have written `io.ReadWriter` without embedding, albeit less succinctly, like this:
+```go
+  type ReadWriter interface {
+      Read(p []byte) (n int, err error)
+      Write(p []byte) (n int, err error)
+  }
+```
+or even using a mixture of the two styles:
+```go
+type ReadWriter interface {
+         Read(p []byte) (n int, err error)
+         Writer
+}
+
+```
+
+
+### Exercises
+- **Exercise 7.4**: The `strings.NewReader` function returns a value that satisfies the `io.Reader` interface (and others) by reading from its argument, a string. Implement a simple version of `NewReader` yourself, and use it to make the HTML parser (§5.2) take input from a string.
+- **Exercise 7.5**: The LimitReader function in the io package accepts an `io.Reader` `r` and `a` number of bytes `n`, and returns another `Reader` that reads from `r` but reports an end-of-file condition after `n` bytes. Implement it.
+```go
+  func LimitReader(r io.Reader, n int64) io.Reader
+```
+
 ## 7.3. Interface Satisfaction 
 ## 7.4. Parsing Flags with flag.Value 
 ## 7.5. Interface Values
