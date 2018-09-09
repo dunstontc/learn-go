@@ -562,7 +562,71 @@ Now that we've covered the mechanics of interface values, let's take a look at s
 
 
 ## 7.7. The `http.Handler` Interface 
-## 7.8. The error Interface 
+## 7.8. The `error` Interface 
+
+Since the beginning of this book, we've been using and creating values of the mysterious predeclared `error` type without explaining what it really is. In fact, it's just an interface type with a single method that returns an error message:
+```go
+    type error interface {
+        Error() string
+    }
+```
+The simplest way to create an error is by calling `errors.New`, which returns a new `error` for a given error message. The entire `errors` package is only four lines long:
+```go
+    package errors
+    
+    func New(text string) error { return &errorString{text} }
+    
+    type errorString struct { text string }
+    
+    func (e *errorString) Error() string { return e.text }
+```
+
+The underlying type of `errorString` is a struct, not a string, to protect its representation from inadvertent (or premeditated) updates. And the reason that the pointer type `*errorString`, not `errorString` alone, satisfies the `error` interface is so that every call to `New` allocates a distinct `error` instance that is equal to no other. We would not want a distinguished `error` such as `io.EOF` to compare equal to one that merely happened to have the same message.
+```go
+    fmt.Println(errors.New("EOF") == errors.New("EOF")) // "false"
+```
+Calls to `errors.New` are relatively infrequent because there’s a convenient wrapper function, `fmt.Errorf`, that does string formatting too. We used it several times in Chapter 5.
+```go
+    package fmt
+
+    import "errors"
+
+    func Errorf(format string, args ...interface{}) error {
+        return errors.New(Sprintf(format, args...))
+    }
+```
+Although `*errorString` may be the simplest type of `error`, it is far from the only one. For example, the `syscall` package provides Go’s low-level system call API. On many platforms, it defines a numeric type `Errno` that satisfies `error`, and on Unix platforms, `Errno`'s `Error` method does a lookup in a table of strings, as shown below:
+```go
+    package syscall
+
+    type Errno uintptr // operating system error code
+
+    var errors = [...]string{
+        1:   "operation not permitted",   // EPERM
+        2:   "no such file or directory", // ENOENT
+        3:   "no such process",           // ESRCH
+        // ...
+    }
+
+    func (e Errno) Error() string {
+        if 0 <= int(e) && int(e) < len(errors) {
+            return errors[e]
+        }
+        return fmt.Sprintf("errno %d", e)
+    }
+```
+The following statement creates an interface value holding the `Errno` value 2, signifying the POSIX `ENOENT` condition:
+```go
+    var err error = syscall.Errno(2)
+    fmt.Println(err.Error()) // "no such file or directory"
+    fmt.Println(err)         // "no such file or directory"
+```
+The value of err is shown graphically in Figure 7.6.
+
+![Figure 7.6](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.6.png)
+
+`Errno` is an efficient representation of system call errors drawn from a finite set, and it satisfies the standard `error` interface. We’ll see other types that satisfy this interface in Section 7.11.
+
 ## 7.9. Example: Expression Evaluator 
 ## 7.10. Type Assertions 
 ## 7.11. Discriminating Errors with Type Assertions 
