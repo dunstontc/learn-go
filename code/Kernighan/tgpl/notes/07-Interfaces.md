@@ -559,9 +559,206 @@ Now that we've covered the mechanics of interface values, let's take a look at s
 
 ## 7.6. Sorting with `sort.Interface` 
 
+Like string formatting, sorting is a frequently used operation in many programs. Although a minimal Quicksort can be written in about 15 lines, a robust implementation is much longer, and it is not the kind of code we should wish to write anew or copy each time we need it.
+
+Fortunately, the `sort` package provides in-place sorting of any sequence according to any ordering function. Its design is rather unusual. In many languages, the sorting algorithm is associated with the sequence data type, while the ordering function is associated with the type of the elements. By contrast, Go's `sort.Sort` function assumes nothing about the representation of either the sequence or its elements. Instead, it uses an interface, `sort.Interface`, to specify the contract between the generic sort algorithm and each sequence type that may be sorted. An implementation of this interface determines both the concrete representation of the sequence, which is often a slice, and the desired ordering of its elements.
+
+An in-place sort algorithm needs three things:
+1. The length of the sequence
+2. A means of comparing two elements
+2. A way to swap two elements
+
+so they are the three methods of `sort.Interface`:
+```go
+    package sort
+    type Interface interface {
+        Len() int
+        Less(i, j int) bool // i, j are indices of sequence elements
+        Swap(i, j int)
+    }
+```
+To sort any sequence, we need to define a type that implements these three methods, then apply `sort.Sort` to an instance of that type. As perhaps the simplest example, consider sorting a slice of strings. The new type `StringSlice` and its `Len`, `Less`,and `Swap` methods are shown below.
+```go
+    type StringSlice []string
+    func (p StringSlice) Len() int           { return len(p) }
+    func (p StringSlice) Less(i, j int) bool { return p[i] < p[j] }
+    func (p StringSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+```
+Now we can sort a slice of strings, `names`, by converting the slice to a `StringSlice` like this:
+```go
+    sort.Sort(StringSlice(names))
+```
+The conversion yields a slice value with the same length, capacity, and underlying array as `names` but with a type that has the three methods required for sorting.
+
+Sorting a slice of strings is so common that the `sort` package provides the `StringSlice` type, as well as a function called `Strings` so that the call above can be simplified to `sort.Strings(names)`.
+
+The technique here is easily adapted to other sort orders, for instance, to ignore capitalization or special characters. (The Go program that sorts index terms and page numbers for this book does this, with extra logic for Roman numerals.) For more complicated sorting, we use the same idea, but with more complicated data structures or more complicated implementations of the `sort.Interface` methods.
+
+Our running example for sorting will be a music playlist, displayed as a table. Each track is a single row, and each column is an attribute of that track, like artist, title, and running time. Imagine that a graphical user interface presents the table, and that clicking the head of a column causes the playlist to be sorted by that attribute; clicking the same column head again reverses the order. Let's look at what might happen in response to each click.
+
+The variable `tracks` below contains a playlist. (One of the authors apologizes for the other author's musical tastes.) Each element is indirect, a pointer to a `Track`. Although the code below would work if we stored the `Track`s directly, the sort function will swap many pairs of elements, so it will run faster if each element is a pointer, which is a single machine word, instead of an entire `Track`, which might be eight words or more.
+```go
+// gopl.io/ch7/sorting
+type Track struct {
+	Title  string
+	Artist string
+	Album  string
+	Year   int
+	Length time.Duration
+}
+
+var tracks = []*Track{
+	{"Go", "Delilah", "From the Roots Up", 2012, length("3m38s")},
+	{"Go", "Moby", "Moby", 1992, length("3m37s")},
+	{"Go Ahead", "Alicia Keys", "As I Am", 2007, length("4m36s")},
+	{"Ready 2 Go", "Martin Solveig", "Smash", 2011, length("4m24s")},
+}
+
+func length(s string) time.Duration {
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		panic(s)
+	}
+	return d
+}
+```
+The `printTracks` function prints the playlist as a table. A graphical display would be nicer, but this little routine uses the `text/tabwriter` package to produce a table whose columns are neatly aligned and padded as shown below. Observe that `*tabwriter.Writer` satisfies `io.Writer`. It collects each piece of data written to it; its `Flush` method formats the entire table and writes it to `os.Stdout`.
+```go
+func printTracks(tracks []*Track) {
+	const format = "%v\t%v\t%v\t%v\t%v\t\n"
+	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
+	fmt.Fprintf(tw, format, "Title", "Artist", "Album", "Year", "Length")
+	fmt.Fprintf(tw, format, "-----", "------", "-----", "----", "------")
+	for _, t := range tracks {
+		fmt.Fprintf(tw, format, t.Title, t.Artist, t.Album, t.Year, t.Length)
+	}
+	tw.Flush() // calculate column widths and print table
+}
+```
+To sort the playlist by the `Artist` field, we define a new slice type with the necessary `Len`, `Less`, and `Swap` methods, analogous to what we did for `StringSlice`.
+```go
+    type byArtist []*Track
+
+    func (x byArtist) Len() int           { return len(x) }
+    func (x byArtist) Less(i, j int) bool { return x[i].Artist < x[j].Artist }
+    func (x byArtist) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+```
+To call the generic sort routine, we must first convert tracks to the new type, `byArtist`, that defines the order:
+```go
+    sort.Sort(byArtist(tracks))
+```
+After sorting the slice by artist, the output from `printTracks` is
+```
+    Title       Artist          Album              Year  Length
+    -----       ------          -----              ----  ------
+    Go Ahead    Alicia Keys     As I Am            2007  4m36s
+    Go          Delilah         From the Roots Up  2012  3m38s
+    Ready 2 Go  Martin Solveig  Smash              2011  4m24s
+    Go          Moby            Moby               1992  3m37s
+```
+If the user requests "sort by artist" a second time, we'll sort the tracks in reverse. We needn't define a new type `byReverseArtist` with an inverted `Less` method, however, since the `sort` package provides a `Reverse` function that transforms any sort order to its inverse.
+```go
+    sort.Sort(sort.Reverse(byArtist(tracks)))
+```
+After reverse-sorting the slice by artist, the output from `printTracks` is
+```
+    Title       Artist          Album              Year  Length
+    -----       ------          -----              ----  ------
+    Go          Moby            Moby               1992  3m37s
+    Ready 2 Go  Martin Solveig  Smash              2011  4m24s
+    Go          Delilah         From the Roots Up  2012  3m38s
+    Go Ahead    Alicia Keys     As I Am            2007  4m36s
+```
+The `sort.Reverse` function deserves a closer look since it uses composition (§6.3), which is an important idea. The `sort` package defines an unexported type `reverse`, which is a struct that embeds a `sort.Interface`. The `Less` method for `reverse` calls the `Less` method of the embedded `sort.Interface` value, but with the indices flipped, reversing the order of the sort results.
+```go
+    package sort
+
+    type reverse struct{ Interface } // that is, sort.Interface
+
+    func (r reverse) Less(i, j int) bool { return r.Interface.Less(j, i) }
+
+    func Reverse(data Interface) Interface { return reverse{data} }
+```
+`Len` and `Swap`, the other two methods of reverse, are implicitly provided by the original `sort.Interface` value because it is an embedded field. The exported function `Reverse` returns an instance of the `reverse` type that contains the original `sort.Interface` value.
+
+To sort by a different column, we must define a new type, such as `byYear`:
+```go
+    type byYear []*Track
+
+    func (x byYear) Len() int           { return len(x) }
+    func (x byYear) Less(i, j int) bool { return x[i].Year < x[j].Year }
+    func (x byYear) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+```
+After sorting tracks by year using `sort.Sort(byYear(tracks))`, `printTracks` shows a chronological listing:
+```
+    Title       Artist          Album              Year  Length
+    -----       ------          -----              ----  ------
+    Go          Moby            Moby               1992  3m37s
+    Go Ahead    Alicia Keys     As I Am            2007  4m36s
+    Ready 2 Go  Martin Solveig  Smash              2011  4m24s
+    Go          Delilah         From the Roots Up  2012  3m38s
+```
+For every slice element type and every ordering function we need, we declare a new implementation of `sort.Interface`. As you can see, the `Len` and `Swap` methods have identical definitions for all slice types. In the next example, the concrete type `customSort` combines a slice with a function, letting us define a new sort order by writing only the comparison function. Incidentally, the concrete types that implement `sort.Interface` are not always slices; `customSort` is a struct type.
+```go
+    type customSort struct {
+        t    []*Track
+        less func(x, y *Track) bool
+    }
+
+    func (x customSort) Len() int           { return len(x.t) }
+    func (x customSort) Less(i, j int) bool { return x.less(x.t[i], x.t[j]) }
+    func (x customSort) Swap(i, j int)      { x.t[i], x.t[j] = x.t[j], x.t[i] }
+```
+Let's define a multi-tier ordering function whose primary sort key is the `Title`, whose secondary key is the `Year`, and whose tertiary key is the running time, `Length`. Here's the call to `Sort` using an anonymous ordering function:
+```go
+    sort.Sort(customSort{tracks, func(x, y *Track) bool {
+        if x.Title != y.Title {
+            return x.Title < y.Title
+        }
+        if x.Year != y.Year {
+            return x.Year < y.Year
+        }
+        if x.Length != y.Length {
+            return x.Length < y.Length
+        }
+        return false
+    }})
+```
+And here's the result. Notice that the tie between the two tracks titled "Go" is broken in favor of the older one.
+```
+    Title       Artist          Album              Year  Length
+    -----       ------          -----              ----  ------
+    Go          Moby            Moby               1992  3m37s
+    Go          Delilah         From the Roots Up  2012  3m38s
+    Go Ahead    Alicia Keys     As I Am            2007  4m36s
+    Ready 2 Go  Martin Solveig  Smash              2011  4m24s
+```
+Although sorting a sequence of length *n* requires O(*n* log *n*) comparison operations, testing whether a sequence is already sorted requires at most *n−1* comparisons. The `IsSorted` function from the sort package checks this for us. Like `sort.Sort`, it abstracts both the sequence and its ordering function using `sort.Interface`, but it never calls the `Swap` method: This code demonstrates the `IntsAreSorted` and `Ints` functions and the `IntSlice` type:
+```go
+    values := []int{3, 1, 4, 1}
+    fmt.Println(sort.IntsAreSorted(values)) // "false"
+    sort.Ints(values)
+    fmt.Println(values)                     // "[1 1 3 4]"
+    fmt.Println(sort.IntsAreSorted(values)) // "true"
+    sort.Sort(sort.Reverse(sort.IntSlice(values)))
+    fmt.Println(values)                     // "[4 3 1 1]"
+    fmt.Println(sort.IntsAreSorted(values)) // "false"
+```
+For convenience, the `sort` package provides versions of its functions and types specialized for `[]int`, `[]string`, and `[]float64` using their natural orderings. For other types, such as `[]int64` or `[]uint`, we're on our own, though the path is short.
+
+
+### Exercises
+- **Exercise 7.8**: Many GUIs provide a table widget with a stateful multi-tier sort: the primary sort key is the most recently clicked column head, the secondary sort key is the second-most recently clicked column head, and so on. Define an implementation of `sort.Interface` for use by such a table. Compare that approach with repeated sorting using `sort.Stable`.
+- **Exercise 7.9**: Use the `html/template` package (§4.6) to replace `printTracks` with a function that displays the `tracks` as an HTML table. Use the solution to the previous exercise to arrange that each click on a column head makes an HTTP request to sort the table.
+- **Exercise 7.10**: The `sort.Interface` type can be adapted to other uses. Write a function `IsPalindrome(s sort.Interface) bool` that reports whether the sequence `s` is a palindrome, in other words, reversing the sequence would not change it. Assume that the elements at indices `i` and `j` are equal if `!s.Less(i, j) && !s.Less(j, i)`.
 
 
 ## 7.7. The `http.Handler` Interface 
+
+
+
+
+
 ## 7.8. The `error` Interface 
 
 Since the beginning of this book, we've been using and creating values of the mysterious predeclared `error` type without explaining what it really is. In fact, it's just an interface type with a single method that returns an error message:
@@ -585,7 +782,7 @@ The underlying type of `errorString` is a struct, not a string, to protect its r
 ```go
     fmt.Println(errors.New("EOF") == errors.New("EOF")) // "false"
 ```
-Calls to `errors.New` are relatively infrequent because there’s a convenient wrapper function, `fmt.Errorf`, that does string formatting too. We used it several times in Chapter 5.
+Calls to `errors.New` are relatively infrequent because there's a convenient wrapper function, `fmt.Errorf`, that does string formatting too. We used it several times in Chapter 5.
 ```go
     package fmt
 
@@ -595,7 +792,7 @@ Calls to `errors.New` are relatively infrequent because there’s a convenient w
         return errors.New(Sprintf(format, args...))
     }
 ```
-Although `*errorString` may be the simplest type of `error`, it is far from the only one. For example, the `syscall` package provides Go’s low-level system call API. On many platforms, it defines a numeric type `Errno` that satisfies `error`, and on Unix platforms, `Errno`'s `Error` method does a lookup in a table of strings, as shown below:
+Although `*errorString` may be the simplest type of `error`, it is far from the only one. For example, the `syscall` package provides Go's low-level system call API. On many platforms, it defines a numeric type `Errno` that satisfies `error`, and on Unix platforms, `Errno`'s `Error` method does a lookup in a table of strings, as shown below:
 ```go
     package syscall
 
@@ -625,7 +822,7 @@ The value of err is shown graphically in Figure 7.6.
 
 ![Figure 7.6](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.6.png)
 
-`Errno` is an efficient representation of system call errors drawn from a finite set, and it satisfies the standard `error` interface. We’ll see other types that satisfy this interface in Section 7.11.
+`Errno` is an efficient representation of system call errors drawn from a finite set, and it satisfies the standard `error` interface. We'll see other types that satisfy this interface in Section 7.11.
 
 ## 7.9. Example: Expression Evaluator 
 ## 7.10. Type Assertions 

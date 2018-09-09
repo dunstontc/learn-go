@@ -104,3 +104,21 @@ replaces each substring `"$foo"` within `s` by the text returned by `f("foo")`.
 able for iterating over with a `range` loop.
 - **Exercise 6.5**: The type of each word used by `IntSet` is `uint64`, but 64-bit arithmetic may be inefficient on a 32-bit platform. Modify the program to use the uint type, which is the most efficient unsigned integer type for the platform. Instead of dividing by 64, define a constant holding the effective size of `uint` in bits, 32 or 64. You can use the perhaps too-clever expression `32 << (^uint(0) >> 63)` for this purpose.
 
+## Chapter 7
+
+- **Exercise 7.1**: Using the ideas from `ByteCounter`, implement counters for words and for lines. You will find `bufio.ScanWords` useful.
+- **Exercise 7.2**: Write a function `CountingWriter` with the signature below that, given an `io.Writer`, returns a new Writer that wraps the original, and a pointer to an int64 variable that at any moment contains the number of bytes written to the new `Writer`.
+```go
+  func CountingWriter(w io.Writer) (io.Writer, *int64)
+```
+- **Exercise 7.3**: Write a `String` method for the `*tree` type in `gopl.io/ch4/treesort` (§4.4) that reveals the sequence of values in the tree.
+- **Exercise 7.4**: The `strings.NewReader` function returns a value that satisfies the `io.Reader` interface (and others) by reading from its argument, a string. Implement a simple version of `NewReader` yourself, and use it to make the HTML parser (§5.2) take input from a string.
+- **Exercise 7.5**: The LimitReader function in the io package accepts an `io.Reader` `r` and `a` number of bytes `n`, and returns another `Reader` that reads from `r` but reports an end-of-file condition after `n` bytes. Implement it.
+```go
+  func LimitReader(r io.Reader, n int64) io.Reader
+```
+- **Exercise 7.6**: Add support for Kelvin temperatures to `tempflag`.
+- **Exercise 7.7**: Explain why the help message contains `°C` when the default value of `20.0` does not.
+- **Exercise 7.8**: Many GUIs provide a table widget with a stateful multi-tier sort: the primary sort key is the most recently clicked column head, the secondary sort key is the second-most recently clicked column head, and so on. Define an implementation of `sort.Interface` for use by such a table. Compare that approach with repeated sorting using `sort.Stable`.
+- **Exercise 7.9**: Use the `html/template` package (§4.6) to replace `printTracks` with a function that displays the `tracks` as an HTML table. Use the solution to the previous exercise to arrange that each click on a column head makes an HTTP request to sort the table.
+- **Exercise 7.10**: The `sort.Interface` type can be adapted to other uses. Write a function `IsPalindrome(s sort.Interface) bool` that reports whether the sequence `s` is a palindrome, in other words, reversing the sequence would not change it. Assume that the elements at indices `i` and `j` are equal if `!s.Less(i, j) && !s.Less(j, i)`.
