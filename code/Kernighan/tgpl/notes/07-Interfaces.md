@@ -22,18 +22,18 @@
 
 Interface types express generalizations or abstractions about the behaviors of other types. By generalizing, interfaces let us write functions that are more flexible and adaptable because they are not tied to the details of one particular implementation.
 
-Many object-oriented languages have some notion of interfaces, but what makes Go’s interfaces so distinctive is that they are *satisfied implicitly*. In other words, there’s no need to declare all the interfaces that a given concrete type satisfies; simply possessing the necessary methods is enough. This design lets you create new interfaces that are satisfied by existing concrete types without changing the existing types, which is particularly useful for types defined in packages that you don’t control.
+Many object-oriented languages have some notion of interfaces, but what makes Go's interfaces so distinctive is that they are *satisfied implicitly*. In other words, there's no need to declare all the interfaces that a given concrete type satisfies; simply possessing the necessary methods is enough. This design lets you create new interfaces that are satisfied by existing concrete types without changing the existing types, which is particularly useful for types defined in packages that you don't control.
 
-In this chapter, we’ll start by looking at the basic mechanics of interface types and their values. Along the way, we’ll study several important interfaces from the standard library. Many Go programs make as much use of standard interfaces as they do of their own ones. Finally, we’ll look at *type assertions* (§7.10) and *type switches* (§7.13) and see how they enable a different kind of generality.
+In this chapter, we'll start by looking at the basic mechanics of interface types and their values. Along the way, we'll study several important interfaces from the standard library. Many Go programs make as much use of standard interfaces as they do of their own ones. Finally, we'll look at *type assertions* (§7.10) and *type switches* (§7.13) and see how they enable a different kind of generality.
 
 
 ## 7.1. Interfaces as Contracts
 
-All the types we’ve looked at so far have been *concrete types*. A concrete type specifies the exact representation of its values and exposes the intrinsic operations of that representation, such as arithmetic for numbers, or indexing, append, and range for slices. A concrete type may also provide additional behaviors through its methods. When you have a value of a concrete type, you know exactly what it is and what you can do with it.
+All the types we've looked at so far have been *concrete types*. A concrete type specifies the exact representation of its values and exposes the intrinsic operations of that representation, such as arithmetic for numbers, or indexing, append, and range for slices. A concrete type may also provide additional behaviors through its methods. When you have a value of a concrete type, you know exactly what it is and what you can do with it.
 
-There is another kind of type in Go called an *interface type*. An interface is an *abstract type*. It doesn’t expose the representation or internal structure of its values, or the set of basic operations they support; it reveals only some of their methods. When you have a value of an interface type, you know nothing about what it is; you know only what it can do, or more precisely, what behaviors are provided by its methods.
+There is another kind of type in Go called an *interface type*. An interface is an *abstract type*. It doesn't expose the representation or internal structure of its values, or the set of basic operations they support; it reveals only some of their methods. When you have a value of an interface type, you know nothing about what it is; you know only what it can do, or more precisely, what behaviors are provided by its methods.
 
-Throughout the book, we’ve been using two similar functions for string formatting: `fmt.Printf`, which writes the result to the standard output (a file), and `fmt.Sprintf`, which returns the result as a string. It would be unfortunate if the hard part, formatting the result, had to be duplicated because of these superficial differences in how the result is used. Thanks to interfaces, it does not. Both of these functions are, in effect, wrappers around a third function, `fmt.Fprintf`, that is agnostic about what happens to the result it computes:
+Throughout the book, we've been using two similar functions for string formatting: `fmt.Printf`, which writes the result to the standard output (a file), and `fmt.Sprintf`, which returns the result as a string. It would be unfortunate if the hard part, formatting the result, had to be duplicated because of these superficial differences in how the result is used. Thanks to interfaces, it does not. Both of these functions are, in effect, wrappers around a third function, `fmt.Fprintf`, that is agnostic about what happens to the result it computes:
 ```go
   package fmt
 
@@ -52,7 +52,7 @@ Throughout the book, we’ve been using two similar functions for string formatt
 
 The `F` prefix of `Fprintf` stands for file and indicates that the formatted output should be written to the file provided as the first argument. In the `Printf` case, the argument, `os.Stdout,` is an `*os.File`. In the `Sprintf` case, however, the argument is not a file, though it superficially resembles one: `&buf` is a pointer to a memory buffer to which bytes can be written.
 
-The first parameter of `Fprintf` is not a file either. It’s an `io.Writer`, which is an interface type with the following declaration:
+The first parameter of `Fprintf` is not a file either. It's an `io.Writer`, which is an interface type with the following declaration:
 ```go
   package io
 
@@ -72,20 +72,40 @@ The `io.Writer` interface defines the contract between Fprintf and its callers. 
 
 Because `fmt.Fprintf` assumes nothing about the representation of the value and relies only on the behaviors guaranteed by the io.Writer contract, we can safely pass a value of any concrete type that satisfies `io.Writer` as the first argument to `fmt.Fprintf`. This freedom to substitute one type for another that satisfies the same interface is called *substitutability*, and is a hallmark of object-oriented programming.
 
-Let’s test this out using a new type. The Write method of the *ByteCounter type below merely counts the bytes written to it before discarding them. (The conversion is required to make the types of `len(p)` and `*c` match in the `+=` assignment statement.)
+Let's test this out using a new type. The `Write` method of the `*ByteCounter` type below merely counts the bytes written to it before discarding them. (The conversion is required to make the types of `len(p)` and `*c` match in the `+=` assignment statement.)
 ```go
 // gopl.io/ch7/bytecounter
+// Bytecounter demonstrates an implementation of io.Writer that counts bytes.
+type ByteCounter int
 
+func (c *ByteCounter) Write(p []byte) (int, error) {
+	*c += ByteCounter(len(p)) // convert int to ByteCounter
+	return len(p), nil
+}
 ```
-Since `*ByteCounter` satisfies the io.Writer contract, we can pass it to `Fprintf`, which does its string formatting oblivious to this change; the `ByteCounter` correctly accumulates the length of the result.
+Since `*ByteCounter` satisfies the `io.Writer` contract, we can pass it to `Fprintf`, which does its string formatting oblivious to this change; the `ByteCounter` correctly accumulates the length of the result.
 ```go
-
+    var c ByteCounter
+    c.Write([]byte("hello"))
+    fmt.Println(c) // "5", = len("hello")
+    c = 0 // reset the counter
+    
+    var name = "Dolly"
+    fmt.Fprintf(&c, "hello, %s", name)
+    fmt.Println(c) // "12", = len("hello, Dolly")
 ```
-Besides io.Writer, there is another interface of great importance to the fmt package. Fprintf and Fprintln provide a way for types to control how their values are printed. In Section 2.5, we defined a String method for the Celsius type so that temperatures would print as "100°C", and in Section 6.5 we equipped *IntSet with a String method so that sets would be rendered using traditional set notation like "{1 2 3}". Declaring a String method makes a type satisfy one of the most widely used interfaces of all, fmt.Stringer:
+Besides io.Writer, there is another interface of great importance to the `fmt` package. `Fprintf` and `Fprintln` provide a way for types to control how their values are printed. In Section 2.5, we defined a `String` method for the `Celsius` type so that temperatures would print as "100°C", and in Section 6.5 we equipped `*IntSet` with a `String` method so that sets would be rendered using traditional set notation like "{1 2 3}". Declaring a `String` method makes a type satisfy one of the most widely used interfaces of all, `fmt.Stringer`:
 ```go
+    package fmt
 
+    // The String method is used to print values passed
+    // as an operand to any format that accepts a string
+    // or to an unformatted printer such as Print.
+    type Stringer interface {
+        String() string
+    }
 ```
-We’ll explain how the fmt package discovers which values satisfy this interface in Section 7.10.
+We'll explain how the fmt package discovers which values satisfy this interface in Section 7.10.
 
 ### Exercises
 - **Exercise 7.1**: Using the ideas from `ByteCounter`, implement counters for words and for lines. You will find `bufio.ScanWords` useful.
@@ -100,7 +120,7 @@ We’ll explain how the fmt package discovers which values satisfy this interfac
 
 An interface type specifies a set of methods that a concrete type must possess to be considered an instance of that interface.
 
-The io.Writer type is one of the most widely used interfaces because it provides an abstraction of all the types to which bytes can be written, which includes files, memory buffers, network connections, HTTP clients, archivers, hashers, and so on. The `io` package defines many other useful interfaces. A `Reader` represents any type from which you can read bytes, and a `Closer` is any value that you can close, such as a file or a network connection. (By now you’ve probably noticed the naming convention for many of Go’s single-method interfaces.)
+The io.Writer type is one of the most widely used interfaces because it provides an abstraction of all the types to which bytes can be written, which includes files, memory buffers, network connections, HTTP clients, archivers, hashers, and so on. The `io` package defines many other useful interfaces. A `Reader` represents any type from which you can read bytes, and a `Closer` is any value that you can close, such as a file or a network connection. (By now you've probably noticed the naming convention for many of Go's single-method interfaces.)
 ```go
   package io
 
@@ -138,7 +158,6 @@ type ReadWriter interface {
          Read(p []byte) (n int, err error)
          Writer
 }
-
 ```
 
 
@@ -149,11 +168,400 @@ type ReadWriter interface {
   func LimitReader(r io.Reader, n int64) io.Reader
 ```
 
+
 ## 7.3. Interface Satisfaction 
+
+A type *satisfies* an interface if it possesses all the methods the interface requires. For example, an `*os.File` satisfies `io.Reader`,`Writer`, `Closer`, and `ReadWriter`. A `*bytes.Buffer` stisfies `Reader`, `Writer`, and `ReadWriter`, but does not satisfy `Closer` because it does not have a `Close` method. As a shorthand, Go programmers often say that a concrete type *"is a"* particular interface type, meaning that it satisfies the interface. For example, a `*bytes.Buffer` is an `io.Writer`; an `*os.File` is an `io.ReadWriter`.
+
+The assignability rule (§2.4.2) for interfaces is very simple: an expression may be assigned to an interface only if its type satisfies the interface. So:
+```go
+    var w io.Writer
+    w = os.Stdout           // OK: *os.File has Write method
+    w = new(bytes.Buffer)   // OK: *bytes.Buffer has Write method
+    w = time.Second         // compile error: time.Duration lacks Write method
+    
+    var rwc io.ReadWriteCloser
+    rwc = os.Stdout         // OK: *os.File has Read, Write, Close methods
+    rwc = new(bytes.Buffer) // compile error: *bytes.Buffer lacks Close method
+```
+This rule applies even when the right-hand side is itself an interface:
+```go
+    w = rwc                 // OK: io.ReadWriteCloser has Write method
+    rwc = w                 // compile error: io.Writer lacks Close method
+```
+Because `ReadWriter` and `ReadWriteCloser` include all the methods of `Writer`, any type that satisfies `ReadWriter` or `ReadWriteCloser` necessarily satisfies `Writer`.
+
+Before we go further, we should explain one subtlety in what it means for a type to have a method. Recall from Section 6.2 that for each named concrete type `T`, some of its methods have a receiver of type `T` itself whereas others require a `*T` pointer. Recall also that it is legal to call a `*T` method on an argument of type `T` so long as the argument is a variable; the compiler implicitly takes its address. But this is mere syntactic sugar: a value of type `T` does not possess all the methods that a `*T` pointer does, and as a result it might satisfy fewer interfaces.
+
+An example will make this clear. The `String` method of the `IntSet` type from Section 6.5 requires a pointer receiver, so we cannot call that method on a non-addressable `IntSet` value:
+```go
+    type IntSet struct { /* ... */ }
+    func (*IntSet) String() string
+    
+    var _ = IntSet{}.String() // compile error: String requires *IntSet receiver
+```
+but we can call it on an `IntSet` variable:
+```go
+    var s IntSet
+    var _ = s.String() // OK: s is a variable and &s has a String method
+```
+However, since only `*IntSet` has a `String` method, only `*IntSet` satisfies the `fmt.Stringer` interface:
+```go
+    var _ fmt.Stringer = &s // OK
+    var _ fmt.Stringer = s  // compile error: IntSet lacks String method
+```
+Section 12.8 includes a program that prints the methods of an arbitrary value, and the `godoc -analysis=type` tool (§10.7.4) displays the methods of each type and the relationship between interfaces and concrete types.
+
+Like an envelope that wraps and conceals the letter it holds, an interface wraps and conceals the concrete type and value that it holds. Only the methods revealed by the interface type may be called, even if the concrete type has others:
+```go
+    os.Stdout.Write([]byte("hello")) // OK: *os.File has Write method
+    os.Stdout.Close()                // OK: *os.File has Close method
+
+    var w io.Writer
+    w = os.Stdout
+    w.Write([]byte("hello")) // OK: io.Writer has Write method
+    w.Close()                // compile error: io.Writer lacks Close method
+```
+
+An interface with more methods, such as `io.ReadWriter`, tells us more about the values it contains, and places greater demands on the types that implement it, than does an interface with fewer methods such as `io.Reader`. So what does the type `interface{}`, which has no methods at all, tell us about the concrete types that satisfy it?
+
+That's right: nothing. This may seem useless, but in fact the type `interface{}`, which is called the *empty interface* type, is indispensable. Because the empty interface type places no demands on the types that satisfy it, we can assign *any* value to the empty interface.
+```go
+    var any interface{}
+    any = true
+    any = 12.34
+    any = "hello"
+    any = map[string]int{"one": 1}
+    any = new(bytes.Buffer)
+```
+Although it wasn't obvious, we've been using the empty interface type since the very first example in this book, because it is what allows functions like `fmt.Println`, or `errorf` in Section 5.7, to accept arguments of any type.
+
+Of course, having created an `interface{}` value containing a boolean, float, string, map, pointer, or any other type, we can do nothing directly to the value it holds since the interface has no methods. We need a way to get the value back out again. We'll see how to do that using a *type assertion* in Section 7.10.
+
+Since interface satisfaction depends only on the methods of the two types involved, there is no need to declare the relationship between a concrete type and the interfaces it satisfies. That said, it is occasionally useful to document and assert the relationship when it is intended but not otherwise enforced by the program. The declaration below asserts at compile time that a value of type `*bytes.Buffer` satisfies `io.Writer`:
+```go
+    // *bytes.Buffer must satisfy io.Writer
+    var w io.Writer = new(bytes.Buffer)
+```
+We needn't allocate a new variable since any value of type `*bytes.Buffer` will do, even `nil`, which we write as `(*bytes.Buffer)(nil)` using an explicit conversion. And since we never intend to refer to `w`, we can replace it with the blank identifier. Together, these changes give us this more frugal variant:
+```go
+    // *bytes.Buffer must satisfy io.Writer
+    var _ io.Writer = (*bytes.Buffer)(nil)
+```
+Non-empty interface types such as `io.Writer` are most often satisfied by a pointer type, particularly when one or more of the interface methods implies some kind of mutation to the receiver, as the `Write` method does. A pointer to a struct is an especially common method-bearing type.
+
+But pointer types are by no means the only types that satisfy interfaces, and even interfaces with mutator methods may be satisfied by one of Go's other reference types. We've seen examples of slice types with methods (`geometry.Path`, §6.1) and map types with methods (`url.Values`, §6.2.1), and later we'll see a function type with methods (`http.HandlerFunc`, §7.7). Even basic types may satisfy interfaces; as we saw in Section 7.4, `time.Duration` satisfies `fmt.Stringer`.
+
+A concrete type may satisfy many unrelated interfaces. Consider a program that organizes or sells digitized cultural artifacts like music, films, and books. It might define the following set of concrete types:
+```
+    Album
+    Book
+    Movie
+    Magazine
+    Podcast
+    TVEpisode
+    Track
+```
+We can express each abstraction of interest as an interface. Some properties are common to all artifacts, such as a title, a creation date, and a list of creators (authors or artists).
+```go
+    type Artifact interface {
+        Title() string
+        Creators() []string
+        Created() time.Time
+    }
+```
+Other properties are restricted to certain types of artifacts. Properties of the printed word are relevant only to books and magazines, whereas only movies and TV episodes have a screen resolution.
+```go
+    type Text interface {
+        Pages() int
+        Words() int
+        PageSize() int
+    }
+
+    type Audio interface {
+        Stream() (io.ReadCloser, error)
+        RunningTime() time.Duration
+        Format() string // e.g., "MP3", "WAV"
+    }
+
+    type Video interface {
+        Stream() (io.ReadCloser, error)
+        RunningTime() time.Duration
+        Format() string // e.g., "MP4", "WMV"
+        Resolution() (x, y int)
+    }
+```
+These interfaces are but one useful way to group related concrete types together and express the facets they share in common. We may discover other groupings later. For example, if we find we need to handle `Audio` and `Video` items in the same way, we can define a `Streamer` interface to represent their common aspects without changing any existing type declarations.
+```go
+    type Streamer interface {
+        Stream() (io.ReadCloser, error)
+        RunningTime() time.Duration
+        Format() string
+    }
+```
+Each grouping of concrete types based on their shared behaviors can be expressed as an interface type. Unlike class-based languages, in which the set of interfaces satisfied by a class is explicit, in Go we can define new abstractions or groupings of interest when we need them, without modifying the declaration of the concrete type. This is particularly useful when the concrete type comes from a package written by a different author. Of course, there do need to be underlying commonalities in the concrete types.
+
+
 ## 7.4. Parsing Flags with flag.Value 
+
+In this section, we'll see how another standard interface, `flag.Value`, helps us define new notations for command-line flags. Consider the program below, which sleeps for a specified period of time.
+```go
+// gopl.io/ch7/sleep
+// The sleep program sleeps for a specified period of time.
+var period = flag.Duration("period", 1*time.Second, "sleep period")
+
+func main() {
+	flag.Parse()
+	fmt.Printf("Sleeping for %v...", *period)
+	time.Sleep(*period)
+	fmt.Println()
+}
+```
+Before it goes to sleep it prints the time period. The `fmt` package calls the `time.Duration`'s `String` method to print the period not as a number of nanoseconds, but in a user-friendly notation:
+```
+    $ go build gopl.io/ch7/sleep
+    $ ./sleep
+    Sleeping for 1s...
+```
+By default, the sleep period is one second, but it can be controlled through the `-period` command-line flag. The `flag.Duration` function creates a flag variable of type `time.Duration` and allows the user to specify the duration in a variety of user-friendly formats, including the same notation printed by the `String` method. This symmetry of design leads to a nice user interface.
+```
+    $ ./sleep -period 50ms
+    Sleeping for 50ms...
+    $ ./sleep -period 2m30s
+    Sleeping for 2m30s...
+    $ ./sleep -period 1.5h
+    Sleeping for 1h30m0s...
+    $ ./sleep -period "1 day"
+    invalid value "1 day" for flag -period: time: invalid duration 1 day
+```
+Because duration-valued flags are so useful, this feature is built into the flag package, but it's easy to define new flag notations for our own data types. We need only define a type that satisfies the `flag.Value` interface, whose declaration is below:
+```go
+    package flag
+
+    // Value is the interface to the value stored in a flag.
+    type Value interface {
+        String() string
+        Set(string) error
+    }
+```
+The `String` method formats the flag's value for use in command-line help messages; thus every `flag.Value` is also a `fmt.Stringer`. The `Set` method parses its string argument and updates the flag value. In effect, the `Set` method is the inverse of the `String` method, and it is good practice for them to use the same notation.
+
+Let's define a `celsiusFlag` type that allows a temperature to be specified in Celsius, or in Fahrenheit with an appropriate conversion. Notice that `celsiusFlag` embeds a `Celsius` (§2.5), thereby getting a `String` method for free. To satisfy `flag.Value`, we need only declare the `Set` method:
+```go
+// gopl.io/ch7/tempconv
+// *celsiusFlag satisfies the flag.Value interface.
+type celsiusFlag struct{ Celsius }
+
+func (f *celsiusFlag) Set(s string) error {
+	var unit string
+	var value float64
+	fmt.Sscanf(s, "%f%s", &value, &unit) // no error check needed
+	switch unit {
+	case "C", "°C":
+		f.Celsius = Celsius(value)
+		return nil
+	case "F", "°F":
+		f.Celsius = FToC(Fahrenheit(value))
+		return nil
+	}
+	return fmt.Errorf("invalid temperature %q", s)
+}
+```
+The call to `fmt.Sscanf` parses a floating-point number (`value`) and a string (`unit`) from the input `s`. Although one must usually check `Sscanf`'s error result, in this case we don't need to because if there was a problem, no switch case will match.
+
+The `CelsiusFlag` function below wraps it all up. To the caller, it returns a pointer to the `Celsius` field embedded within the `celsiusFlag` variable `f`. The `Celsius` field is the variable that will be updated by the `Set` method during flags processing. The call to `Var` adds the flag to the application's set of command-line flags, the global variable `flag.CommandLine`. Programs with unusually complex command-line interfaces may have several variables of this type. The call to `Var` assigns a `*celsiusFlag` argument to a `flag.Value` parameter, causing the compiler to check that `*celsiusFlag` has the necessary methods.
+```go
+// CelsiusFlag defines a Celsius flag with the specified name,
+// default value, and usage, and returns the address of the flag variable.
+// The flag argument must have a quantity and a unit, e.g., "100C".
+func CelsiusFlag(name string, value Celsius, usage string) *Celsius {
+	f := celsiusFlag{value}
+	flag.CommandLine.Var(&f, name, usage)
+	return &f.Celsius
+}
+```
+Now we can start using the new flag in our programs:
+```go
+var temp = tempconv.CelsiusFlag("temp", 20.0, "the temperature")
+
+func main() {
+	flag.Parse()
+	fmt.Println(*temp)
+}
+```
+Here's a typical session:
+```
+    $ go build gopl.io/ch7/tempflag
+    $ ./tempflag
+    20°C
+    $ ./tempflag -temp -18C
+    -18°C
+    $ ./tempflag -temp 212°F
+    100°C
+    $ ./tempflag -temp 273.15K
+    invalid value "273.15K" for flag -temp: invalid temperature "273.15K"
+    Usage of ./tempflag:
+      -temp value
+            the temperature (default 20°C)
+    $ ./tempflag -help
+    Usage of ./tempflag:
+      -temp value
+            the temperature (default 20°C)
+```
+
+### Exercises
+- **Exercise 7.6**: Add support for Kelvin temperatures to `tempflag`.
+- **Exercise 7.7**: Explain why the help message contains `°C` when the default value of `20.0` does not.
+
+
 ## 7.5. Interface Values
-## 7.6. Sorting with sort.Interface 
-## 7.7. The http.Handler Interface 
+
+Conceptually, a value of an interface type, or *interface value*, has two components, a concrete type and a value of that type. These are called the interface's *dynamic type* and *dynamic value*.
+
+For a statically typed language like Go, types are a compile-time concept, so a type is not a value. In our conceptual model, a set of values called *type descriptors* provide information about each type, such as its name and methods. In an interface value, the type component is represented by the appropriate type descriptor.
+
+
+In the four statements below, the variable `w` takes on three different values. (The initial and final values are the same.)
+```go
+    var w io.Writer
+    w = os.Stdout
+    w = new(bytes.Buffer)
+    w = nil
+```
+Let's take a closer look at the value and dynamic behavior of `w` after each statement. The first statement declares `w`:
+```go
+    var w io.Writer
+```
+In Go, variables are always initialized to a well-defined value, and interfaces are no exception. The zero value for an interface has both its type and value components set to nil (Figure 7.1).
+
+![Figure 7.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.1.png)
+
+An interface value is described as nil or non-nil based on its dynamic type, so this is a nil interface value. You can test whether an interface value is nil using `w == nil` or `w != nil`. Calling any method of a nil interface value causes a panic:
+```go
+    w.Write([]byte("hello")) // panic: nil pointer dereference
+```
+The second statement assigns a value of type `*os.File` to `w`:
+```go
+    w = os.Stdout
+```
+This assignment involves an implicit conversion from a concrete type to an interface type, and is equivalent to the explicit conversion `io.Writer(os.Stdout)`. A conversion of this kind, whether explicit or implicit, captures the type and the value of its operand. The interface value's dynamic type is set to the type descriptor for the pointer type `*os.File`, and its dynamic value holds a copy of `os.Stdout`, which is a pointer to the `os.File` variable representing the standard output of the process (Figure 7.2).
+
+![Figure 7.2](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.2.png)
+
+Calling the Write method on an interface value containing an `*os.File` pointer causes the `(*os.File).Write` method to be called. The call prints `"hello"`.
+```go
+    w.Write([]byte("hello")) // "hello"
+```
+In general, we cannot know at compile time what the dynamic type of an interface value will be, so a call through an interface must use *dynamic dispatch*. Instead of a direct call, the compiler must generate code to obtain the address of the method named Write from the type descriptor, then make an indirect call to that address. The receiver argument for the call is a copy of the interface's dynamic value, `os.Stdout`. The effect is as if we had made this call directly:
+```go
+    os.Stdout.Write([]byte("hello")) // "hello"
+```
+The third statement assigns a value of type `*bytes.Buffer` to the interface value:
+```go
+    w = new(bytes.Buffer)
+```
+The dynamic type is now `*bytes.Buffer` and the dynamic value is a pointer to the newly allocated buffer (Figure 7.3).
+
+![Figure 7.3](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.3.png)
+
+A call to the Write method uses the same mechanism as before:
+```go
+    w.Write([]byte("hello")) // writes "hello" to the bytes.Buffer
+```
+This time, the type descriptor is `*bytes.Buffer`, so the `(*bytes.Buffer).Write` method is called, with the address of the buffer as the value of the receiver parameter. The call appends `"hello"` to the buffer.
+
+Finally, the fourth statement assigns nil to the interface value:
+```go
+    w = nil
+```
+This resets both its components to `nil`, restoring `w` to the same state as when it was declared, which was shown in Figure 7.1.
+
+An interface value can hold arbitrarily large dynamic values. For example, the `time.Time` type, which represents an instant in time, is a struct type with several unexported fields. If we create an interface value from it,
+```go
+    var x interface{} = time.Now()
+```
+the result might look like Figure 7.4. Conceptually, the dynamic value always fits inside the interface value, no matter how large its type. (This is only a conceptual model; a realistic implementation is quite different.)
+
+![Figure 7.4](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.4.png)
+
+Interface values may be compared using `==` and `!=`. Two interface values are equal if both are nil, or if their dynamic types are identical and their dynamic values are equal according to the usual behavior of `==` for that type. Because interface values are comparable, they may be used as the keys of a map or as the operand of a `switch` statement.
+
+However, if two interface values are compared and have the same dynamic type, but that type is not comparable (a slice, for instance), then the comparison fails with a panic:
+```go
+    var x interface{} = []int{1, 2, 3}
+    fmt.Println(x == x) // panic: comparing uncomparable type []int
+```
+In this respect, interface types are unusual. Other types are either safely comparable (like basic types and pointers) or not comparable at all (like slices, maps, and functions), but when comparing interface values or aggregate types that contain interface values, we must be aware of the potential for a panic. A similar risk exists when using interfaces as map keys or switch operands. Only compare interface values if you are certain that they contain dynamic values of comparable types.
+
+When handling errors, or during debugging, it is often helpful to report the dynamic type of an interface value. For that, we use the fmt package's `%T` verb:
+```go
+    var w io.Writer
+    fmt.Printf("%T\n", w) // "<nil>"
+
+    w = os.Stdout
+    fmt.Printf("%T\n", w) // "*os.File"
+
+    w = new(bytes.Buffer)
+    fmt.Printf("%T\n", w) // "*bytes.Buffer"
+```
+Internally, `fmt` uses reflection to obtain the name of the interface's dynamic type. We'll look at reflection in Chapter 12.
+
+
+### 7.5.1. Caveat: An Interface Containing a Nil Pointer Is Non-Nil
+
+A nil interface value, which contains no value at all, is not the same as an interface value containing a pointer that happens to be nil. This subtle distinction creates a trap into which every Go programmer has stumbled.
+
+Consider the program below. With `debug` set to `true`, the main function collects the output of the function `f` in a `bytes.Buffer`.
+```go
+    const debug = true
+
+    func main() {
+        var buf *bytes.Buffer
+        if debug {
+            buf = new(bytes.Buffer) // enable collection of output
+        }
+        f(buf) // NOTE: subtly incorrect!
+        if debug {
+            // ...use buf...
+        } 
+    }
+
+    // If out is non-nil, output will be written to it.
+    func f(out io.Writer) {
+        // ...do something...
+        if out != nil {
+            out.Write([]byte("done!\n"))
+        } 
+    }
+```
+We might expect that changing `debug` to `false` would disable the collection of the output, but in fact it causes the program to panic during the `out.Write` call:
+```go
+    if out != nil {
+        out.Write([]byte("done!\n")) // panic: nil pointer dereference
+    }
+```
+When `main` calls `f`, it assigns a nil pointer of type `*bytes.Buffer` to the out parameter, so the dynamic value of `out` is `nil`. However, its dynamic type is `*bytes.Buffer`, meaning that `out` is a non-nil interface containing a nil pointer value (Figure 7.5), so the defensive check `out != nil` is still true.
+
+![Figure 7.5](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.5.png)
+
+As before, the dynamic dispatch mechanism determines that `(*bytes.Buffer).Write` must be called but this time with a receiver value that is nil. For some types, such as `*os.File`, `nil` is a valid receiver (§6.2.1), but `*bytes.Buffer` is not among them. The method is called, but it panics as it tries to access the buffer.
+
+The problem is that although a nil `*bytes.Buffer` pointer has the methods needed to satisfy the interface, it doesn't satisfy the behavioral requirements of the interface. In particular, the call violates the implicit precondition of `(*bytes.Buffer).Write` that its receiver is not nil, so assigning the nil pointer to the interface was a mistake. The solution is to change the type of `buf` in `main` to `io.Writer`, thereby avoiding the assignment of the dysfunctional value to the interface in the first place:
+```go
+    var buf io.Writer
+    if debug {
+        buf = new(bytes.Buffer) // enable collection of output
+    }
+    f(buf) // OK
+```
+Now that we've covered the mechanics of interface values, let's take a look at some more important interfaces from Go's standard library. In the next three sections, we'll see how interfaces are used for sorting, web serving, and error handling.
+
+
+## 7.6. Sorting with `sort.Interface` 
+
+
+
+## 7.7. The `http.Handler` Interface 
 ## 7.8. The error Interface 
 ## 7.9. Example: Expression Evaluator 
 ## 7.10. Type Assertions 
