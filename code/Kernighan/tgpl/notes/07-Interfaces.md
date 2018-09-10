@@ -755,8 +755,178 @@ For convenience, the `sort` package provides versions of its functions and types
 
 ## 7.7. The `http.Handler` Interface 
 
+In Chapter 1, we saw a glimpse of how to use the `net/http` package to implement web clients (§1.5) and servers (§1.7). In this section, we'll look more closely at the server API, whose foundation is the http.Handler interface:
+```go
+    // net/http
+    package http
+       
+    type Handler interface {
+        ServeHTTP(w ResponseWriter, r *Request)
+    }
 
+    func ListenAndServe(address string, h Handler) error
+```
+The `ListenAndServe` function requires a server address, such as `"localhost:8000"`, and an instance of the `Handler` interface to which all requests should be dispatched. It runs forever, or until the server fails (or fails to start) with an error, always non-nil, which it returns.
 
+Imagine an e-commerce site with a database mapping the items for sale to their prices in dol- lars. The program below shows the simplest imaginable implementation. It models the inventory as a map type, `database`, to which we've attached a `ServeHTTP` method so that it satisfies the `http.Handler` interface. The handler ranges over the map and prints the items.
+```go
+// gopl.io/ch7/http1
+func main() {
+	db := database{"shoes": 50, "socks": 5}
+	log.Fatal(http.ListenAndServe("localhost:8000", db))
+}
+
+type dollars float32
+
+func (d dollars) String() string { return fmt.Sprintf("$%.2f", d) }
+
+type database map[string]dollars
+
+func (db database) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	for item, price := range db {
+		fmt.Fprintf(w, "%s: %s\n", item, price)
+	}
+}
+```
+If we start the server,
+```bash
+    $ go build gopl.io/ch7/http1
+    $ ./http1 &
+```
+then connect to it with the `fetch` program from Section 1.5 (or a web browser if you prefer), we get the following output:
+```bash
+    $ go build gopl.io/ch1/fetch
+    $ ./fetch http://localhost:8000
+    shoes: $50.00
+    socks: $5.00
+```
+So far, the server can only list its entire inventory and will do this for every request, regardless of URL. A more realistic server defines multiple different URLs, each triggering a different behavior. Let's call the existing one `/list` and add another one called `/price` that reports the price of a single item, specified as a request parameter like `/price?item=socks`.
+```go
+// gopl.io/ch7/http2
+func (db database) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	switch req.URL.Path {
+	case "/list":
+		for item, price := range db {
+			fmt.Fprintf(w, "%s: %s\n", item, price)
+		}
+	case "/price":
+		item := req.URL.Query().Get("item")
+		price, ok := db[item]
+		if !ok {
+			w.WriteHeader(http.StatusNotFound) // 404
+			fmt.Fprintf(w, "no such item: %q\n", item)
+			return
+		}
+		fmt.Fprintf(w, "%s\n", price)
+	default:
+		w.WriteHeader(http.StatusNotFound) // 404
+		fmt.Fprintf(w, "no such page: %s\n", req.URL)
+	}
+}
+```
+Now the handler decides what logic to execute based on the path component of the URL, `req.URL.Path`. If the handler doesn't recognize the path, it reports an HTTP error to the client by calling `w.WriteHeader(http.StatusNotFound)`; this must be done before writing any text to `w`. (Incidentally, `http.ResponseWriter` is another interface. It augments `io.Writer` with methods for sending HTTP response headers.) Equivalently, we could use the `http.Error` utility function:
+```go
+    msg := fmt.Sprintf("no such page: %s\n", req.URL)
+    http.Error(w, msg, http.StatusNotFound) // 404
+```
+The case for `/price` calls the URL's Query method to parse the HTTP request parameters as a map, or more precisely, a  multimap of type `url.Values` (§6.2.1) from the `net/url` package. It then finds the first item parameter and looks up its price. If the item wasn't found, it reports an error.
+
+Here's an example session with the new server:
+```bash
+    $ go build gopl.io/ch7/http2
+    $ go build gopl.io/ch1/fetch
+    $ ./http2 &
+    $ ./fetch http://localhost:8000/list
+    shoes: $50.00
+    socks: $5.00
+    $ ./fetch http://localhost:8000/price?item=socks
+    $5.00
+    $ ./fetch http://localhost:8000/price?item=shoes
+    $50.00
+    $ ./fetch http://localhost:8000/price?item=hat
+    no such item: "hat"
+    $ ./fetch http://localhost:8000/help
+    no such page: /help
+```
+Obviously we could keep adding cases to `ServeHTTP`, but in a realistic application, it's convenient to define the logic for each case in a separate function or method. Furthermore, related URLs may need similar logic; several image files may have URLs of the form `/images/*.png`, for instance. For these reasons, `net/http` provides `ServeMux`, a *request multiplexer*, to simplify the association between URLs and handlers. A `ServeMux` aggregates a collection of `http.Handler`s into a single `http.Handler`. Again, we see that different types satisfying the same interface are *substitutable*: the web server can dispatch requests to any `http.Handler`, regardless of which concrete type is behind it.
+
+For a more complex application, several `ServeMux`es may be composed to handle more intricate dispatching requirements. Go doesn't have a canonical web framework analogous to Ruby's Rails or Python's Django. This is not to say that such frameworks don't exist, but the building blocks in Go's standard library are flexible enough that frameworks are often unnecessary. Furthermore, although frameworks are convenient in the early phases of a project, their additional complexity can make longer-term maintenance harder.
+
+In the program below, we create a `ServeMux` and use it to associate the URLs with the corresponding handlers for the `/list` and `/price` operations, which have been split into separate methods. We then use the `ServeMux` as the main handler in the call to `ListenAndServe`.
+```go
+// gopl.io/ch7/http3
+func main() {
+	db := database{"shoes": 50, "socks": 5}
+	mux := http.NewServeMux()
+	mux.Handle("/list", http.HandlerFunc(db.list))
+	mux.Handle("/price", http.HandlerFunc(db.price))
+	log.Fatal(http.ListenAndServe("localhost:8000", mux))
+}
+
+type database map[string]dollars
+
+func (db database) list(w http.ResponseWriter, req *http.Request) {
+	for item, price := range db {
+		fmt.Fprintf(w, "%s: %s\n", item, price)
+	}
+}
+
+func (db database) price(w http.ResponseWriter, req *http.Request) {
+	item := req.URL.Query().Get("item")
+	price, ok := db[item]
+	if !ok {
+		w.WriteHeader(http.StatusNotFound) // 404
+		fmt.Fprintf(w, "no such item: %q\n", item)
+		return
+	}
+	fmt.Fprintf(w, "%s\n", price)
+}
+```
+Let's focus on the two calls to `mux.Handle` that register the handlers. In the first one, `db.list` is a method value (§6.4), that is, a value of type
+```go
+    func(w http.ResponseWriter, req *http.Request)
+```
+that, when called, invokes the `database.list` method with the receiver value `db`. So `db.list` is a function that implements handler-like behavior, but since it has no methods, it doesn't satisfy the `http.Handler` interface and can't be passed directly to mux.Handle.
+
+The expression `http.HandlerFunc(db.list)` is a conversion, not a function call, since `http.HandlerFunc` is a type. It has the following definition:
+```go
+  // net/http
+  package http
+
+  type HandlerFunc func(w ResponseWriter, r *Request)
+
+  func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+      f(w, r)
+  }
+```
+`HandlerFunc` demonstrates some unusual features of Go's interface mechanism. It is a function type that has methods and satisfies an interface, http.Handler. The behavior of its `ServeHTTP` method is to call the underlying function. `HandlerFunc` is thus an adapter that lets a function value satisfy an interface, where the function and the interface's sole method have the same signature. In effect, this trick lets a single type such as database satisfy the `http.Handler` interface several different ways: once through its `list` method, once through its `price` method, and so on.
+
+Because registering a handler this way is so common, `ServeMux` has a convenience method called `HandleFunc` that does it for us, so we can simplify the handler registration code to this:
+```go
+// gopl.io/ch7/http3a
+mux.HandleFunc("/list", db.list)
+mux.HandleFunc("/price", db.price)
+```
+It's easy to see from the code above how one would construct a program in which there are two different web servers, listening on different ports, defining different URLs, and dispatching to different handlers. We would just construct another `ServeMux` and make another call to `ListenAndServe`, perhaps concurrently. But in most programs, one web server is plenty. Also, it's typical to define HTTP handlers across many files of an application, and it would be a nuisance if they all had to be explicitly registered with the application's `ServeMux` instance.
+
+So, for convenience, `net/http` provides a global `ServeMux` instance called `DefaultServeMux` and package-level functions called `http.Handle` and `http.HandleFunc`. To use `DefaultServeMux` as the server's main handler, we needn't pass it to `ListenAndServe`; `nil` will do.
+
+The server's `main` function can then be simplified to
+```go
+// gopl.io/ch7/http4
+func main() {
+	db := database{"shoes": 50, "socks": 5}
+	http.HandleFunc("/list", db.list)
+	http.HandleFunc("/price", db.price)
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+}
+
+```
+Finally, an important reminder: as we mentioned in Section 1.7, the web server invokes each handler in a new goroutine, so handlers must take precautions such as *locking* when accessing variables that other goroutines, including other requests to the same handler, may be accessing. We'll talk about concurrency in the next two chapters.
+
+### Exercises
+- **Exercise 7.11**: Add additional handlers so that clients can create, read, update, and delete database entries. For example, a request of the form `/update?item=socks&price=6` will update the price of an item in the inventory and report an error if the item does not exist or if the price is invalid. (Warning: this change introduces concurrent variable updates.)
+- **Exercise 7.12**: Change the handler for `/list` to print its output as an HTML table, not text. You may find the `html/template` package (§4.6) useful.
 
 
 ## 7.8. The `error` Interface 
