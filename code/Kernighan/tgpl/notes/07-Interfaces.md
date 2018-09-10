@@ -994,10 +994,707 @@ The value of err is shown graphically in Figure 7.6.
 
 `Errno` is an efficient representation of system call errors drawn from a finite set, and it satisfies the standard `error` interface. We'll see other types that satisfy this interface in Section 7.11.
 
+
 ## 7.9. Example: Expression Evaluator 
+
+In this section, we’ll build an evaluator for simple arithmetic expressions. We’ll use an interface, `Expr`, to represent any expression in this language. For now, this interface needs no methods, but we’ll add some later.
+```go
+    // An Expr is an arithmetic expression.
+    type Expr interface{}
+```
+Our expression language consists of floating-point literals; the binary operators `+`, `-`, `*`, and `/`; the unary operators `-x` and `+x`; function calls `pow(x,y)`, `sin(x)`, and `sqrt(x)`; variables such as `x` and `pi`; and of course parentheses and standard operator precedence. All values are of type `float64`. Here are some example expressions:
+```go
+    sqrt(A / pi)
+    pow(x, 3) + pow(y, 3)
+    (F - 32) * 5 / 9
+```
+The five concrete types below represent particular kinds of expression. A `Var` represents a reference to a variable. (We’ll soon see why it is exported.) A `literal` represents a floating-point constant. The `unary` and `binary` types represent operator expressions with one or two operands, which can be any kind of `Expr`. A call represents a function `call`; we’ll restrict its `fn` field to `pow`, `sin`, or `sqrt`.
+```go
+// gopl.io/ch7/eval
+// A Var identifies a variable, e.g., x.
+type Var string
+
+// A literal is a numeric constant, e.g., 3.141.
+type literal float64
+
+// A unary represents a unary operator expression, e.g., -x.
+type unary struct {
+	op rune // one of '+', '-'
+	x  Expr
+}
+
+// A binary represents a binary operator expression, e.g., x+y.
+type binary struct {
+	op   rune // one of '+', '-', '*', '/'
+	x, y Expr
+}
+
+// A call represents a function call expression, e.g., sin(x).
+type call struct {
+	fn   string // one of "pow", "sin", "sqrt"
+	args []Expr
+}
+```
+To evaluate an expression containing variables, we’ll need an *environment* that maps variable names to values:
+```go
+type Env map[Var]float64
+```
+We’ll also need each kind of expression to define an `Eval` method that returns the expression’s value in a given environment. Since every expression must provide this method, we add it to the `Expr` interface. The package exports only the types `Expr`, `Env`, and `Var`; clients can use the evaluator without access to the other expression types.
+```go
+type Expr interface {
+    // Eval returns the value of this Expr in the environment env.
+    Eval(env Env) float64
+}
+```
+The concrete `Eval` methods are shown below. The method for `Var` performs an environment lookup, which returns zero if the variable is not defined, and the method for `literal` simply returns the literal value.
+```go
+func (v Var) Eval(env Env) float64 {
+  return env[v]
+}
+
+func (l literal) Eval(_ Env) float64 {
+  return float64(l)
+}
+```
+The `Eval` methods for `unary` and `binary` recursively evaluate their operands, then apply the operation `op` to them. We don’t consider divisions by zero or infinity to be errors, since they produce a result, albeit non-finite. Finally, the method for `call` evaluates the arguments to the `pow`, `sin`, or `sqrt` function, then calls the corresponding function in the math package.
+```go
+func (u unary) Eval(env Env) float64 {
+	switch u.op {
+	case '+':
+		return +u.x.Eval(env)
+	case '-':
+		return -u.x.Eval(env)
+	}
+	panic(fmt.Sprintf("unsupported unary operator: %q", u.op))
+}
+
+func (b binary) Eval(env Env) float64 {
+	switch b.op {
+	case '+':
+		return b.x.Eval(env) + b.y.Eval(env)
+	case '-':
+		return b.x.Eval(env) - b.y.Eval(env)
+	case '*':
+		return b.x.Eval(env) * b.y.Eval(env)
+	case '/':
+		return b.x.Eval(env) / b.y.Eval(env)
+	}
+	panic(fmt.Sprintf("unsupported binary operator: %q", b.op))
+}
+
+func (c call) Eval(env Env) float64 {
+	switch c.fn {
+	case "pow":
+		return math.Pow(c.args[0].Eval(env), c.args[1].Eval(env))
+	case "sin":
+		return math.Sin(c.args[0].Eval(env))
+	case "sqrt":
+		return math.Sqrt(c.args[0].Eval(env))
+	}
+	panic(fmt.Sprintf("unsupported function call: %s", c.fn))
+}
+```
+Several of these methods can fail. For example, a `call` expression could have an unknown function or the wrong number of arguments. It’s also possible to construct a `unary` or `binary` expression with an invalid operator such as `!` or `<` (although the `Parse` function mentioned below will never do this). These errors cause `Eval` to panic. Other errors, like evaluating a `Var` not present in the environment, merely cause `Eval` to return the wrong result. All of these errors could be detected by inspecting the `Expr` before evaluating it. That will be the job of the `Check` method, which we will show soon, but first let’s test `Eval`.
+
+The `TestEval` function below is a test of the evaluator. It uses the `testing` package, which we’ll explain in Chapter 11, but for now it’s enough to know that calling `t.Errorf` reports an error. The function loops over a table of inputs that defines three expressions and different environments for each one. The first expression computes the radius of a circle given its area `A`, the second computes the sum of the cubes of two variables `x` and `y`, and the third converts a Fahrenheit temperature `F` to Celsius.
+```go
+// gopl.io/ch7/eval/eval_test
+func TestEval(t *testing.T) {
+	tests := []struct {
+		expr string
+		env  Env
+		want string
+	}{
+		{"sqrt(A / pi)", Env{"A": 87616, "pi": math.Pi}, "167"},
+		{"pow(x, 3) + pow(y, 3)", Env{"x": 12, "y": 1}, "1729"},
+		{"pow(x, 3) + pow(y, 3)", Env{"x": 9, "y": 10}, "1729"},
+		{"5 / 9 * (F - 32)", Env{"F": -40}, "-40"},
+		{"5 / 9 * (F - 32)", Env{"F": 32}, "0"},
+		{"5 / 9 * (F - 32)", Env{"F": 212}, "100"},
+		//!-Eval
+		// additional tests that don't appear in the book
+		{"-1 + -x", Env{"x": 1}, "-2"},
+		{"-1 - x", Env{"x": 1}, "-2"},
+		//!+Eval
+	}
+	var prevExpr string
+	for _, test := range tests {
+		// Print expr only when it changes.
+		if test.expr != prevExpr {
+			fmt.Printf("\n%s\n", test.expr)
+			prevExpr = test.expr
+		}
+		expr, err := Parse(test.expr)
+		if err != nil {
+			t.Error(err) // parse error
+			continue
+		}
+		got := fmt.Sprintf("%.6g", expr.Eval(test.env))
+		fmt.Printf("\t%v => %s\n", test.env, got)
+		if got != test.want {
+			t.Errorf("%s.Eval() in %v = %q, want %q\n",
+				test.expr, test.env, got, test.want)
+		}
+	}
+}
+```
+For each entry in the table, the test parses the expression, evaluates it in the environment, and prints the result. We don’t have space to show the `Parse` function here, but you’ll find it if you download the package using `go get`.
+
+The `go test` command (§11.1) runs a package’s tests:
+```bash
+    $ go test -v gopl.io/ch7/eval
+```
+The `-v` flag lets us see the printed output of the test, which is normally suppressed for a suc- cessful test like this one. Here is the output of the test’s `fmt.Printf` statements:
+```
+sqrt(A / pi)
+	map[A:87616 pi:3.141592653589793] => 167
+
+pow(x, 3) + pow(y, 3)
+	map[x:12 y:1] => 1729
+	map[x:9 y:10] => 1729
+
+5 / 9 * (F - 32)
+	map[F:-40] => -40
+	map[F:32] => 0
+	map[F:212] => 100
+```
+Fortunately the inputs so far have all been well formed, but our luck is unlikely to last. Even in interpreted languages, it is common to check the syntax for *static* errors, that is, mistakes that can be detected without running the program. By separating the static checks from the dynamic ones, we can detect errors sooner and perform many checks only once instead of each time an expression is evaluated.
+
+Let’s add another method to the `Expr` interface. The `Check` method checks for static errors in an expression syntax tree. We’ll explain its `vars` parameter in a moment.
+```go
+    type Expr interface {
+        Eval(env Env) float64
+        // Check reports errors in this Expr and adds its Vars to the set.
+        Check(vars map[Var]bool) error
+    }
+```
+TheconcreteCheckmethodsareshownbelow. Evaluation of `literal` and `Var` cannot fail, so the `Check` methods for these types return `nil`. The methods for `unary` and `binary` first check that the operator is valid, then recursively check the operands. Similarly, the method for `call` first checks that the function is known and has the right number of arguments, then recursively checks each argument.
+```go
+// gopl.io/ch7/eval/check.go
+func (v Var) Check(vars map[Var]bool) error {
+	vars[v] = true
+	return nil
+}
+
+func (literal) Check(vars map[Var]bool) error {
+	return nil
+}
+
+func (u unary) Check(vars map[Var]bool) error {
+	if !strings.ContainsRune("+-", u.op) {
+		return fmt.Errorf("unexpected unary op %q", u.op)
+	}
+	return u.x.Check(vars)
+}
+
+func (b binary) Check(vars map[Var]bool) error {
+	if !strings.ContainsRune("+-*/", b.op) {
+		return fmt.Errorf("unexpected binary op %q", b.op)
+	}
+	if err := b.x.Check(vars); err != nil {
+		return err
+	}
+	return b.y.Check(vars)
+}
+
+func (c call) Check(vars map[Var]bool) error {
+	arity, ok := numParams[c.fn]
+	if !ok {
+		return fmt.Errorf("unknown function %q", c.fn)
+	}
+	if len(c.args) != arity {
+		return fmt.Errorf("call to %s has %d args, want %d",
+			c.fn, len(c.args), arity)
+	}
+	for _, arg := range c.args {
+		if err := arg.Check(vars); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+var numParams = map[string]int{"pow": 2, "sin": 1, "sqrt": 1}
+```
+We’ve listed a selection of flawed inputs and the errors they elicit, in two groups. The `Parse` function (not shown) reports syntax errors and the `Check` function reports semantic errors.
+```
+x % 2         unexpected '%'
+math.Pi       unexpected '.'
+!true         unexpected '!'
+"hello"       unexpected '"'
+log(10)       unknown function "log"
+sqrt(1, 2)    call to sqrt has 2 args, want 1
+```
+`Check`'s argument, a set of `Vars`, accumulates the set of variable names found within the expression. Each of these variables must be present in the environment for evaluation to succeed. This set is logically the result of the call to `Check`, but because the method is recursive, it is more convenient for `Check` to populate a set passed as a parameter. The client must provide an empty set in the initial call.
+
+In Section 3.2, we plotted a function `f(x,y)` that was fixed at compile time. Now that we can parse, check, and evaluate expressions in strings, we can build a web application that receives an expression at run time from the client and plots the surface of that function. We can use the `vars` set to check that the expression is a function of only two variables, `x` and `y`—three, actually, since we’ll provide `r`, the radius, as a convenience. And we’ll use the `Check` method to reject ill-formed expressions before evaluation begins so that we don’t repeat those checks during the 40,000 evaluations (100x100 cells, each with four corners) of the function that follow.
+
+The `parseAndCheck` function combines these parsing and checking steps:
+```go
+// gopl.io/ch7/surface
+import "gopl.io/ch7/eval"
+
+func parseAndCheck(s string) (eval.Expr, error) {
+	if s == "" {
+		return nil, fmt.Errorf("empty expression")
+	}
+	expr, err := eval.Parse(s)
+	if err != nil {
+		return nil, err
+	}
+	vars := make(map[eval.Var]bool)
+	if err := expr.Check(vars); err != nil {
+		return nil, err
+	}
+	for v := range vars {
+		if v != "x" && v != "y" && v != "r" {
+			return nil, fmt.Errorf("undefined variable: %s", v)
+		}
+	}
+	return expr, nil
+}
+```
+To make this a web application, all we need is the `plot` function below, which has the familiar signature of an `http.HandlerFunc`:
+```go
+// gopl.io/ch7/surface
+func plot(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	expr, err := parseAndCheck(r.Form.Get("expr"))
+	if err != nil {
+		http.Error(w, "bad expr: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "image/svg+xml")
+	surface(w, func(x, y float64) float64 {
+		r := math.Hypot(x, y) // distance from (0,0)
+		return expr.Eval(eval.Env{"x": x, "y": y, "r": r})
+	})
+}
+```
+
+![Figure 7.7](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig7.7.png)
+
+The `plot` function parses and checks the expression specified in the HTTP request and uses it to create an anonymous function of two variables. The anonymous function has the same signature as the fixed function `f` from the original surface-plotting program, but it evaluates the user-supplied expression. The environment defines `x`, `y`, and the radius `r`. Finally, `plot` calls `surface`, which is just the `main` function from `gopl.io/ch3/surface`, modified to take the function to plot and the output `io.Writer` as parameters, instead of using the fixed function `f` and `os.Stdout`. Figure 7.7 shows three surfaces produced by the program.
+
+### Exercises
+- **Exercise 7.13**: Add a `String` method to `Expr` to pretty-print the syntax tree. Check that the results, when parsed again, yield an equivalent tree.
+- **Exercise 7.14**: Define a new concrete type that satisfies the `Expr` interface and provides a new operation such as computing the minimum value of its operands. Since the `Parse` function does not create instances of this new type, to use it you will need to construct a syntax tree directly (or extend the parser).
+- **Exercise 7.15**: Write a program that reads a single expression from the standard input, prompts the user to provide values for any variables, then evaluates the expression in the resulting environment. Handle all errors gracefully.
+- **Exercise 7.16**: Write a web-based calculator program.
+
+
 ## 7.10. Type Assertions 
+
+A *type assertion* is an operation applied to an interface value. Syntactically, it looks like `x.(T)`, where `x` is an expression of an interface type and `T` is a type, called the "asserted" type. A type assertion checks that the dynamic type of its operand matches the asserted type.
+
+There are two possibilities. First, if the asserted type `T` is a concrete type, then the type assertion checks whether `x`'s dynamic type is identical to `T`. If this check succeeds, the result of the type assertion is `x`'s dynamic value, whose type is of course `T`. In other words, a type assertion to a concrete type extracts the concrete value from its operand. If the check fails, then the operation panics. For example:
+```go
+    var w io.Writer
+    w = os.Stdout
+    f := w.(*os.File)      // success: f == os.Stdout
+    c := w.(*bytes.Buffer) // panic: interface holds *os.File, not *bytes.Buffer
+```
+Second, if instead the asserted type `T` is an interface type, then the type assertion checks whether `x`'s dynamic type *satisfies* `T`. If this check succeeds, the dynamic value is not extracted; the result is still an interface value with the same type and value components, but the result has the interface type `T`. In other words, a type assertion to an interface type changes the type of the expression, making a different (and usually larger) set of methods accessible, but it preserves the dynamic type and value components inside the interface value.
+
+After the first type assertion below, both `w` and `rw` hold `os.Stdout` so each has a dynamic type of `*os.File`, but `w`, an `io.Writer`, exposes only the file's `Write` method, whereas `rw` exposes its `Read` method too.
+```go
+    var w io.Writer
+
+    w = os.Stdout
+    rw := w.(io.ReadWriter) // success: *os.File has both Read and Write
+
+    w = new(ByteCounter)
+    rw = w.(io.ReadWriter) // panic: *ByteCounter has no Read method
+```
+No matter what type was asserted, if the operand is a nil interface value, the type assertion fails. A type assertion to a less restrictive interface type (one with fewer methods) is rarely needed, as it behaves just like an assignment, except in the nil case.
+```go
+    w = rw             // io.ReadWriter is assignable to io.Writer
+    w = rw.(io.Writer) // fails only if rw == nil
+```
+Often we're not sure of the dynamic type of an interface value, and we'd like to test whether it is some particular type. If the type assertion appears in an assignment in which two results are expected, such as the following declarations, the operation does not panic on failure but instead returns an additional second result, a boolean indicating success:
+```go
+    var w io.Writer = os.Stdout
+    f, ok := w.(*os.File)      // success:  ok, f == os.Stdout
+    b, ok := w.(*bytes.Buffer) // failure: !ok, b == nil
+```
+The second result is conventionally assigned to a variable named `ok`. If the operation failed, `ok` is false, and the first result is equal to the zero value of the asserted type, which in this example is a nil `*bytes.Buffer`.
+
+The ok result is often immediately used to decide what to do next. The extended form of the if statement makes this quite compact:
+```go
+    if f, ok := w.(*os.File); ok {
+        // ...use f...
+    }
+```
+When the operand of a type assertion is a variable, rather than invent another name for the new local variable, you'll sometimes see the original name reused, shadowing the original, like this:
+```go
+    if w, ok := w.(*os.File); ok {
+        // ...use w...
+    }
+```
+
+
 ## 7.11. Discriminating Errors with Type Assertions 
+
+Consider the set of errors returned by file operations in the os package. I/O can fail for any number of reasons, but three kinds of failure often must be handled differently: file already exists (for create operations), file not found (for read operations), and permission denied. The `os` package provides these three helper functions to classify the failure indicated by a given error value:
+```go
+    package os
+  
+    func IsExist(err error) bool
+    func IsNotExist(err error) bool
+    func IsPermission(err error) bool
+```
+A naïve implementation of one of these predicates might check that the error message contains a certain substring,
+```go
+    func IsNotExist(err error) bool {
+        // NOTE: not robust!
+        return strings.Contains(err.Error(), "file does not exist")
+    }
+```
+but because the logic for handling I/O errors can vary from one platform to another, this approach is not robust and the same failure may be reported with a variety of different error messages. Checking for substrings of error messages may be useful during testing to ensure that functions fail in the expected manner, but it's inadequate for production code.
+
+A more reliable approach is to represent structured error values using a dedicated type. The `os` package defines a type called `PathError` to describe failures involving an operation on a file path, like `Open` or `Delete`, and a variant called `LinkError` to describe failures of operations involving two file paths, like `Symlink` and `Rename`. Here's `os.PathError`:
+```go
+    package os
+
+    // PathError records an error and the operation and file path that caused it.
+    type PathError struct {
+        Op   string
+        Path string
+        Err  error
+    }
+
+    func (e *PathError) Error() string {
+        return e.Op + " " + e.Path + ": " + e.Err.Error()
+    }
+```
+Most clients are oblivious to `PathError` and deal with all errors in a uniform way by calling their `Error` methods. Although `PathError`'s `Error` method forms a message by simply concatenating the fields, `PathError`'s structure preserves the underlying components of the error. Clients that need to distinguish one kind of failure from another can use a type assertion to detect the specific type of the error; the specific type provides more detail than a simple string.
+```go
+    _, err := os.Open("/no/such/file")
+    fmt.Println(err) // "open /no/such/file: No such file or directory"
+    fmt.Printf("%#v\n", err)
+    // Output:
+    // &os.PathError{Op:"open", Path:"/no/such/file", Err:0x2}
+```
+That's how the three helper functions work. For example, `IsNotExist`, shown below, reports whether an error is equal to `syscall.ENOENT` (§7.8) or to the distinguished error `os.ErrNotExist` (see `io.EOF` in §5.4.2), or is a `*PathError` whose underlying error is one of those two.
+```go
+    import (
+        "errors"
+        "syscall"
+    )
+
+    var ErrNotExist = errors.New("file does not exist")
+    // IsNotExist returns a boolean indicating whether the error is known to
+    // report that a file or directory does not exist. It is satisfied by
+    // ErrNotExist as well as some syscall errors.
+    func IsNotExist(err error) bool {
+        if pe, ok := err.(*PathError); ok {
+            err = pe.Err
+        }
+        return err == syscall.ENOENT || err == ErrNotExist
+    }
+```
+And here it is in action:
+```go
+    _, err := os.Open("/no/such/file")
+    fmt.Println(os.IsNotExist(err)) // "true"
+```
+Of course, `PathError`'s structure is lost if the error message is combined into a larger string, for instance by a call to `fmt.Errorf`. Error discrimination must usually be done immediately after the failing operation, before an error is propagated to the caller.
+
+
 ## 7.12. Querying Behaviors with Interface Type Assertions 
+
+The logic below is similar to the part of the `net/http` web server responsible for writing HTTP header fields such as `"Content-type:text/html"`. The `io.Writer` `w` represents the HTTP response; the bytes written to it are ultimately sent to someone's web browser.
+```go
+    func writeHeader(w io.Writer, contentType string) error {
+        if _, err := w.Write([]byte("Content-Type: ")); err != nil {
+            return err
+        }
+        if _, err := w.Write([]byte(contentType)); err != nil {
+            return err
+        }
+        // ...
+    }
+```
+Because the `Write` method requires a byte slice, and the value we wish to write is a string, a `[]byte(...)` conversion is required. This conversion allocates memory and makes a copy, but the copy is thrown away almost immediately after. Let's pretend that this is a core part of the web server and that our profiling has revealed that this memory allocation is slowing it down. Can we avoid allocating memory here?
+
+The `io.Writer` interface tells us only one fact about the concrete type that `w` holds: that bytes may be written to it. If we look behind the curtains of the `net/http` package, we see that the dynamic type that `w` holds in this program also has a `WriteString` method that allows strings to be efficiently written to it, avoiding the need to allocate a temporary copy. (This may seem like a shot in the dark, but a number of important types that satisfy `io.Writer` also have a `WriteString` method, including `*bytes.Buffer`, `*os.File`, and `*bufio.Writer`.)
+
+We cannot assume that an arbitrary `io.Writer` `w` also has the `WriteString` method. But we can define a new interface that has just this method and use a type assertion to test whether the dynamic type of `w` satisfies this new interface.
+```go
+    // writeString writes s to w.
+    // If w has a WriteString method, it is invoked instead of w.Write.
+    func writeString(w io.Writer, s string) (n int, err error) {
+        type stringWriter interface {
+            WriteString(string) (n int, err error)
+        }
+        if sw, ok := w.(stringWriter); ok {
+            return sw.WriteString(s) // avoid a copy
+        }
+        return w.Write([]byte(s)) // allocate temporary copy
+    }
+
+    func writeHeader(w io.Writer, contentType string) error {
+        if _, err := writeString(w, "Content-Type: "); err != nil {
+            return err
+        }
+        if _, err := writeString(w, contentType); err != nil {
+            return err
+        }
+        // ...
+    }
+```
+To avoid repeating ourselves, we've moved the check into the utility function `writeString`, but it is so useful that the standard library provides it as `io.WriteString`. It is the recommended way to write a string to an `io.Writer`.
+
+What's curious in this example is that there is no standard interface that defines the `WriteString` method and specifies its required behavior. Furthermore, whether or not a concrete type satisfies the `stringWriter` interface is determined only by its methods, not by any declared relationship between it and the interface type. What this means is that the technique above relies on the assumption that *if* a type satisfies the interface below, *then* `WriteString(s)` must have the same effect as `Write([]byte(s))`.
+```go
+    interface {
+        io.Writer
+        WriteString(s string) (n int, err error)
+    }
+```
+Although `io.WriteString` documents its assumption, few functions that call it are likely to document that they too make the same assumption. Defining a method of a particular type is taken as an implicit assent for a certain behavioral contract. Newcomers to Go, especially those from a background in strongly typed languages, may find this lack of explicit intention unsettling, but it is rarely a problem in practice. With the exception of the empty interface `interface{}`, interface types are seldom satisfied by unintended coincidence.
+
+The writeString function above uses a type assertion to see whether a value of a general interface type also satisfies a more specific interface type, and if so, it uses the behaviors of the specific interface. This technique can be put to good use whether or not the queried interface is standard like `io.ReadWriter` or user-defined like stringWriter.
+
+It's also how `fmt.Fprintf` distinguishes values that satisfy error or `fmt.Stringer` from all other values. Within `fmt.Fprintf`, there is a step that converts a single operand to a string, something like this:
+```go
+    package fmt
+
+    func formatOneValue(x interface{}) string {
+        if err, ok := x.(error); ok {
+            return err.Error()
+        }
+
+        if str, ok := x.(Stringer); ok {
+            return str.String()
+        }
+        // ...all other types...
+    }
+```
+If `x` satisfies either of the two interfaces, that determines the formatting of the value. If not, the default case handles all other types more or less uniformly using reflection; we'll find out how in Chapter 12.
+
+Again, this makes the assumption that any type with a `String` method satisfies the behavioral contract of `fmt.Stringer`, which is to return a string suitable for printing.
+
+
 ## 7.13. Type Switches 
+
+Interfaces are used in two distinct styles. In the first style, exemplified by `io.Reader`, `io.Writer`, `fmt.Stringer`, `sort.Interface`, `http.Handler`, and `error`, an interface's methods express the similarities of the concrete types that satisfy the interface but hide the representation details and intrinsic operations of those concrete types. The emphasis is on the methods, not on the concrete types.
+
+The second style exploits the ability of an interface value to hold values of a variety of concrete types and considers the interface to be the *union* of those types. Type assertions are used to discriminate among these types dynamically and treat each case differently. In this style, the emphasis is on the concrete types that satisfy the interface, not on the interface's methods (if indeed it has any), and there is no hiding of information. We'll describe interfaces used this way as *discriminated unions*.
+
+If you're familiar with object-oriented programming, you may recognize these two styles as *subtype polymorphism* and *ad hoc polymorphism*, but you needn't remember those terms. For the remainder of this chapter, we'll present examples of the second style.
+
+Go's API for querying an SQL database, like those of other languages, lets us cleanly separate the fixed part of a query from the variable parts. An example client might look like this:
+```go
+    import "database/sql"
+
+    func listTracks(db sql.DB, artist string, minYear, maxYear int) {
+        result, err := db.Exec(
+            "SELECT * FROM tracks WHERE artist = ? AND ? <= year AND year <= ?",
+            artist, minYear, maxYear)
+        // ...
+    }
+```
+
+The `Exec` method replaces each `'?'` in the query string with an SQL literal denoting the corresponding argument value, which may be a boolean, a number, a string, or `nil`. Constructing queries this way helps avoid SQL injection attacks, in which an adversary takes control of the query by exploiting improper quotation of input data. Within `Exec`, we might find a function like the one below, which converts each argument value to its literal SQL notation.
+```go
+    func sqlQuote(x interface{}) string {
+        if x == nil {
+            return "NULL"
+        } else if _, ok := x.(int); ok {
+            return fmt.Sprintf("%d", x)
+        } else if _, ok := x.(uint); ok {
+            return fmt.Sprintf("%d", x)
+        } else if b, ok := x.(bool); ok {
+            if b {
+                return "TRUE"
+            }
+            return "FALSE"
+        } else if s, ok := x.(string); ok {
+            return sqlQuoteString(s) // (not shown)
+        } else {
+            panic(fmt.Sprintf("unexpected type %T: %v", x, x))
+        } 
+    }
+```
+A `switch` statement simplifies an `if`-`else` chain that performs a series of value equality tests. An analogous *type switch* statement simplifies an `if`-`else` chain of type assertions.
+
+In its simplest form, a type switch looks like an ordinary switch statement in which the operand is `x.(type)` (that's literally the keyword `type`) and each case has one or more types. A type switch enables a multi-way branch based on the interface value's dynamic type. The nil case matches if `x == nil`, and the default case matches if no other case does. A type switch for `sqlQuote` would have these cases:
+```go
+    switch x.(type) {
+        case nil:       // ...
+        case int, uint: // ...
+        case bool:      // ...
+        case string:    // ...
+        default:        // ...
+    }
+```
+As with an ordinary `switch` statement (§1.8), cases are considered in order and, when a match is found, the case's body is executed. Case order becomes significant when one or more case types are interfaces, since then there is a possibility of two cases matching. The position of the default case relative to the others is immaterial. No fallthrough is allowed.
+
+Notice that in the original function, the logic for the `bool` and `string` cases needs access to the value extracted by the type assertion. Since this is typical, the type switch statement has an extended form that binds the extracted value to a new variable within each case:
+```go
+    switch x := x.(type) { /* ... */ }
+```
+Here we've called the new variables `x` too; as with type assertions, reuse of variable names is common. Like a `switch` statement, a type switch implicitly creates a lexical block, so the declaration of the new variable called `x` does not conflict with a variable `x` in an outer block. Each case also implicitly creates a separate lexical block.
+
+Rewriting `sqlQuote` to use the extended form of type switch makes it significantly clearer:
+```go
+func sqlQuote(x interface{}) string {
+         switch x := x.(type) {
+         case nil:
+             return "NULL"
+         case int, uint:
+             return fmt.Sprintf("%d", x) // x has type interface{} here.
+         case bool:
+             if x {
+                 return "TRUE"
+}
+             return "FALSE"
+         case string:
+             return sqlQuoteString(x) // (not shown)
+         default:
+} }
+panic(fmt.Sprintf("unexpected type %T: %v", x, x))
+```
+In this version, within the block of each single-type case, the variable x has the same type as thecase. For instance, `x` has type `bool` within the `bool` case and `string` within the `string` case. In all other cases, `x` has the (interface) type of the `switch` operand, which is `interface{}` in this example. When the same action is required for multiple cases, like `int` and `uint`, the type switch makes it easy to combine them.
+
+Although `sqlQuote` accepts an argument of any type, the function runs to completion only if the argument's type matches one of the cases in the type switch; otherwise it panics with an "unexpected type" message. Although the type of `x` is `interface{}`, we consider it a discriminated union of `int`, `uint`, `bool`, `string`, and `nil`.
+
+
 ## 7.14. Example: Token-Based XML Decoding 
+
+Section 4.5 showed how to decode JSON documents into Go data structures with the `Marshal` and `Unmarshal` functions from the `encoding/json` package. The `encoding/xml` package provides a similar API. This approach is convenient when we want to construct a representation of the document tree, but that's unnecessary for many programs. The `encoding/xml` package also provides a lower-level token-based API for decoding XML. In the token-based style, the parser consumes the input and produces a stream of tokens, primarily of four kinds (`StartElement`, `EndElement`, `CharData`, and `Comment`) each being a concrete type in the `encoding/xmlpackage`. Each call to `(*xml.Decoder)`. `Token` returns a token. 
+
+The relevant parts of the API are shown here:
+```go
+// encoding/xml
+    package xml
+
+    type Name struct {
+        Local string // e.g., "Title" or "id"
+    }
+    type Attr struct { // e.g., name="value"
+        Name  Name
+        Value string
+    }
+
+    // A Token includes StartElement, EndElement, CharData,
+    // and Comment, plus a few esoteric types (not shown).
+    type Token interface{}
+    type StartElement struct { // e.g., <name>
+        Name Name
+        Attr []Attr
+    }
+    type EndElement struct { Name Name } // e.g., </name>
+    type CharData []byte                 // e.g., <p>CharData</p>
+    type Comment []byte                  // e.g., <!-- Comment -->
+
+    type Decoder struct{ /* ... */ }
+
+    func NewDecoder(io.Reader) *Decoder
+    func (*Decoder) Token() (Token, error) // returns next Token in sequence
+```
+The `Token` interface, which has no methods, is also an example of a discriminated union. The purpose of a traditional interface like `io.Reader` is to hide details of the concrete types that satisfy it so that new implementations can be created; each concrete type is treated uniformly. By contrast, the set of concrete types that satisfy a discriminated union is fixed by the design and exposed, not hidden. Discriminated union types have few methods; functions that operate on them are expressed as a set of cases using a type switch, with different logic in each case.
+
+The `xmlselect` program below extracts and prints the text found beneath certain elements in an XML document tree. Using the API above, it can do its job in a single pass over the input without ever materializing the tree.
+```go
+// gopl.io/ch7/xmlselect
+// Xmlselect prints the text of selected elements of an XML document.
+package main
+
+import (
+	"encoding/xml"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+)
+
+func main() {
+	dec := xml.NewDecoder(os.Stdin)
+	var stack []string // stack of element names
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			fmt.Fprintf(os.Stderr, "xmlselect: %v\n", err)
+			os.Exit(1)
+		}
+		switch tok := tok.(type) {
+		case xml.StartElement:
+			stack = append(stack, tok.Name.Local) // push
+		case xml.EndElement:
+			stack = stack[:len(stack)-1] // pop
+		case xml.CharData:
+			if containsAll(stack, os.Args[1:]) {
+				fmt.Printf("%s: %s\n", strings.Join(stack, " "), tok)
+			}
+		}
+	}
+}
+
+// containsAll reports whether x contains the elements of y, in order.
+func containsAll(x, y []string) bool {
+	for len(y) <= len(x) {
+		if len(y) == 0 {
+			return true
+		}
+		if x[0] == y[0] {
+			y = y[1:]
+		}
+		x = x[1:]
+	}
+	return false
+}
+```
+Each time the loop in `main` encounters a `StartElement`, it pushes the element's name onto a stack, and for each `EndElement` it pops the name from the stack. The API guarantees that the sequence of `StartElement` and `EndElement` tokens will be properly matched, even in ill-formed documents. `Comments` are ignored. When xmlselect encounters a `CharData`, it prints the text only if the stack contains all the elements named by the command-line arguments, in order.
+
+The command below prints the text of any h2 elements appearing beneath two levels of `div` elements. Its input is the XML specification, itself an XML document.
+```
+    $ go build gopl.io/ch1/fetch
+    $ ./fetch http://www.w3.org/TR/2006/REC-xml11-20060816 |
+        ./xmlselect div div h2
+    html body div div h2: 1 Introduction
+    html body div div h2: 2 Documents
+    html body div div h2: 3 Logical Structures
+    html body div div h2: 4 Physical Structures
+    html body div div h2: 5 Conformance
+    html body div div h2: 6 Notation
+    html body div div h2: A References
+    html body div div h2: B Definitions for Character Normalization
+    ...
+```
+
+### Exercises
+- **Exercise 7.17**: Extend `xmlselect` so that elements may be selected not just by name, but by their attributes too, in the manner of CSS, so that, for instance, an element like `<div id="page" class="wide">` could be selected by a matching `id` or `class` as well as its name.
+- **Exercise 7.18**: Using the token-based decoder API, write a program that will read an arbitrary XML document and construct a tree of generic nodes that represents it. Nodes are of two kinds: `CharData` nodes represent text strings, and `Element` nodes represent named elements and their attributes. Each element node has a slice of child nodes.
+
+You may find the following declarations helpful.
+```go
+    import "encoding/xml"
+
+    type Node interface{} // CharData or *Element
+     
+    type CharData string
+
+    type Element struct {
+        Type     xml.Name
+        Attr     []xml.Attr
+        Children []Node
+    }
+```
+
+
+
+
+
 ## 7.15. A Few Words of Advice
+
+When designing a new package, novice Go programmers often start by creating a set of interfaces and only later define the concrete types that satisfy them. This approach results in many interfaces, each of which has only a single implementation. Don't do that. Such interfaces are unnecessary abstractions; they also have a run-time cost. You can restrict which methods of a type or fields of a struct are visible outside a package using the export mechanism (§6.6). Interfaces are only needed when there are two or more concrete types that must be dealt with in a uniform way.
+
+We make an exception to this rule when an interface is satisfied by a single concrete type but that type cannot live in the same package as the interface because of its dependencies. In that case, an interface is a good way to decouple two packages.
+
+Because interfaces are used in Go only when they are satisfied by two or more types, they necessarily abstract away from the details of any particular implementation. The result is smaller interfaces with fewer, simpler methods, often just one as with `io.Writer` or `fmt.Stringer`. Small interfaces are easier to satisfy when new types come along. A good rule of thumb for interface design is *ask only for what you need*.
+
+This concludes our tour of methods and interfaces. Go has great support for the object-oriented style of programming, but this does not mean you need to use it exclusively. Not everything need be an object; standalone functions have their place, as do unencapsulated data types. Observe that together, the examples in the first five chapters of this book call no more than two dozen methods, like `input.Scan`, as opposed to ordinary function calls like `fmt.Printf`.

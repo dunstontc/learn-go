@@ -124,3 +124,24 @@ able for iterating over with a `range` loop.
 - **Exercise 7.10**: The `sort.Interface` type can be adapted to other uses. Write a function `IsPalindrome(s sort.Interface) bool` that reports whether the sequence `s` is a palindrome, in other words, reversing the sequence would not change it. Assume that the elements at indices `i` and `j` are equal if `!s.Less(i, j) && !s.Less(j, i)`.
 - **Exercise 7.11**: Add additional handlers so that clients can create, read, update, and delete database entries. For example, a request of the form `/update?item=socks&price=6` will update the price of an item in the inventory and report an error if the item does not exist or if the price is invalid. (Warning: this change introduces concurrent variable updates.)
 - **Exercise 7.12**: Change the handler for `/list` to print its output as an HTML table, not text. You may find the `html/template` package (§4.6) useful.
+- **Exercise 7.13**: Add a `String` method to `Expr` to pretty-print the syntax tree. Check that the results, when parsed again, yield an equivalent tree.
+- **Exercise 7.14**: Define a new concrete type that satisfies the `Expr` interface and provides a new operation such as computing the minimum value of its operands. Since the `Parse` function does not create instances of this new type, to use it you will need to construct a syntax tree directly (or extend the parser).
+- **Exercise 7.15**: Write a program that reads a single expression from the standard input, prompts the user to provide values for any variables, then evaluates the expression in the resulting environment. Handle all errors gracefully.
+- **Exercise 7.16**: Write a web-based calculator program.
+- **Exercise 7.17**: Extend `xmlselect` so that elements may be selected not just by name, but by their attributes too, in the manner of CSS, so that, for instance, an element like `<div id="page" class="wide">` could be selected by a matching `id` or `class` as well as its name.
+- **Exercise 7.18**: Using the token-based decoder API, write a program that will read an arbitrary XML document and construct a tree of generic nodes that represents it. Nodes are of two kinds: `CharData` nodes represent text strings, and `Element` nodes represent named elements and their attributes. Each element node has a slice of child nodes.
+
+You may find the following declarations helpful.
+```go
+    import "encoding/xml"
+
+    type Node interface{} // CharData or *Element
+     
+    type CharData string
+
+    type Element struct {
+        Type     xml.Name
+        Attr     []xml.Attr
+        Children []Node
+    }
+```
