@@ -997,7 +997,7 @@ The value of err is shown graphically in Figure 7.6.
 
 ## 7.9. Example: Expression Evaluator 
 
-In this section, we’ll build an evaluator for simple arithmetic expressions. We’ll use an interface, `Expr`, to represent any expression in this language. For now, this interface needs no methods, but we’ll add some later.
+In this section, we'll build an evaluator for simple arithmetic expressions. We'll use an interface, `Expr`, to represent any expression in this language. For now, this interface needs no methods, but we'll add some later.
 ```go
     // An Expr is an arithmetic expression.
     type Expr interface{}
@@ -1008,7 +1008,7 @@ Our expression language consists of floating-point literals; the binary operator
     pow(x, 3) + pow(y, 3)
     (F - 32) * 5 / 9
 ```
-The five concrete types below represent particular kinds of expression. A `Var` represents a reference to a variable. (We’ll soon see why it is exported.) A `literal` represents a floating-point constant. The `unary` and `binary` types represent operator expressions with one or two operands, which can be any kind of `Expr`. A call represents a function `call`; we’ll restrict its `fn` field to `pow`, `sin`, or `sqrt`.
+The five concrete types below represent particular kinds of expression. A `Var` represents a reference to a variable. (We'll soon see why it is exported.) A `literal` represents a floating-point constant. The `unary` and `binary` types represent operator expressions with one or two operands, which can be any kind of `Expr`. A call represents a function `call`; we'll restrict its `fn` field to `pow`, `sin`, or `sqrt`.
 ```go
 // gopl.io/ch7/eval
 // A Var identifies a variable, e.g., x.
@@ -1035,11 +1035,11 @@ type call struct {
 	args []Expr
 }
 ```
-To evaluate an expression containing variables, we’ll need an *environment* that maps variable names to values:
+To evaluate an expression containing variables, we'll need an *environment* that maps variable names to values:
 ```go
 type Env map[Var]float64
 ```
-We’ll also need each kind of expression to define an `Eval` method that returns the expression’s value in a given environment. Since every expression must provide this method, we add it to the `Expr` interface. The package exports only the types `Expr`, `Env`, and `Var`; clients can use the evaluator without access to the other expression types.
+We'll also need each kind of expression to define an `Eval` method that returns the expression's value in a given environment. Since every expression must provide this method, we add it to the `Expr` interface. The package exports only the types `Expr`, `Env`, and `Var`; clients can use the evaluator without access to the other expression types.
 ```go
 type Expr interface {
     // Eval returns the value of this Expr in the environment env.
@@ -1056,7 +1056,7 @@ func (l literal) Eval(_ Env) float64 {
   return float64(l)
 }
 ```
-The `Eval` methods for `unary` and `binary` recursively evaluate their operands, then apply the operation `op` to them. We don’t consider divisions by zero or infinity to be errors, since they produce a result, albeit non-finite. Finally, the method for `call` evaluates the arguments to the `pow`, `sin`, or `sqrt` function, then calls the corresponding function in the math package.
+The `Eval` methods for `unary` and `binary` recursively evaluate their operands, then apply the operation `op` to them. We don't consider divisions by zero or infinity to be errors, since they produce a result, albeit non-finite. Finally, the method for `call` evaluates the arguments to the `pow`, `sin`, or `sqrt` function, then calls the corresponding function in the math package.
 ```go
 func (u unary) Eval(env Env) float64 {
 	switch u.op {
@@ -1094,9 +1094,9 @@ func (c call) Eval(env Env) float64 {
 	panic(fmt.Sprintf("unsupported function call: %s", c.fn))
 }
 ```
-Several of these methods can fail. For example, a `call` expression could have an unknown function or the wrong number of arguments. It’s also possible to construct a `unary` or `binary` expression with an invalid operator such as `!` or `<` (although the `Parse` function mentioned below will never do this). These errors cause `Eval` to panic. Other errors, like evaluating a `Var` not present in the environment, merely cause `Eval` to return the wrong result. All of these errors could be detected by inspecting the `Expr` before evaluating it. That will be the job of the `Check` method, which we will show soon, but first let’s test `Eval`.
+Several of these methods can fail. For example, a `call` expression could have an unknown function or the wrong number of arguments. It's also possible to construct a `unary` or `binary` expression with an invalid operator such as `!` or `<` (although the `Parse` function mentioned below will never do this). These errors cause `Eval` to panic. Other errors, like evaluating a `Var` not present in the environment, merely cause `Eval` to return the wrong result. All of these errors could be detected by inspecting the `Expr` before evaluating it. That will be the job of the `Check` method, which we will show soon, but first let's test `Eval`.
 
-The `TestEval` function below is a test of the evaluator. It uses the `testing` package, which we’ll explain in Chapter 11, but for now it’s enough to know that calling `t.Errorf` reports an error. The function loops over a table of inputs that defines three expressions and different environments for each one. The first expression computes the radius of a circle given its area `A`, the second computes the sum of the cubes of two variables `x` and `y`, and the third converts a Fahrenheit temperature `F` to Celsius.
+The `TestEval` function below is a test of the evaluator. It uses the `testing` package, which we'll explain in Chapter 11, but for now it's enough to know that calling `t.Errorf` reports an error. The function loops over a table of inputs that defines three expressions and different environments for each one. The first expression computes the radius of a circle given its area `A`, the second computes the sum of the cubes of two variables `x` and `y`, and the third converts a Fahrenheit temperature `F` to Celsius.
 ```go
 // gopl.io/ch7/eval/eval_test
 func TestEval(t *testing.T) {
@@ -1138,13 +1138,13 @@ func TestEval(t *testing.T) {
 	}
 }
 ```
-For each entry in the table, the test parses the expression, evaluates it in the environment, and prints the result. We don’t have space to show the `Parse` function here, but you’ll find it if you download the package using `go get`.
+For each entry in the table, the test parses the expression, evaluates it in the environment, and prints the result. We don't have space to show the `Parse` function here, but you'll find it if you download the package using `go get`.
 
-The `go test` command (§11.1) runs a package’s tests:
+The `go test` command (§11.1) runs a package's tests:
 ```bash
     $ go test -v gopl.io/ch7/eval
 ```
-The `-v` flag lets us see the printed output of the test, which is normally suppressed for a suc- cessful test like this one. Here is the output of the test’s `fmt.Printf` statements:
+The `-v` flag lets us see the printed output of the test, which is normally suppressed for a suc- cessful test like this one. Here is the output of the test's `fmt.Printf` statements:
 ```
 sqrt(A / pi)
 	map[A:87616 pi:3.141592653589793] => 167
@@ -1160,7 +1160,7 @@ pow(x, 3) + pow(y, 3)
 ```
 Fortunately the inputs so far have all been well formed, but our luck is unlikely to last. Even in interpreted languages, it is common to check the syntax for *static* errors, that is, mistakes that can be detected without running the program. By separating the static checks from the dynamic ones, we can detect errors sooner and perform many checks only once instead of each time an expression is evaluated.
 
-Let’s add another method to the `Expr` interface. The `Check` method checks for static errors in an expression syntax tree. We’ll explain its `vars` parameter in a moment.
+Let's add another method to the `Expr` interface. The `Check` method checks for static errors in an expression syntax tree. We'll explain its `vars` parameter in a moment.
 ```go
     type Expr interface {
         Eval(env Env) float64
@@ -1216,7 +1216,7 @@ func (c call) Check(vars map[Var]bool) error {
 
 var numParams = map[string]int{"pow": 2, "sin": 1, "sqrt": 1}
 ```
-We’ve listed a selection of flawed inputs and the errors they elicit, in two groups. The `Parse` function (not shown) reports syntax errors and the `Check` function reports semantic errors.
+We've listed a selection of flawed inputs and the errors they elicit, in two groups. The `Parse` function (not shown) reports syntax errors and the `Check` function reports semantic errors.
 ```
 x % 2         unexpected '%'
 math.Pi       unexpected '.'
@@ -1227,7 +1227,7 @@ sqrt(1, 2)    call to sqrt has 2 args, want 1
 ```
 `Check`'s argument, a set of `Vars`, accumulates the set of variable names found within the expression. Each of these variables must be present in the environment for evaluation to succeed. This set is logically the result of the call to `Check`, but because the method is recursive, it is more convenient for `Check` to populate a set passed as a parameter. The client must provide an empty set in the initial call.
 
-In Section 3.2, we plotted a function `f(x,y)` that was fixed at compile time. Now that we can parse, check, and evaluate expressions in strings, we can build a web application that receives an expression at run time from the client and plots the surface of that function. We can use the `vars` set to check that the expression is a function of only two variables, `x` and `y`—three, actually, since we’ll provide `r`, the radius, as a convenience. And we’ll use the `Check` method to reject ill-formed expressions before evaluation begins so that we don’t repeat those checks during the 40,000 evaluations (100x100 cells, each with four corners) of the function that follow.
+In Section 3.2, we plotted a function `f(x,y)` that was fixed at compile time. Now that we can parse, check, and evaluate expressions in strings, we can build a web application that receives an expression at run time from the client and plots the surface of that function. We can use the `vars` set to check that the expression is a function of only two variables, `x` and `y`—three, actually, since we'll provide `r`, the radius, as a convenience. And we'll use the `Check` method to reject ill-formed expressions before evaluation begins so that we don't repeat those checks during the 40,000 evaluations (100x100 cells, each with four corners) of the function that follow.
 
 The `parseAndCheck` function combines these parsing and checking steps:
 ```go
