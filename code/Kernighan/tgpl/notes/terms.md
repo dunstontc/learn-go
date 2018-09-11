@@ -22,4 +22,5 @@
 | field tag         | A field tag is a string of metadata associated at compile time with the field of a struct                                                                                           |
 | function literal  | A function literal is written like a function declaration, but without a name following the func keyword. <br/> It is an expression, and its value is called an anonymous function. |
 | type assertion    | A type assertion is an operation applied to an interface value. <br/> A type assertion checks that the dynamic type of its operand matches the asserted type.                       |
-| communication     | a send or receive operation on some channel                                                                                                                                         |
+| communication     | A send or receive operation on some channel                                                                                                                                         |
+| memoizing         | Caching the result of a function so that it need be computed only once                                                                                                              |
