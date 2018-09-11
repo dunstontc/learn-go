@@ -15,18 +15,18 @@
 
 In the previous chapter, we presented several programs that use goroutines and channels to express concurrency in a direct and natural way. However, in doing so, we glossed over a number of important and subtle issues that programmers must bear in mind when writing concurrent code.
 
-In this chapter, we’ll take a closer look at the mechanics of concurrency. In particular, we’ll point out some of the problems associated with sharing variables among multiple goroutines, the analytical techniques for recognizing those problems, and the patterns for solving them. Finally, we’ll explain some of the technical differences between goroutines and operating system threads.
+In this chapter, we'll take a closer look at the mechanics of concurrency. In particular, we'll point out some of the problems associated with sharing variables among multiple goroutines, the analytical techniques for recognizing those problems, and the patterns for solving them. Finally, we'll explain some of the technical differences between goroutines and operating system threads.
 
 
 ## 9.1. Race Conditions 
-## 9.2. Mutual Exclusion: sync.Mutex 
-## 9.3. Read/Write Mutexes: sync.RWMutex 
+## 9.2. Mutual Exclusion: `sync.Mutex` 
+## 9.3. Read/Write Mutexes: `sync.RWMutex` 
 ## 9.4. Memory Synchronization 
-## 9.5. Lazy Initialization: sync.Once 
+## 9.5. Lazy Initialization: `sync.Once` 
 ## 9.6. The Race Detector 
 ## 9.7. Example: Concurrent Non-Blocking Cache 
 ## 9.8. Goroutines and Threads
-### 9.8.1
-### 9.8.2
-### 9.8.3
-### 9.8.4
+### 9.8.1 Growable Stacks
+### 9.8.2 Goroutine Scheduling
+### 9.8.3 `GOMAXPROCS`
+### 9.8.4. Goroutines Have No Identity
