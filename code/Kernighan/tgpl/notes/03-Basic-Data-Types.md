@@ -19,13 +19,13 @@
 <!-- /TOC -->
 
 
-It’s all bits at the bottom, of course, but computers operate fundamentally on fixed-size numbers called *words*, which are interpreted as integers, floating-point numbers, bit sets, or memory addresses, then combined into larger aggregates that represent packets, pixels, portfolios, poetry, and everything else. Go offers a variety of ways to organize data, with a spectrum of data types that at one end match the features of the hardware and at the other end provide what programmers need to conveniently represent complicated data structures.
+It's all bits at the bottom, of course, but computers operate fundamentally on fixed-size numbers called *words*, which are interpreted as integers, floating-point numbers, bit sets, or memory addresses, then combined into larger aggregates that represent packets, pixels, portfolios, poetry, and everything else. Go offers a variety of ways to organize data, with a spectrum of data types that at one end match the features of the hardware and at the other end provide what programmers need to conveniently represent complicated data structures.
 
-Go’s types fall into four categories: *basic types*, *aggregate types*, *reference types*, and *interface types*. Basic types, the topic of this chapter, include numbers, strings, and booleans. Aggregate types—arrays (§4.1) and structs (§4.4)—form more complicated data types by combining values of several simpler ones. Reference types are a diverse group that includes pointers (§2.3.2), slices (§4.2), maps (§4.3), functions (Chapter 5), and channels (Chapter 8), but what they have in common is that they all refer to program variables or state indirectly, so that the effect of an operation applied to one reference is observed by all copies of that reference. Finally, we’ll talk about interface types in Chapter 7.
+Go's types fall into four categories: *basic types*, *aggregate types*, *reference types*, and *interface types*. Basic types, the topic of this chapter, include numbers, strings, and booleans. Aggregate types—arrays (§4.1) and structs (§4.4)—form more complicated data types by combining values of several simpler ones. Reference types are a diverse group that includes pointers (§2.3.2), slices (§4.2), maps (§4.3), functions (Chapter 5), and channels (Chapter 8), but what they have in common is that they all refer to program variables or state indirectly, so that the effect of an operation applied to one reference is observed by all copies of that reference. Finally, we'll talk about interface types in Chapter 7.
 
 ## 3.1. Integers 
 
-Go’s numeric data types include several sizes of integers, floating-point numbers, and complex numbers. Each numeric type determines the size and signedness of its values. Let’s begin with integers.
+Go's numeric data types include several sizes of integers, floating-point numbers, and complex numbers. Each numeric type determines the size and signedness of its values. Let's begin with integers.
 
 Go provides both signed and unsigned integer arithmetic. There are four distinct sizes of signed integers—8, 16, 32, and 64 bits—represented by the types `int8`, `int16`, `int32`, and `int64`, and corresponding unsigned versions `uint8`, `uint16`, `uint32`, and `uint64`.
 
@@ -33,13 +33,13 @@ There are also two types called just `int` and `uint` that are the natural or mo
 
 The type `rune` is an synonym for `int32` and conventionally indicates that a value is a Unicode code point. The two names may be used interchangeably. Similarly, the type `byte` is an synonym for `uint8`, and emphasizes that the value is a piece of raw data rather than a small numeric quantity.
 
-Finally, there is an unsigned integer type `uintptr`, whose width is not specified but is sufficient to hold all the bits of a pointer value. The `uintptr` type is used only for low-level programming, such as at the boundary of a Go program with a C library or an operating system. We’ll see examples of this when we deal with the unsafe package in Chapter 13.
+Finally, there is an unsigned integer type `uintptr`, whose width is not specified but is sufficient to hold all the bits of a pointer value. The `uintptr` type is used only for low-level programming, such as at the boundary of a Go program with a C library or an operating system. We'll see examples of this when we deal with the unsafe package in Chapter 13.
 
 Regardless of their size, `int`, `uint`, and `uintptr` are different types from their explicitly sized siblings. Thus `int` is not the same type as `int32`, even if the natural size of integers is 32 bits, and an explicit conversion is required to use an `int` value where an `int32` is needed, and vice versa.
 
 Signed numbers are represented in *Two's-complement* [*0*](https://www.youtube.com/watch?v=lKTsv6iVxV4&t=188s) [*1*](https://www.reddit.com/r/compsci/comments/26jnqu/im_having_trouble_understanding_twos_compliment/) [*2*](https://stackoverflow.com/a/1049880/7687024)  form, in which the high-order bit is reserved for the sign of the number and the range of values of an *n*-bit number is from $−2^{n−1}$ to $2^{n−1}−1$. Unsigned integers use the full range of bits for non-negative values and thus have the range 0 to $2^n−1$. For instance, the range of `int8` is −128 to 127, whereas the range of `uint8` is 0 to 255.
 
-Go’s binary [operators](https://golang.org/ref/spec#Operators) for arithmetic, logic, and comparison are listed here in order of decreasing precedence:
+Go's binary [operators](https://golang.org/ref/spec#Operators) for arithmetic, logic, and comparison are listed here in order of decreasing precedence:
 ```
   *    /    %    <<    >>    &    &^    
   +    -    |    ^
@@ -70,7 +70,7 @@ Two integers of the same type may be compared using the binary comparison operat
   >=    greater than or equal to
 ```
 
-In fact, all values of basic type—booleans, numbers, and strings—are *comparable*, meaning that two values of the same type may be compared using the `==` and `!=` operators. Furthermore, integers, floating-point numbers, and strings are *ordered* by the comparison operators. The values of many other types are not comparable, and no other types are ordered. As we encounter each type, we’ll present the rules governing the *comparability* of its values.
+In fact, all values of basic type—booleans, numbers, and strings—are *comparable*, meaning that two values of the same type may be compared using the `==` and `!=` operators. Furthermore, integers, floating-point numbers, and strings are *ordered* by the comparison operators. The values of many other types are not comparable, and no other types are ordered. As we encounter each type, we'll present the rules governing the *comparability* of its values.
 
 There are also unary addition and subtraction operators:
 ```
@@ -90,7 +90,7 @@ Go also provides the following bitwise binary operators, the first four of which
 
 The operator `^` is bitwise exclusive OR (XOR) when used as a binary operator, but when used as a unary prefix operator it is bitwise negation or complement; that is, it returns a value with each bit in its operand inverted. The `&^` operator is bit clear (AND NOT): in the expression  `z = x &^ y`, each bit of `z` is `0` if the corresponding bit of `y` is `1`; otherwise it equals the corresponding bit of `x`.
 
-The code below shows how bitwise operations can be used to interpret a `uint8` value as a compact and efficient set of 8 independent bits. It uses `Printf`’s `%b` verb to print a number’s binary digits; `08` modifies `%b` (an adverb!) to pad the result with zeros to exactly 8 digits.
+The code below shows how bitwise operations can be used to interpret a `uint8` value as a compact and efficient set of 8 independent bits. It uses `Printf`'s `%b` verb to print a number's binary digits; `08` modifies `%b` (an adverb!) to pad the result with zeros to exactly 8 digits.
 ```go
   var x uint8 = 1<<1 | 1<<5
   var y uint8 = 1<<1 | 1<<2
@@ -112,9 +112,9 @@ The code below shows how bitwise operations can be used to interpret a `uint8` v
 
 In the shift operations `x<<n` and `x>>n`, the `n` operand determines the number of bit positions to shift and must be unsigned; the x operand may be unsigned or signed. Arithmetically, a left shift `x<<n` is equivalent to multiplication by $2^n$ and a right shift `x>>n` is equivalent to the floor of division by $2^n$.
 
-Left shifts fill the vacated bits with zeros, as do right shifts of unsigned numbers, but right shifts of signed numbers fill the vacated bits with copies of the sign bit. For this reason, it is important to use unsigned arithmetic when you’re treating an integer as a bit pattern.
+Left shifts fill the vacated bits with zeros, as do right shifts of unsigned numbers, but right shifts of signed numbers fill the vacated bits with copies of the sign bit. For this reason, it is important to use unsigned arithmetic when you're treating an integer as a bit pattern.
 
-Although Go provides unsigned numbers and arithmetic, we tend to use the signed `int` form even for quantities that can’t be negative, such as the length of an array, though `uint` might seem a more obvious choice. Indeed, the built-in len function returns a signed int, as in this loop which announces prize medals in reverse order:
+Although Go provides unsigned numbers and arithmetic, we tend to use the signed `int` form even for quantities that can't be negative, such as the length of an array, though `uint` might seem a more obvious choice. Indeed, the built-in len function returns a signed int, as in this loop which announces prize medals in reverse order:
 ```go
   medals := []string{"gold", "silver", "bronze"}
   for i := len(medals) - 1; i >= 0; i-- {
@@ -170,7 +170,7 @@ When printing numbers using the `fmt` package, we can control the radix and form
 
 Note the use of two `fmt` tricks. Usually a `Printf` format string containing multiple `%` verbs would require the same number of extra operands, but the `[1]` "adverbs" after `%` tell `Printf` to use the first operand over and over again. Second, the `#` adverb for `%o` or `%x` or `%X` tells `Printf` to emit a `0` or `0x` or `0X` prefix respectively.
 
-Rune literals are written as a character within single quotes. The simplest example is an ASCII character like `'a'`, but it’s possible to write any Unicode code point either directly or with numeric escapes, as we will see shortly.
+Rune literals are written as a character within single quotes. The simplest example is an ASCII character like `'a'`, but it's possible to write any Unicode code point either directly or with numeric escapes, as we will see shortly.
 
 Runes are printed with `%c`, or with `%q` if quoting is desired:
 ```go
@@ -202,7 +202,7 @@ Digits may be omitted before the decimal point (`.707`) or after it (`1.`). Very
   const Avogadro = 6.02214129e23
   const Planck   = 6.62606957e-34
 ```
-Floating-point values are conveniently printed with `Printf’s` `%g` verb, which chooses the most compact representation that has adequate precision, but for tables of data, the `%e` (exponent) or `%f` (no exponent) forms may be more appropriate. All three verbs allow field width and numeric precision to be controlled.
+Floating-point values are conveniently printed with `Printf's` `%g` verb, which chooses the most compact representation that has adequate precision, but for tables of data, the `%e` (exponent) or `%f` (no exponent) forms may be more appropriate. All three verbs allow field width and numeric precision to be controlled.
 ```go
   for x := 0; x < 8; x++ {
       fmt.Printf("x = %d eA = %8.3f\n", x, math.Exp(float64(x)))
@@ -226,13 +226,13 @@ In addition to a large collection of the usual mathematical functions, the `math
   fmt.Println(z, -z, 1/z, -1/z, z/z) //  "0 -0 +Inf -Inf NaN"
 ```
 
-The function `math.IsNaN` tests whether its argument is a not-a-number value, and `math.NaN` returns such a value. It’s tempting to use NaN as a sentinel value in a numeric computation, but testing whether a specific computational result is equal to NaN is fraught with peril because any comparison with NaN always yields false:
+The function `math.IsNaN` tests whether its argument is a not-a-number value, and `math.NaN` returns such a value. It's tempting to use NaN as a sentinel value in a numeric computation, but testing whether a specific computational result is equal to NaN is fraught with peril because any comparison with NaN always yields false:
 ```go
   nan := math.NaN()
   fmt.Println(nan == nan, nan < nan, nan > nan) // "false false false"
 ```
 
-If a function that returns a floating-point result might fail, it’s better to report the failure separately, like this:
+If a function that returns a floating-point result might fail, it's better to report the failure separately, like this:
 ```go
   func compute() (value float64, ok bool) {
       // ...
@@ -306,7 +306,7 @@ func f(x, y float64) float64 {
 
 Notice that the function `corner` returns two values, the coordinates of the corner of the cell.
 
-The explanation of how the program works requires only basic geometry, but it’s fine to skip over it, since the point is to illustrate floating-point computation. The essence of the program is mapping between three different coordinate systems, shown in Figure 3.2. The first is a 2-D grid of 100x100 cells identified by integer coordinates (*i*, *j*), starting at (0, 0) in the far back corner. We plot from the back to the front so that background polygons may be obscured by foreground ones.
+The explanation of how the program works requires only basic geometry, but it's fine to skip over it, since the point is to illustrate floating-point computation. The essence of the program is mapping between three different coordinate systems, shown in Figure 3.2. The first is a 2-D grid of 100x100 cells identified by integer coordinates (*i*, *j*), starting at (0, 0) in the far back corner. We plot from the back to the front so that background polygons may be obscured by foreground ones.
 
 The second coordinate system is a mesh of 3-D floating-point coordinates (*x*, *y*, *z*), where *x* and *y* are linear functions of *i* and *j*, translated so that the origin is in the center, and scaled by the constant `xyrange`. The height *z* is the value of the surface function *f(x, y)*.
 
@@ -410,7 +410,7 @@ The two nested loops iterate over each point in a 1024x1024 grayscale raster ima
 
 - **Exercise 3.5**: Implement a full-color Mandelbrot set using the function `image.NewRGBA` and the type `color.RGBA` or `color.YCbCr`.
 - **Exercise 3.6**: Supersampling is a technique to reduce the effect of pixelation by computing the color value at several points within each pixel and taking the average. The simplest method is to divide each pixel into four "subpixels." Implement it.
-- **Exercise 3.7**: Another simple fractal uses Newton’s method to find complex solutions to a function such as $z^4−1 = 0$. Shade each starting point by the number of iterations required to get close to one of the four roots. Color each point by the root it approaches.
+- **Exercise 3.7**: Another simple fractal uses Newton's method to find complex solutions to a function such as $z^4−1 = 0$. Shade each starting point by the number of iterations required to get close to one of the four roots. Color each point by the root it approaches.
 
 ![Figure 3.3](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/mandelbrot.png)
 
@@ -435,7 +435,7 @@ Since `&&` has higher precedence than `||` (mnemonic: `&&` is boolean multiplica
      // ...ASCII letter or digit...
   }
 ```
-There is no implicit conversion from a boolean value to a numeric value like 0 or 1, or vice versa. It’s necessary to use an explicit `if`, as in
+There is no implicit conversion from a boolean value to a numeric value like 0 or 1, or vice versa. It's necessary to use an explicit `if`, as in
 ```go
   i := 0 if b {
       i=1
@@ -451,7 +451,7 @@ It might be worth writing a conversion function if this operation were needed of
       return 0
   }
 ```
-The inverse operation is so simple that it doesn’t warrant a function, but for symmetry here it is:
+The inverse operation is so simple that it doesn't warrant a function, but for symmetry here it is:
 ```go
 
   // itob reports whether i is non-zero.
@@ -461,7 +461,7 @@ The inverse operation is so simple that it doesn’t warrant a function, but for
 
 ## 3.5. Strings 
 
-A string is an immutable sequence of bytes. Strings may contain arbitrary data, including bytes with value 0, but usually they contain human-readable text. Text strings are conventionally interpreted as UTF-8-encoded sequences of Unicode code points (runes), which we’ll explore in detail very soon.
+A string is an immutable sequence of bytes. Strings may contain arbitrary data, including bytes with value 0, but usually they contain human-readable text. Text strings are conventionally interpreted as UTF-8-encoded sequences of Unicode code points (runes), which we'll explore in detail very soon.
 
 The built-in len function returns the number of bytes (not runes) in a string, and the *index* operation `s[i]` retrieves the *i*-th byte of string `s`, where `0 ≤ i < len(s)`.
 ```go
@@ -505,7 +505,7 @@ This does not modify the string that `s` originally held but causes `s` to hold 
   fmt.Println(s) // "left foot, right foot"
   fmt.Println(t) // "left foot"
 ```
-Since strings are immutable, constructions that try to modify a string’s data in place are not allowed:
+Since strings are immutable, constructions that try to modify a string's data in place are not allowed:
 ```go
   s[0] = 'L' // compile error: cannot assign to s[0]
 ```
@@ -536,7 +536,7 @@ Within a double-quoted string literal, *escape sequences* that begin with a back
 | `\'`            | single quote (only in the rune literal `'\''`) \" double quote (only within `"..."` literals) |
 | `\\`            | backslash                                                                                    |
 
-Arbitrary bytes can also be included in literal strings using hexadecimal or octal escapes. A *hexadecimal escape* is written *\xhh*, with exactly two hexadecimal digits *h* (in upper or lower case). An *octal escape* is written *\ooo* with exactly three octal digits *o* (0 through 7) not exceeding `\377`. Both denote a single byte with the specified value. Later, we’ll see how to encode Unicode code points numerically in string literals.
+Arbitrary bytes can also be included in literal strings using hexadecimal or octal escapes. A *hexadecimal escape* is written *\xhh*, with exactly two hexadecimal digits *h* (in upper or lower case). An *octal escape* is written *\ooo* with exactly three octal digits *o* (0 through 7) not exceeding `\377`. Both denote a single byte with the specified value. Later, we'll see how to encode Unicode code points numerically in string literals.
 
 A *raw string literal* is written `...`, using backquotes instead of double quotes. Within a raw string literal, no escape sequences are processed; the contents are taken literally, including backslashes and newlines, so a raw string literal may spread over several lines in the program source. The only processing is that carriage returns are deleted so that the value of the string is the same on all platforms, including those that conventionally put carriage returns in text files.
 
@@ -551,11 +551,11 @@ Raw string literals are a convenient way to write regular expressions, which ten
 
 ### 3.5.2 Unicode
 
-Long ago, life was simple and there was, at least in a parochial view, only one character set to deal with: ASCII, the American Standard Code for Information Interchange. ASCII, or more precisely US-ASCII, uses 7 bits to represent 128 ‘‘characters’’: the upperand lower-case letters of English, digits, and a variety of punctuation and device-control characters. For much of the early days of computing, this was adequate, but it left a very large fraction of the world’s population unable to use their own writing systems in computers. With the growth of the Internet, data in myriad languages has become much more common. How can this rich variety be dealt with at all and, if possible, efficiently?
+Long ago, life was simple and there was, at least in a parochial view, only one character set to deal with: ASCII, the American Standard Code for Information Interchange. ASCII, or more precisely US-ASCII, uses 7 bits to represent 128 ‘‘characters'': the upperand lower-case letters of English, digits, and a variety of punctuation and device-control characters. For much of the early days of computing, this was adequate, but it left a very large fraction of the world's population unable to use their own writing systems in computers. With the growth of the Internet, data in myriad languages has become much more common. How can this rich variety be dealt with at all and, if possible, efficiently?
 
-The answer is [Unicode](https://unicode.org/), which collects all of the characters in all of the world’s writing systems, plus accents and other diacritical marks, control codes like tab and carriage return, and plenty of esoterica, and assigns each one a standard number called a *Unicode code point* or, in Go terminology, a *rune*.
+The answer is [Unicode](https://unicode.org/), which collects all of the characters in all of the world's writing systems, plus accents and other diacritical marks, control codes like tab and carriage return, and plenty of esoterica, and assigns each one a standard number called a *Unicode code point* or, in Go terminology, a *rune*.
 
-Unicode version 8 defines code points for over 120,000 characters in well over 100 languages and scripts. How are these represented in computer programs and data? The natural data type to hold a single rune is `int32`, and that’s what Go uses; it has the synonym `rune` for precisely this purpose.
+Unicode version 8 defines code points for over 120,000 characters in well over 100 languages and scripts. How are these represented in computer programs and data? The natural data type to hold a single rune is `int32`, and that's what Go uses; it has the synonym `rune` for precisely this purpose.
 
 We could represent a sequence of runes as a sequence of `int32` values. In this representation, which is called UTF-32 or UCS-4, the encoding of each Unicode code point has the same size, 32 bits. This is simple and uniform, but it uses much more space than necessary since most computer-readable text is in ASCII, which requires only 8 bits or 1 byte per character. All the characters in widespread use still number fewer than 65,536, which would fit in 16 bits. Can we do better?
 
@@ -571,7 +571,7 @@ UTF-8 is a variable-length encoding of Unicode code points as bytes. UTF-8 was i
 | 110xxxx 10xxxxxx 10xxxxxx          | 2048−65535     | (values <2048 unused) |
 | 1110xxx 10xxxxxx 10xxxxxx 10xxxxxx | 65536−0x10ffff | (other values unused) |
 
-A variable-length encoding precludes direct indexing to access the *n*-th character of a string, but UTF-8 has many desirable properties to compensate. The encoding is compact, compatible with ASCII, and self-synchronizing: it’s possible to find the beginning of a character by backing up no more than three bytes. It’s also a prefix code, so it can be decoded from left to right without any ambiguity or lookahead. No rune’s encoding is a substring of any other, or even of a sequence of others, so you can search for a rune by just searching for its bytes, without worrying about the preceding context. The lexicographic byte order equals the Unicode code point order, so sorting UTF-8 works naturally. There are no embedded NUL (zero) bytes, which is convenient for programming languages that use NUL to terminate strings.
+A variable-length encoding precludes direct indexing to access the *n*-th character of a string, but UTF-8 has many desirable properties to compensate. The encoding is compact, compatible with ASCII, and self-synchronizing: it's possible to find the beginning of a character by backing up no more than three bytes. It's also a prefix code, so it can be decoded from left to right without any ambiguity or lookahead. No rune's encoding is a substring of any other, or even of a sequence of others, so you can search for a rune by just searching for its bytes, without worrying about the preceding context. The lexicographic byte order equals the Unicode code point order, so sorting UTF-8 works naturally. There are no embedded NUL (zero) bytes, which is convenient for programming languages that use NUL to terminate strings.
 
 Go source files are always encoded in UTF-8, and UTF-8 is the preferred encoding for text strings manipulated by Go programs. The `unicode` package provides functions for working with individual runes (such as distinguishing letters from numbers, or converting an uppercase letter to a lower-case one), and the `unicode/utf8` package provides functions for encoding and decoding runes as bytes using UTF-8.
 
@@ -594,7 +594,7 @@ Unicode escapes may also be used in rune literals. These three literals are equi
 
 A rune whose value is less than 256 may be written with a single hexadecimal escape, such as `'\x41'` for `'A'`, but for higher values, a `\u` or `\U` escape must be used. Consequently, `'\xe4\xb8\x96'` is not a legal rune literal, even though those three bytes are a valid UTF-8 encoding of a single code point.
 
-Thanks to the nice properties of UTF-8, many string operations don’t require decoding. We can test whether one string contains another as a prefix:
+Thanks to the nice properties of UTF-8, many string operations don't require decoding. We can test whether one string contains another as a prefix:
 ```go
   func HasPrefix(s, prefix string) bool {
       return len(s) >= len(prefix) && s[:len(prefix)] == prefix
@@ -634,7 +634,7 @@ To process those characters, we need a UTF-8 decoder. The `unicode/utf8` package
       i += size
   }
 ```
-Each call to `DecodeRuneInString` returns `r`, the rune itself, and `size`, the number of bytes occupied by the UTF-8 encoding of `r`. The size is used to update the byte index `i` of the next rune in the string. But this is clumsy, and we need loops of this kind all the time. Fortunately, Go’s `range` loop, when applied to a string, performs UTF-8 decoding implicitly. The output of the loop below is also shown in Figure 3.5; notice how the index jumps by more than 1 for each non-ASCII rune.
+Each call to `DecodeRuneInString` returns `r`, the rune itself, and `size`, the number of bytes occupied by the UTF-8 encoding of `r`. The size is used to update the byte index `i` of the next rune in the string. But this is clumsy, and we need loops of this kind all the time. Fortunately, Go's `range` loop, when applied to a string, performs UTF-8 decoding implicitly. The output of the loop below is also shown in Figure 3.5; notice how the index jumps by more than 1 for each non-ASCII rune.
 
 ![Figure 3.5](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig3.5.png)
 
@@ -650,7 +650,7 @@ We could use a simple `range` loop to count the number of runes in a string, lik
       n++ 
   }
 ```
-As with the other forms of range loop, we can omit the variables we don’t need:
+As with the other forms of range loop, we can omit the variables we don't need:
 ```go
   n := 0
   for range s {
@@ -659,9 +659,9 @@ As with the other forms of range loop, we can omit the variables we don’t need
 ```
 Or we can just call `utf8.RuneCountInString(s)`.
 
-We mentioned earlier that it is mostly a matter of convention in Go that text strings are interpreted as UTF-8-encoded sequences of Unicode code points, but for correct use of `range` loops on strings, it’s more than a convention, it’s a necessity. What happens if we range over a string containing arbitrary binary data or, for that matter, UTF-8 data containing errors?
+We mentioned earlier that it is mostly a matter of convention in Go that text strings are interpreted as UTF-8-encoded sequences of Unicode code points, but for correct use of `range` loops on strings, it's more than a convention, it's a necessity. What happens if we range over a string containing arbitrary binary data or, for that matter, UTF-8 data containing errors?
 
-Each time a UTF-8 decoder, whether explicit in a call to `utf8.DecodeRuneInString` or implicit in a `range` loop, consumes an unexpected input byte, it generates a special Unicode *replacement character*, `'\uFFFD'`, which is usually printed as a white question mark inside a black hexagonal or diamond-like shape `$`. When a program encounters this rune value, it’s often a sign that some upstream part of the system that generated the string data has been careless in its treatment of text encodings.
+Each time a UTF-8 decoder, whether explicit in a call to `utf8.DecodeRuneInString` or implicit in a `range` loop, consumes an unexpected input byte, it generates a special Unicode *replacement character*, `'\uFFFD'`, which is usually printed as a white question mark inside a black hexagonal or diamond-like shape `$`. When a program encounters this rune value, it's often a sign that some upstream part of the system that generated the string data has been careless in its treatment of text encodings.
 
 UTF-8 is exceptionally convenient as an interchange format but within a program runes may be more convenient because they are of uniform size and are thus easily indexed in arrays and slices.
 
@@ -695,7 +695,7 @@ If the rune is invalid, the replacement character is substituted:
 
 Four standard packages are particularly important for manipulating strings: `bytes`, `strings`, `strconv`, and `unicode`. The `strings` package provides many functions for searching, replacing, comparing, trimming, splitting, and joining strings.
 
-The `bytes` package has similar functions for manipulating slices of bytes, of type `[]byte`, which share some properties with strings. Because strings are immutable, building up strings incrementally can involve a lot of allocation and copying. In such cases, it’s more efficient to use the `bytes.Buffer` type, which we’ll show in a moment.
+The `bytes` package has similar functions for manipulating slices of bytes, of type `[]byte`, which share some properties with strings. Because strings are immutable, building up strings incrementally can involve a lot of allocation and copying. In such cases, it's more efficient to use the `bytes.Buffer` type, which we'll show in a moment.
 
 The `strconv` package provides functions for converting boolean, integer, and floating-point values to and from their string representations, and functions for quoting and unquoting strings.
 
@@ -744,9 +744,9 @@ func basename(s string) string {
 }
 ```
 
-The `path` and `path/filepath` packages provide a more general set of functions for manipulating hierarchical names. The `path` package works with slash-delimited paths on any platform. It shouldn’t be used for file names, but it is appropriate for other domains, like the path component of a URL. By contrast, `path/filepath` manipulates file names using the rules for the host platform, such as `/foo/bar` for POSIX or `c:\foo\bar` on Microsoft Windows.   
+The `path` and `path/filepath` packages provide a more general set of functions for manipulating hierarchical names. The `path` package works with slash-delimited paths on any platform. It shouldn't be used for file names, but it is appropriate for other domains, like the path component of a URL. By contrast, `path/filepath` manipulates file names using the rules for the host platform, such as `/foo/bar` for POSIX or `c:\foo\bar` on Microsoft Windows.   
 
-Let’s continue with another substring example. The task is to take a string representation of an integer, such as `"12345"`, and insert commas every three places, as in `"12,345"`. This version only works for integers; handling floating-point numbers is left as a exercise.   
+Let's continue with another substring example. The task is to take a string representation of an integer, such as `"12345"`, and insert commas every three places, as in `"12,345"`. This version only works for integers; handling floating-point numbers is left as a exercise.   
 ```go
 // gopl.io/ch3/comma
 // comma inserts commas in a non-negative decimal integer string.
@@ -813,9 +813,9 @@ func main() {
 	fmt.Println(intsToString([]int{1, 2, 3})) // "[1, 2, 3]"
 }
 ```
-When appending the UTF-8 encoding of an arbitrary rune to a `bytes.Buffer,` it’s best to use `bytes.Buffer`’s `WriteRune` method, but `WriteByte` is fine for ASCII characters such as `'['` and `']'`.
+When appending the UTF-8 encoding of an arbitrary rune to a `bytes.Buffer,` it's best to use `bytes.Buffer`'s `WriteRune` method, but `WriteByte` is fine for ASCII characters such as `'['` and `']'`.
 
-The `bytes.Buffer` type is extremely versatile, and when we discuss interfaces in Chapter 7, we’ll see how it may be used as a replacement for a file whenever an I/O function requires a sink for bytes (`io.Writer`) as `Fprintf` does above, or a source of bytes (`io.Reader`).
+The `bytes.Buffer` type is extremely versatile, and when we discuss interfaces in Chapter 7, we'll see how it may be used as a replacement for a file whenever an I/O function requires a sink for bytes (`io.Writer`) as `Fprintf` does above, or a source of bytes (`io.Reader`).
 
 #### Exercises
 - **Exercise 3.10**: Write a non-recursive version of `comma`, using `bytes.Buffer` instead of string concatenation.
@@ -825,7 +825,7 @@ The `bytes.Buffer` type is extremely versatile, and when we discuss interfaces i
 
 ### 3.5.5 Conversions between Strings and Numbers
 
-In addition to conversions between strings, runes, and bytes, it’s often necessary to convert between numeric values and their string representations. This is done with functions from the `strconv` package.
+In addition to conversions between strings, runes, and bytes, it's often necessary to convert between numeric values and their string representations. This is done with functions from the `strconv` package.
 
 
 To convert an integer to a string, one option is to use `fmt.Sprintf`; another is to use the function `strconv.Itoa` ("integer to ASCII"):
@@ -856,7 +856,7 @@ Sometimes `fmt.Scanf` is useful for parsing input that consists of orderly mixtu
 
 Constants are expressions whose value is known to the compiler and whose evaluation is guaranteed to occur at compile time, not at run time. The underlying type of every constant is a basic type: boolean, string, or number.
 
-A const declaration defines named values that look syntactically like variables but whose value is constant, which prevents accidental (or nefarious) changes during program execution. For instance, a constant is more appropriate than a variable for a mathematical constant like pi, since its value won’t change:
+A const declaration defines named values that look syntactically like variables but whose value is constant, which prevents accidental (or nefarious) changes during program execution. For instance, a constant is more appropriate than a variable for a mathematical constant like pi, since its value won't change:
 ```go
   const pi = 3.14159 // approximately; math.Pi is a better approximation
 ```
@@ -912,7 +912,7 @@ This is not very useful if the implicitly copied right-hand side expression alwa
 
 A const declaration may use the *constant generator* `iota`, which is used to create a sequence of related values without spelling out each one explicitly. In a `const` declaration, the value of iota begins at zero and increments by one for each item in the sequence.
 
-Here’s an example from the `time` package, which defines named constants of type `Weekday` for the days of the week, starting with zero for `Sunday`. Types of this kind are often called *enumerations*, or *enums* for short.
+Here's an example from the `time` package, which defines named constants of type `Weekday` for the days of the week, starting with zero for `Sunday`. Types of this kind are often called *enumerations*, or *enums* for short.
 ```go
   type Weekday int
   const (
@@ -982,7 +982,7 @@ As a more complex example of `iota`, this declaration names the powers of 1024:
   )
 ```
 
-The `iota` mechanism has its limits. For example, it’s not possible to generate the more familiar powers of 1000 (KB, MB, and so on) because there is no exponentiation operator.
+The `iota` mechanism has its limits. For example, it's not possible to generate the more familiar powers of 1000 (KB, MB, and so on) because there is no exponentiation operator.
 
 #### Exercises
 - **Exercise 3.13**: Write `const` declarations for KB, MB, up through YB as compactly as you can.
@@ -1063,7 +1063,7 @@ In a variable declaration without an explicit type (including short variable dec
   c := 0i     // untyped complex;        implicit complex128(0i)
 ```
 
-Note the asymmetry: untyped integers are converted to `int`, whose size is not guaranteed, but untyped floating-point and complex numbers are converted to the explicitly sized types `float64` and `complex128`. The language has no unsized `float` and `complex` types analogous to unsized `int`, because it is very difficult to write correct numerical algorithms without knowing the size of one’s floating-point data types.
+Note the asymmetry: untyped integers are converted to `int`, whose size is not guaranteed, but untyped floating-point and complex numbers are converted to the explicitly sized types `float64` and `complex128`. The language has no unsized `float` and `complex` types analogous to unsized `int`, because it is very difficult to write correct numerical algorithms without knowing the size of one's floating-point data types.
 
 To give the variable a different type, we must explicitly convert the untyped constant to the desired type or state the desired type in the variable declaration, as in these examples:
 ```go
@@ -1079,5 +1079,5 @@ These defaults are particularly important when converting an untyped constant to
 ```
 
 
-We’ve now covered the basic data types of Go. The next step is to show how they can be combined into larger groupings like arrays and structs, and then into data structures for solving real programming problems; that is the topic of Chapter 4.
+We've now covered the basic data types of Go. The next step is to show how they can be combined into larger groupings like arrays and structs, and then into data structures for solving real programming problems; that is the topic of Chapter 4.
 

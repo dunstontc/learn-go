@@ -164,6 +164,7 @@ You may find the following declarations helpful.
 ## Chapter 10
 - **Exercise 10.1**: Extend the `jpeg` program so that it converts any supported input format to any output format, using `image.Decode` to detect the input format and a flag to select the output format.
 - **Exercise 10.2**: Define a generic archive file-reading function capable of reading ZIP files (`archive/zip`) and POSIX tar files (`archive/tar`). Use a registration mechanism similar to the one described above so that support for each file format can be plugged in using blank imports.
+- **Exercise 10.3**: Using `fetch http://gopl.io/ch1/helloworld?go-get=1`, find out which service hosts the code samples for this book. (HTTP requests from `go get` include the `go-get` parameter so that servers can distinguish them from ordinary browser requests.)
 
 
 ## Chapter 11

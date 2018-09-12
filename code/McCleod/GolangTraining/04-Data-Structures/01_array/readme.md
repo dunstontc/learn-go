@@ -16,7 +16,7 @@
 
 ## Array Examples
 - understanding the difference between index position and the items stored
-  - if you’re storing three items in array a, those items will be at index positions 0, 1, 2
+  - if you're storing three items in array a, those items will be at index positions 0, 1, 2
     - len(a)-1 is your last index position
       - eg, 3-1 = 2 → 2 is your last index position for your array, a, which has three items
 - using break in a loop

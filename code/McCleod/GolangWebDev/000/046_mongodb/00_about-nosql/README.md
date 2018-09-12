@@ -57,7 +57,7 @@ Up to this point, we have been thinking about data storage in terms of rows. RDB
 
 With column nosql, data is stored in columns. This has performance gains.
 
-"Relational databases store all the data in a particular table’s rows together on-disk, making retrieval of a particular row fast.  Column-family databases generally serialize all the values of a particular column together on-disk, which makes retrieval of a large amount of a specific attribute fast.  This approach lends itself well to aggregate queries and analytics scenarios where you might run range queries over a specific field." [source](http://www.jamesserra.com/archive/2015/04/types-of-nosql-databases/)
+"Relational databases store all the data in a particular table's rows together on-disk, making retrieval of a particular row fast.  Column-family databases generally serialize all the values of a particular column together on-disk, which makes retrieval of a large amount of a specific attribute fast.  This approach lends itself well to aggregate queries and analytics scenarios where you might run range queries over a specific field." [source](http://www.jamesserra.com/archive/2015/04/types-of-nosql-databases/)
 
 Examples: Big Table (google), Cassandra (facebook), HBase
 

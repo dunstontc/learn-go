@@ -14,7 +14,7 @@
 
 Since the early 1990s, object-oriented programming (OOP) has been the dominant programming paradigm in industry and education, and nearly all widely used languages developed since then have included support for it. Go is no exception.
 
-Although there is no universally accepted definition of object-oriented programming, for our purposes, an object is simply a value or variable that has methods, and a method is a function associated with a particular type. An object-oriented program is one that uses methods to express the properties and operations of each data structure so that clients need not access the object’s representation directly.
+Although there is no universally accepted definition of object-oriented programming, for our purposes, an object is simply a value or variable that has methods, and a method is a function associated with a particular type. An object-oriented program is one that uses methods to express the properties and operations of each data structure so that clients need not access the object's representation directly.
 
 In earlier chapters, we have made regular use of methods from the standard library, like the Seconds method of type time.Duration:
 ```go
@@ -25,14 +25,14 @@ and we defined a method of our own in Section 2.5, a String method for the `Cels
 ```go
   func (c Celsius) String() string { return fmt.Sprintf("%g°C", c) }
 ```
-In this chapter, the first of two on object-oriented programming, we’ll show how to define and use methods effectively. We’ll also cover two key principles of object-oriented programming, *encapsulation* and *composition*.
+In this chapter, the first of two on object-oriented programming, we'll show how to define and use methods effectively. We'll also cover two key principles of object-oriented programming, *encapsulation* and *composition*.
 
 
 ## 6.1. Method Declarations 
 
 A method is declared with a variant of the ordinary function declaration in which an extra parameter appears before the function name. The parameter attaches the function to the type of that parameter.
 
-Let’s write our first method in a simple package for plane geometry:
+Let's write our first method in a simple package for plane geometry:
 ```go
 // gopl.io/ch6/geometry
 // Package geometry defines simple types for plane geometry.
@@ -52,9 +52,9 @@ func (p Point) Distance(q Point) float64 {
 	return math.Hypot((q.X-p.X), ((q.Y-p.Y))
 }
 ```
-The extra parameter p is called the method’s *receiver*, a legacy from early object-oriented languages that described calling a method as "sending a message to an object."
+The extra parameter p is called the method's *receiver*, a legacy from early object-oriented languages that described calling a method as "sending a message to an object."
 
-In Go, we don’t use a special name like *this* or *self* for the receiver; we choose receiver names just as we would for any other parameter. Since the receiver name will be frequently used, it’s a good idea to choose something short and to be consistent across methods. A common choice is the first letter of the type name, like `p` for `Point`.
+In Go, we don't use a special name like *this* or *self* for the receiver; we choose receiver names just as we would for any other parameter. Since the receiver name will be frequently used, it's a good idea to choose something short and to be consistent across methods. A common choice is the first letter of the type name, like `p` for `Point`.
 
 In a method call, the receiver argument appears before the method name. This parallels the declaration, in which the receiver parameter appears before the method name.
 ```go
@@ -63,11 +63,11 @@ In a method call, the receiver argument appears before the method name. This par
   fmt.Println(Distance(p, q)) // "5", function call
   fmt.Println(p.Distance(q))  // "5", method call
 ```
-There’s no conflict between the two declarations of functions called `Distance` above. The first declares a package-level function called `geometry.Distance`. The second declares a method of the type `Point`, so its name is `Point.Distance`.
+There's no conflict between the two declarations of functions called `Distance` above. The first declares a package-level function called `geometry.Distance`. The second declares a method of the type `Point`, so its name is `Point.Distance`.
 
 The expression `p.Distance` is called a *selector*, because it selects the appropriate `Distance` method for the receiver `p` of type `Point`. Selectors are also used to select fields of struct types, as in `p.X`. Since methods and fields inhabit the same name space, declaring a method `X` on the struct type `Point` would be ambiguous and the compiler will reject it.
 
-Since each type has its own name space for methods, we can use the name `Distance` for other methods so long as they belong to different types. Let’s define a type `Path` that represents a sequence of line segments and give it a `Distance` method too.
+Since each type has its own name space for methods, we can use the name `Distance` for other methods so long as they belong to different types. Let's define a type `Path` that represents a sequence of line segments and give it a `Distance` method too.
 ```go
   // A Path is a journey connecting the points with straight lines.
   type Path []Point
@@ -85,9 +85,9 @@ Since each type has its own name space for methods, we can use the name `Distanc
 ```
 `Path` is a named slice type, not a struct type like `Point`, yet we can still define methods for it. In allowing methods to be associated with any type, Go is unlike many other object-oriented languages. It is often convenient to define additional behaviors for simple types such as numbers, strings, slices, maps, and sometimes even functions. Methods may be declared on any named type defined in the same package, so long as its underlying type is neither a pointer nor an interface.
 
-The two `Distance` methods have different types. They’re not related to each other at all, though `Path.Distance` uses `Point.Distance` internally to compute the length of each segment that connects adjacent points.
+The two `Distance` methods have different types. They're not related to each other at all, though `Path.Distance` uses `Point.Distance` internally to compute the length of each segment that connects adjacent points.
 
-Let’s call the new method to compute the perimeter of a right triangle:
+Let's call the new method to compute the perimeter of a right triangle:
 ```go
   perim := Path{
       {1, 1},
@@ -99,7 +99,7 @@ Let’s call the new method to compute the perimeter of a right triangle:
 ```
 In the two calls above to methods named `Distance`, the compiler determines which function to call based on both the method name and the type of the receiver. In the first, `path[i-1]` has type `Point` so `Point.Distance` is called; in the second, perim has type `Path`, so `Path.Distance` is called.
 
-All methods of a given type must have unique names, but different types can use the same name for a method, like the `Distance` methods for `Point` and `Path`; there’s no need to qualify function names (for example, `PathDistance`) to disambiguate. Here we see the first benefit to using methods over ordinary functions: method names can be shorter. The benefit is magnified for calls originating outside the package, since they can use the shorter name *and* omit the package name:
+All methods of a given type must have unique names, but different types can use the same name for a method, like the `Distance` methods for `Point` and `Path`; there's no need to qualify function names (for example, `PathDistance`) to disambiguate. Here we see the first benefit to using methods over ordinary functions: method names can be shorter. The benefit is magnified for calls originating outside the package, since they can use the shorter name *and* omit the package name:
 ```go
   import "gopl.io/ch6/geometry"
 
@@ -127,7 +127,7 @@ Because calling a function makes a copy of each argument value, if a function ne
 ```
 The name of this method is `(*Point).ScaleBy`. The parentheses are necessary; without them, the expression would be parsed as `*(Point.ScaleBy)`.
 
-In a realistic program, convention dictates that if any method of Point has a pointer receiver, then all methods of Point should have a pointer receiver, even ones that don’t strictly need it. We’ve broken this rule for `Point` so that we can show both kinds of method.
+In a realistic program, convention dictates that if any method of Point has a pointer receiver, then all methods of Point should have a pointer receiver, even ones that don't strictly need it. We've broken this rule for `Point` so that we can show both kinds of method.
 
 Named types (`Point`) and pointers to them (`*Point`) are the only types that may appear in a receiver declaration. Furthermore, to avoid ambiguities, method declarations are not permitted on named types that are themselves pointer types:
 ```go
@@ -157,7 +157,7 @@ But the last two cases are ungainly. Fortunately, the language helps us here. If
 ```go
   p.ScaleBy(2)
 ```
-and the compiler will perform an implicit `&p` on the variable. This works only for variables, including struct fields like `p.X` and array or slice elements like `perim[0]`. We cannot call a `*Point` method on a non-addressable `Point` receiver, because there’s no way to obtain the address of a temporary value.
+and the compiler will perform an implicit `&p` on the variable. This works only for variables, including struct fields like `p.X` and array or slice elements like `perim[0]`. We cannot call a `*Point` method on a non-addressable `Point` receiver, because there's no way to obtain the address of a temporary value.
 ```go
   Point{1, 2}.ScaleBy(2) // compile error: can't take address of Point literal
 ```
@@ -166,7 +166,7 @@ But we can call a `Point` method like `Point.Distance` with a `*Point` receiver,
   pptr.Distance(q)
   (*pptr).Distance(q)
 ```
-Let’s summarize these three cases again, since they are a frequent point of confusion. In every valid method call expression, exactly one of these three statements is true.
+Let's summarize these three cases again, since they are a frequent point of confusion. In every valid method call expression, exactly one of these three statements is true.
 
 Either the receiver argument has the same type as the receiver parameter, for example both have type `T` or both have type `*T`:
 ```go
@@ -202,10 +202,10 @@ Just as some functions allow nil pointers as arguments, so do some methods for t
       return list.Value + list.Tail.Sum()
   }
 ```
-When you define a type whose methods allow nil as a receiver value, it’s worth pointing this
+When you define a type whose methods allow nil as a receiver value, it's worth pointing this
 out explicitly in its documentation comment, as we did above.
 
-Here’s part of the definition of the `Values` type from the `net/url` package:
+Here's part of the definition of the `Values` type from the `net/url` package:
 ```go
   // net/url
   package url
@@ -228,7 +228,7 @@ Here’s part of the definition of the `Values` type from the `net/url` package:
       v[key] = append(v[key], value)
   }
 ```
-It exposes its representation as a map but also provides methods to simplify access to the map, whose values are slices of strings; it’s a *multimap*. Its clients can use its intrinsic operators (`make`, slice literals, `m[key]`, and so on), or its methods, or both, as they prefer:
+It exposes its representation as a map but also provides methods to simplify access to the map, whose values are slices of strings; it's a *multimap*. Its clients can use its intrinsic operators (`make`, slice literals, `m[key]`, and so on), or its methods, or both, as they prefer:
 ```go
 // gopl.io/ch6/urlvalues
 
@@ -314,9 +314,9 @@ A struct type may have more than one anonymous field. Had we declared `ColoredPo
 ```
 then a value of this type would have all the methods of Point, all the methods of RGBA, and any additional methods declared on `ColoredPoint` directly. When the compiler resolves a selector such as `p.ScaleBy` to a method, it first looks for a directly declared method named `ScaleBy`, then for methods promoted once from `ColoredPoint`'s embedded fields, then for methods promoted twice from embedded fields within `Point` and `RGBA`, and so on. The compiler reports an error if the selector was ambiguous because two methods were promoted from the same rank.
 
-Methods can be declared only on named types (like `Point`) and pointers to them (`*Point`), but thanks to embedding, it’s possible and sometimes useful for unnamed struct types to have methods too.
+Methods can be declared only on named types (like `Point`) and pointers to them (`*Point`), but thanks to embedding, it's possible and sometimes useful for unnamed struct types to have methods too.
 
-Here’s a nice trick to illustrate. This example shows part of a simple cache implemented using two package-level variables, a mutex (§9.2) and the map that it guards:
+Here's a nice trick to illustrate. This example shows part of a simple cache implemented using two package-level variables, a mutex (§9.2) and the map that it guards:
 ```go
   var (
       mu sync.Mutex // guards mapping
@@ -351,7 +351,7 @@ The new variable gives more expressive names to the variables related to the cac
 
 ## 6.4. Method Values and Expressions 
 
-Usually we select and call a method in the same expression, as in `p.Distance()`, but it’s possible to separate these two operations. The selector `p.Distance` yields a *method value*, a function that binds a method (`Point.Distance`) to a specific receiver value `p`. This function can then be invoked without a receiver value; it needs only the non-receiver arguments.
+Usually we select and call a method in the same expression, as in `p.Distance()`, but it's possible to separate these two operations. The selector `p.Distance` yields a *method value*, a function that binds a method (`Point.Distance`) to a specific receiver value `p`. This function can then be invoked without a receiver value; it needs only the non-receiver arguments.
 ```go
   p := Point{1, 2}
   q := Point{4, 6}
@@ -367,7 +367,7 @@ scaleP(3)           //      then (6, 12)
 scaleP(10)          //      then (60, 120)
 ```
 
-Method values are useful when a package’s API calls for a function value, and the client’s desired behavior for that function is to call a method on a specific receiver. For example, the function time.AfterFunc calls a function value after a specified delay. This program uses it to launch the rocket r after 10 seconds:
+Method values are useful when a package's API calls for a function value, and the client's desired behavior for that function is to call a method on a specific receiver. For example, the function time.AfterFunc calls a function value after a specified delay. This program uses it to launch the rocket r after 10 seconds:
 ```go
   type Rocket struct { /* ... */ }
   func (r *Rocket) Launch() { /* ... */ }
@@ -458,9 +458,9 @@ func (s *IntSet) UnionWith(t *IntSet) {
 	}
 }
 ```
-Since each word has 64 bits, to locate the bit for x, we use the quotient x/64 as the word index and the remainder x%64 as the bit index within that word. The UnionWith operation uses the bitwise OR operator | to compute the union 64 elements at a time. (We’ll revisit the choice of 64-bit words in Exercise 6.5.)
+Since each word has 64 bits, to locate the bit for x, we use the quotient x/64 as the word index and the remainder x%64 as the bit index within that word. The UnionWith operation uses the bitwise OR operator | to compute the union 64 elements at a time. (We'll revisit the choice of 64-bit words in Exercise 6.5.)
 
-This implementation lacks many desirable features, some of which are posed as exercises below, but one is hard to live without: way to print an IntSet as a string. Let’s give it a String method as we did with Celsius in Section 2.5:
+This implementation lacks many desirable features, some of which are posed as exercises below, but one is hard to live without: way to print an IntSet as a string. Let's give it a String method as we did with Celsius in Section 2.5:
 ```go
 // String returns the set as a string of the form "{1 2 3}".
 func (s *IntSet) String() string {
@@ -484,7 +484,7 @@ func (s *IntSet) String() string {
 }
 ```
 
-Notice the similarity of the String method above with intsToString in Section 3.5.4; bytes.BufferisoftenusedthiswayinStringmethods. Thefmtpackagetreatstypeswitha String method specially so that values of complicated types can display themselves in a user- friendly manner. Instead of printing the raw representation of the value (a struct in this case), fmt calls the String method. The mechanism relies on interfaces and type assertions, which we’ll explain in Chapter 7.
+Notice the similarity of the String method above with intsToString in Section 3.5.4; bytes.BufferisoftenusedthiswayinStringmethods. Thefmtpackagetreatstypeswitha String method specially so that values of complicated types can display themselves in a user- friendly manner. Instead of printing the raw representation of the value (a struct in this case), fmt calls the String method. The mechanism relies on interfaces and type assertions, which we'll explain in Chapter 7.
 
 We can now demonstrate IntSet in action:
 ```go
@@ -509,7 +509,7 @@ A word of caution: we declared String and Has as methods of the pointer type *In
   fmt.Println(x.String()) // "{1 9 42 144}"
   fmt.Println(x)          // "{[4398046511618 0 65536]}"
 ```
-In the first case, we print an `*IntSet` pointer, which does have a `String` method. In the second case, we call `String()` on an `IntSet` variable; the compiler inserts the implicit & operation, giving us a pointer, which has the `String` method. But in the third case, because the `IntSet` value does not have a `String` method, `fmt.Println` prints the representation of the struct instead. It’s important not to forget the & operator. Making String a method of `IntSet`, not `*IntSet`, might be a good idea, but this is a case-by-case judgment.
+In the first case, we print an `*IntSet` pointer, which does have a `String` method. In the second case, we call `String()` on an `IntSet` variable; the compiler inserts the implicit & operation, giving us a pointer, which has the `String` method. But in the third case, because the `IntSet` value does not have a `String` method, `fmt.Println` prints the representation of the struct instead. It's important not to forget the & operator. Making String a method of `IntSet`, not `*IntSet`, might be a good idea, but this is a case-by-case judgment.
 
 ### Exercises
 - **Exercise 6.1**: Implement these additional methods:
@@ -532,13 +532,13 @@ A variable or method of an object is said to be encapsulated if it is inaccessib
 
 Go has only one mechanism to control the visibility of names: capitalized identifiers are exported from the package in which they are defined, and uncapitalized names are not. The same mechanism that limits access to members of a package also limits access to the fields of a struct or the methods of a type. As a consequence, to encapsulate an object, we must make it a struct.
 
-That’s the reason the `IntSet` type from the previous section was declared as a struct type even though it has only a single field:
+That's the reason the `IntSet` type from the previous section was declared as a struct type even though it has only a single field:
 ```go
   type IntSet struct {
       words []uint64
   }
 ```
-We could instead define `IntSet` as a slice type as follows, though of course we’d have to replace each occurrence of `s.words` by `*s` in its methods:
+We could instead define `IntSet` as a slice type as follows, though of course we'd have to replace each occurrence of `s.words` by `*s` in its methods:
 ```go
   type IntSet []uint64
 ```
@@ -571,7 +571,7 @@ As an example, consider the `bytes.Buffer` type. It is frequently used to accumu
       } 
   }
 ```
-The third benefit of encapsulation, and in many cases the most important, is that it prevents clients from setting an object’s variables arbitrarily. Because the object's variables can be set only by functions in the same package, the author of that package can ensure that all those functions maintain the object’s internal invariants. For example, the `Counter` type below permits clients to increment the counter or to reset it to zero, but not to set it to some arbitrary value:
+The third benefit of encapsulation, and in many cases the most important, is that it prevents clients from setting an object's variables arbitrarily. Because the object's variables can be set only by functions in the same package, the author of that package can ensure that all those functions maintain the object's internal invariants. For example, the `Counter` type below permits clients to increment the counter or to reset it to zero, but not to set it to some arbitrary value:
 ```go
   type Counter struct { n int }
 
@@ -603,6 +603,6 @@ Encapsulation is not always desirable. By revealing its representation as an int
 ```
 As another example, contrast `IntSet` with the `geometry.Path` type from the beginning of this chapter. `Path` was defined as a slice type, allowing its clients to construct instances using the slice literal syntax, to iterate over its points using a `range` loop, and so on, whereas these operations are denied to clients of `IntSet`.
 
-Here’s the crucial difference: `geometry.Path` is intrinsically a sequence of points, no more and no less, and we don’t foresee adding new fields to it, so it makes sense for the `geometry` package to reveal that `Path` is a slice. In contrast, an `IntSet` merely happens to be represented as a `[]uint64` slice. It could have been represented using `[]uint`, or something completely different for sets that are sparse or very small, and it might perhaps benefit from additional features like an extra field to record the number of elements in the set. For these reasons, it makes sense for `IntSet` to be opaque.
+Here's the crucial difference: `geometry.Path` is intrinsically a sequence of points, no more and no less, and we don't foresee adding new fields to it, so it makes sense for the `geometry` package to reveal that `Path` is a slice. In contrast, an `IntSet` merely happens to be represented as a `[]uint64` slice. It could have been represented using `[]uint`, or something completely different for sets that are sparse or very small, and it might perhaps benefit from additional features like an extra field to record the number of elements in the set. For these reasons, it makes sense for `IntSet` to be opaque.
 
-In this chapter, we learned how to associate methods with named types, and how to call those methods. Although methods are crucial to object-oriented programming, they’re only half the picture. To complete it, we need *interfaces*, the subject of the next chapter.
+In this chapter, we learned how to associate methods with named types, and how to call those methods. Although methods are crucial to object-oriented programming, they're only half the picture. To complete it, we need *interfaces*, the subject of the next chapter.

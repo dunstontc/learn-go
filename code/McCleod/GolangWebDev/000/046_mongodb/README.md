@@ -1450,7 +1450,7 @@ db.inventory.distinct( "sizes" )
 db.<collection name>.aggregate([{<match, sort, geoNear>},{<group>}])
 ```
 
-MongoDB’s aggregation framework is modeled on the concept of data processing pipelines. Documents enter a multi-stage pipeline that transforms the documents into an aggregated result.
+MongoDB's aggregation framework is modeled on the concept of data processing pipelines. Documents enter a multi-stage pipeline that transforms the documents into an aggregated result.
 
 The most basic pipeline stages provide filters that operate like queries and document transformations that modify the form of the output document.
 

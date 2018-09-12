@@ -2,7 +2,7 @@
 
 - *constant*
   - a simple, unchanging value
-- iota’s
+- iota's
   - creating constants values for:
     - KB
     - MB
@@ -27,5 +27,5 @@
     - int?
     - uint?
     - float64?
-  - if we didn’t have UNTYPED constants (constants of a kind), then we would have to do conversion on every literal value we used
+  - if we didn't have UNTYPED constants (constants of a kind), then we would have to do conversion on every literal value we used
     - and that would suck

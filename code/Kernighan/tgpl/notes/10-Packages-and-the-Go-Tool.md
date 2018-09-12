@@ -280,10 +280,330 @@ To keep the need for configuration to a minimum, the go tool relies heavily on c
 
 ### 10.7.1. Workspace Organization
 
+The only configuration most users ever need is the `GOPATH` environment variable, which specifies the root of the workspace. When switching to a different workspace, users update the value of `GOPATH`. For instance, we set GOPATH to `$HOME/gobook` while working on this book:
+```
+    $ export GOPATH=$HOME/gobook
+    $ go get gopl.io/...
+```
+After you download all the programs for this book using the command above, your workspace will contain a hierarchy like this one:
+```
+    GOPATH/ 
+        src/
+            gopl.io/
+                .git/
+                ch1/
+                    helloworld/
+                        main.go 
+                    dup/
+                        main.go
+                    ...
+            golang.org/x/net/
+                .git/
+                html/
+                    parse.go
+                    node.go 
+                    ...
+        bin/
+            helloworld
+            dup 
+        pkg/
+            darwin_amd64/
+                ...
+```
+GOPATH has three subdirectories. The src subdirectory holds source code. Each package resides in a directory whose name relative to `$GOPATH/src` is the package's import path, such asgopl.io/ch1/helloworld. Observe that a single `GOPATH` workspace contains multiple version-control repositories beneath `src`, such as `gopl.io` or `golang.org`. The `pkg` subdirectory is where the build tools store compiled packages, and the `bin` subdirectory holds executable programs like `helloworld`.
+
+A second environment variable, `GOROOT`, specifies the root directory of the Go distribution, which provides all the packages of the standard library. The directory structure beneath `GOROOT` resembles that of `GOPATH`, so, for example, the source files of the `fmt` package reside in the `$GOROOT/src/fmt` directory. Users never need to set `GOROOT` since, by default, the go tool will use the location where it was installed.
+
+The `go env` command prints the effective values of the environment variables relevant to the toolchain, including the default values for the missing ones. `GOOS` specifies the target operating system (for example, `android`, `linux`, `darwin`, or `windows`) and `GOARCH` specifies the target processor architecture, such as `amd64`, `386`, or `arm`. Although `GOPATH` is the only variable you must set, the others occasionally appear in our explanations.
+```
+    $ go env
+    GOPATH="/home/gopher/gobook"
+    GOROOT="/usr/local/go"
+    GOARCH="amd64"
+    GOOS="darwin"
+    ...
+```
 
 
 ### 10.7.2. Downloading Packages
+
+When using the `go` tool, a package's import path indicates not only where to find it in the local workspace, but where to find it on the Internet so that go get can retrieve and update it.
+
+The go get command can download a single package or an entire subtree or repository using the `...` notation, as in the previous section. The tool also computes and downloads all the dependencies of the initial packages, which is why the `golang.org/x/net/html` package appeared in the workspace in the previous example.
+
+Once `go get` has downloaded the packages, it builds them and then *installs* the libraries and commands. We'll look at the details in the next section, but an example will show how straightforward the process is. The first command below gets the `golint` tool, which checks for common style problems in Go source code. The second command runs `golint` on `gopl.io/ch2/popcount` from Section 2.6.2. It helpfully reports that we have forgotten to write a doc comment for the package:
+```
+    $ go get github.com/golang/lint/golint
+    $ $GOPATH/bin/golint gopl.io/ch2/popcount
+    src/gopl.io/ch2/popcount/main.go:1:1:
+        package comment should be of the form "Package popcount ..."
+```
+The go get command has support for popular code-hosting sites like GitHub, Bitbucket, and Launchpad and can make the appropriate requests to their version-control systems. For less well-known sites, you may have to indicate which version-control protocol to use in the import path, such as Git or Mercurial. Run `go help` import path for the details.
+
+The directories that `go get` creates are true clients of the remote repository, not just copies of the files, so you can use version-control commands to see a diff of local edits you've made or to update to a different revision. For example, the `golang.org/x/net` directory is a Git client:
+```
+    $ cd $GOPATH/src/golang.org/x/net
+    $ git remote -v
+    origin  https://go.googlesource.com/net (fetch)
+    origin  https://go.googlesource.com/net (push)
+```
+Notice that the apparent domain name in the package's import path, `golang.org`, differs from the actual domain name of the Git server, `go.googlesource.com`. This is a feature of the go tool that lets packages use a custom domain name in their import path while being hosted by a generic service such as `googlesource.com` or `github.com`. HTML pages beneath `https://golang.org/x/net/html` include the metadata shown below, which redirects the go tool to the Git repository at the actual hosting site:
+```
+    $ go build gopl.io/ch1/fetch
+    $ ./fetch https://golang.org/x/net/html | grep go-import
+    <meta name="go-import" 
+          content="golang.org/x/net git https://go.googlesource.com/net">
+```
+If you specify the `-u` flag, go get will ensure that all packages it visits, including dependencies, are updated to their latest version before being built and installed. Without that flag, packages that already exist locally will not be updated.
+
+The `go get -u` command generally retrieves the latest version of each package, which is convenient when you're getting started but may be inappropriate for deployed projects, where precise control of dependencies is critical for release hygiene. The usual solution to this problem is to *vendor* the code, that is, to make a persistent local copy of all the necessary dependencies, and to update this copy carefully and deliberately. Prior to Go 1.5, this required changing those packages' import paths, so our copy of `golang.org/x/net/html` would become `gopl.io/vendor/golang.org/x/net/html`. More recent versions of the go tool support vendoring directly, though we don't have space to show the details here. See *Vendor Directories* in the output of the `go help gopath` command.
+
+#### Exercises
+- **Exercise 10.3**: Using `fetch http://gopl.io/ch1/helloworld?go-get=1`, find out which service hosts the code samples for this book. (HTTP requests from `go get` include the `go-get` parameter so that servers can distinguish them from ordinary browser requests.)
+
+
 ### 10.7.3. Building Packages
+
+The `go build` command compiles each argument package. If the package is a library, the result is discarded; this merely checks that the package is free of compile errors. If the package is named `main`, `go build` invokes the linker to create an executable in the current directory; the name of the executable is taken from the last segment of the package's import path.
+
+Since each directory contains one package, each executable program, or *command* in Unix terminology, requires its own directory. These directories are sometimes children of a directory named `cmd`, such as the `golang.org/x/tools/cmd/godoc` command which serves Go package documentation through a web interface (§10.7.4).
+
+Packages may be specified by their import paths, as we saw above, or by a relative directory name, which must start with a `.` or `..` segment even if this would not ordinarily be required. If no argument is provided, the current directory is assumed. Thus the following commands build the same package, though each writes the executable to the directory in which `go build` is run:
+```
+    $ cd $GOPATH/src/gopl.io/ch1/helloworld
+    $ go build
+```
+and:
+```
+    $ cd anywhere
+    $ go build gopl.io/ch1/helloworld
+```
+and:
+```
+    $ cd $GOPATH
+    $ go build ./src/gopl.io/ch1/helloworld
+```
+but not:
+```
+    $ cd $GOPATH
+    $ go build src/gopl.io/ch1/helloworld
+    Error: cannot find package "src/gopl.io/ch1/helloworld".
+```
+Packages may also be specified as a list of file names, though this tends to be used only for small programs and one-off experiments. If the package name is `main`, the executable name comes from the basename of the first `.go` file.
+```
+    $ cat quoteargs.go
+    package main
+
+    import (
+        "fmt"
+        "os"
+    )
+
+    func main() {
+        fmt.Printf("%q\n", os.Args[1:])
+    }
+    $ go build quoteargs.go
+    $ ./quoteargs one "two three" four\ five
+    ["one" "two three" "four five"]
+```
+Particularly for throwaway programs like this one, we want to run the executable as soon as we've built it. The `go run` command combines these twos teps:
+```
+    $ go run quoteargs.go one "two three" four\ five
+    ["one" "two three" "four five"]
+```
+The first argument that doesn't end in `.go` is assumed to be the beginning of the list of arguments to the Go executable.
+
+By default, the `go build` command builds the requested package and all its dependencies, then throws away all the compiled code except the final executable, if any. Both the dependency analysis and the compilation are surprisingly fast, but as projects grow to dozens of packages and hundreds of thousands of lines of code, the time to recompile dependencies can become noticeable, potentially several seconds, even when those dependencies haven't changed at all.
+
+The `go install` command is very similar to go build, except that it saves the compiled code for each package and command instead of throwing it away. Compiled packages are saved beneath the `$GOPATH/pkg` directory corresponding to the src directory in which the source resides, and command executables are saved in the `$GOPATH/bin` directory. (Many users put `$GOPATH/bin` on their executable search path.) Thereafter, `go build` and `go install` do not run the compiler for those packages and commands if they have not changed, making subsequent builds much faster. For convenience, `go build -i` installs the packages that are dependencies of the build target.
+
+Since compiled packages vary by platform and architecture, `go install` saves them beneath a subdirectory whose name incorporates the values of the `GOOS` and `GOARCH` environment variables. For example, on a Mac the `golang.org/x/net/html` package is compiled and installed in the file `golang.org/x/net/html.a` under `$GOPATH/pkg/darwin_amd64`.
+
+It is straightforward to *cross-compile* a Go program, that is, to build an executable intended for a different operating system or CPU. Just set the `GOOS` or `GOARCH` variables during the build. The `cross` program prints the operating system and architecture for which it was built:
+```go
+// gopl.io/ch10/cross
+func main() {
+	fmt.Println(runtime.GOOS, runtime.GOARCH)
+}
+```
+The following commands produce 64-bit and 32-bit executables respectively:
+```
+    $ go build gopl.io/ch10/cross
+    $ ./cross
+    darwin amd64
+    $ GOARCH=386 go build gopl.io/ch10/cross
+    $ ./cross
+    darwin 386
+```
+Some packages may need to compile different versions of the code for certain platforms or processors, to deal with low-level portability issues or to provide optimized versions of important routines, for instance. If a file name includes an operating system or processor architecture name like `net_linux.go` or `asm_amd64.s`, then the `go` tool will compile the file only when building for that target. Special comments called *build tags* give more fine-grained control. For example, if a file contains this comment:
+```go
+    // +build linux darwin
+```
+before the package declaration (and its doc comment), `go build` will compile it only when building for Linux or Mac OS X, and this comment says never to compile the file:
+```go
+    // +build ignore
+```
+For more details, see the *Build Constraints* section of the `go/build` package's documentation:
+```
+    $ go doc go/build
+```
+
+
 ### 10.7.4. Documenting Packages
+
+Go style strongly encourages good documentation of package APIs. Each declaration of an exported package member and the package declaration itself should be immediately preceded by a comment explaining its purpose and usage.
+
+Go *doc comments* are always complete sentences, and the first sentence is usually a summary that starts with the name being declared. Function parameters and other identifiers are mentioned without quotation or markup. For example, here's the doc comment for `fmt.Fprintf`:
+```go
+    // Fprintf formats according to a format specifier and writes to w.
+    // It returns the number of bytes written and any write error encountered.
+    func Fprintf(w io.Writer, format string, a ...interface{}) (int, error)
+```
+The details of `Fprintf`'s formatting are explained in a doc comment associated with the `fmt` package itself. A comment immediately preceding a `package` declaration is considered the doc comment for the package as a whole. There must be only one, though it may appear in any file. Longer package comments may warrant a file of their own; `fmt`'s is over 300 lines. This file is usually called `doc.go`.
+
+Good documentation need not be extensive, and documentation is no substitute for simplicity. Indeed, Go's conventions favor brevity and simplicity in documentation as in all things, since documentation, like code, requires maintenance too. Many declarations can be explained in one well-worded sentence, and if the behavior is truly obvious, no comment is needed.
+
+Throughout the book, as space permits, we've preceded many declarations by doc comments, but you will find better examples as you browse the standard library. Two tools can help you do that.
+
+The `go doc` tool prints the declaration and doc comment of the entity specified on the command line, which may be a package:
+```
+    $ go doc time
+    package time // import "time"
+    Package time provides functionality for measuring and displaying time.
+    const Nanosecond Duration = 1 ...
+    func After(d Duration) <-chan Time
+    func Sleep(d Duration)
+    func Since(t Time) Duration
+    func Now() Time
+    type Duration int64
+    type Time struct { ... } ...many more...
+```
+or a package member:
+```
+    $ go doc time.Since
+    func Since(t Time) Duration
+        Since returns the time elapsed since t.
+        It is shorthand for time.Now().Sub(t).
+```
+or a method:
+```
+    $ go doc time.Duration.Seconds
+    func (d Duration) Seconds() float64
+        Seconds returns the duration as a floating-point number of seconds.
+```
+The tool does not need complete import paths or correct identifier case. This command prints the documentation of `(*json.Decoder).Decode` from the `encoding/json` package:
+```
+  $ go doc json.decode
+  func (dec *Decoder) Decode(v interface{}) error
+      Decode reads the next JSON-encoded value from its input and stores
+      it in the value pointed to by v.
+```
+The second tool, confusingly named `godoc`, serves cross-linked HTML pages that provide the same information as `go doc` and muc hmore. The `godoc` server at `https://golang.org/pkg` covers the standard library. Figure 10.1 shows the documentation for the `time` package, and in Section 11.6 we'll see `godoc`'s interactive display of example programs. The `godoc` server at `https://godoc.org` has a searchable index of thousands of open-source packages.
+
+You can also run an instance of `godoc` in your workspace if you want to browse your own packages. Visit `http://localhost:8000/pkg` in your browser while running this command:
+```
+    $ godoc -http :8000
+```
+Its `-analysis=type` and `-analysis=pointer` flags augment the documentation and the source code with the results of advanced static analysis.
+
+
 ### 10.7.5. Internal Packages
+
+The package is the most important mechanism for encapsulation in Go programs. Unexported identifiers are visible only within the same package, and exported identifiers are visible to the world.
+
+Sometimes, though, a middle ground would be helpful, a way to define identifiers that are visible to a small set of trusted packages, but not to everyone. For example, when we're breaking up a large package into more manageable parts, we may not want to reveal the interfaces between those parts to other packages. Or we may want to share utility functions across several packages of a project without exposing them more widely. Or perhaps we just want to experiment with a new package without prematurely committing to its API, by putting it "on probation" with a limited set of clients.
+
+![Figure 10.1](https://raw.githubusercontent.com/dunstontc/learn-go/master/code/Kernighan/tgpl/assets/fig10.1.png)
+
+To address these needs, the go build tool treats a package specially if its import path contains a path segment named `internal`. Such packages are called *internal packages*. An internal package may be imported only by another package that is inside the tree rooted at the parent of the internal directory. For example, given the packages below, `net/http/internal/chunked` can be imported from `net/http/httputil` or `net/http`, but not from `net/url`. However, `net/url` may import `net/http/httputil`.
+```
+    net/http
+    net/http/internal/chunked
+    net/http/httputil
+    net/url
+```
+
+
 ### 10.7.6. Querying Packages
+
+The `go list` tool reports in formation about available packages. In its simplest form, `go list` tests whether a package is present in the workspace and prints its import path if so:
+```
+    $ go list github.com/go-sql-driver/mysql
+    github.com/go-sql-driver/mysql
+```
+An argument to `go list` may contain the `"..."` wildcard, which matches any substring of a package's import path. We can use it to enumerate all the packages within a Go workspace:
+```
+    $ go list ...
+    archive/tar
+    archive/zip
+    bufio
+    bytes 
+    cmd/addr2line 
+    cmd/api 
+    ...many more...
+```
+or within a specific subtree:
+```
+    $ go list gopl.io/ch3/...
+    gopl.io/ch3/basename1
+    gopl.io/ch3/basename2
+    gopl.io/ch3/comma
+    gopl.io/ch3/mandelbrot
+    gopl.io/ch3/netflag
+    gopl.io/ch3/printints
+    gopl.io/ch3/surface
+```
+or related to a particular topic:
+```
+    $ go list ...xml...
+    encoding/xml
+    gopl.io/ch7/xmlselect
+```
+The `go list` command obtains the complete metadata for each package, not just the import path, and makes this information available to users or other tools in a variety of formats. The `-json` flag causes `go list` to print the entire record of each package in JSON format:
+```
+    $ go list -json hash
+    {
+        "Dir": "/home/gopher/go/src/hash",
+        "ImportPath": "hash",
+        "Name": "hash",
+        "Doc": "Package hash provides interfaces for hash functions.",
+        "Target": "/home/gopher/go/pkg/darwin_amd64/hash.a",
+        "Goroot": true,
+        "Standard": true,
+        "Root": "/home/gopher/go",
+        "GoFiles": [
+            "hash.go"
+        ],
+        "Imports": [
+          "io" 
+        ],
+        "Deps": [
+            "errors",
+            "io",
+            "runtime",
+            "sync",
+            "sync/atomic",
+            "unsafe"
+        ] 
+    }
+```
+The `-f` flag lets users customize the output format using the template language of package `text/template` (§4.6). This command prints the transitive dependencies of the `strconv` package, separated by spaces:
+```
+    $ go list -f '{{join .Deps " "}}' strconv
+    errors math runtime unicode/utf8 unsafe
+```
+and this command prints the direct imports of each package in the `compress` subtree of the standard library:
+```
+    $ go list -f '{{.ImportPath}} -> {{join .Imports " "}}' compress/...
+    compress/bzip2 -> bufio io sort
+    compress/flate -> bufio fmt io math sort strconv
+    compress/gzip -> bufio compress/flate errors fmt hash hash/crc32 io time
+    compress/lzw -> bufio errors fmt io
+    compress/zlib -> bufio compress/flate errors fmt hash hash/adler32 io
+```
+The `go list` command is useful for both one-off interactive queries and for build and test automation scripts. We'll use it again in Section 11.2.4. For more information, including the set of available fields and their meaning, see the output of `go help list`.
+
+In this chapter, we've explained all the important subcommands of the go tool — except one. In the next chapter, we'll see how the `go test` command is used for testing Go programs.
+
+#### Exercises
+- **Exercise 10.4**: Construct a tool that reports the set of all packages in the workspace that transitively depend on the packages specified by the arguments. Hint: you will need to run `go list twice`, once for the initial packages and once for all packages. You may want to parse its JSON output using the `encoding/json` package (§4.5).

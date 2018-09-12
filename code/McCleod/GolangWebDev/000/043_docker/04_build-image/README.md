@@ -76,7 +76,7 @@ Build the image using the docker build command.
 
 The -t parameter gives your image a tag, so you can run it more easily later. 
 
-Don’t forget the . command, which tells the docker build command to look in the current directory for a file called Dockerfile. 
+Don't forget the . command, which tells the docker build command to look in the current directory for a file called Dockerfile. 
 
 ```
 docker build -t docker-whale .

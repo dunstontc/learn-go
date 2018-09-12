@@ -4,7 +4,7 @@ We will search docker hub for an image. We will then run that image.
 
 When you run an image, that image is copied to your local machine.
 
-When you run an image in a container, Docker downloads the image to your computer. This local copy of the image saves you time. Docker only downloads the image again if the image’s source changes on the hub. You can, of course, delete the image yourself. You’ll learn more about that later. 
+When you run an image in a container, Docker downloads the image to your computer. This local copy of the image saves you time. Docker only downloads the image again if the image's source changes on the hub. You can, of course, delete the image yourself. You'll learn more about that later. 
 
 # Locate whalesay
 

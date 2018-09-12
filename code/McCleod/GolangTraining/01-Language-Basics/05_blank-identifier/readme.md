@@ -4,7 +4,7 @@
 
 ## the blank identifier
 - `_`
-- allows you to tell the compiler you aren’t using something
+- allows you to tell the compiler you aren't using something
 
 ### example
 

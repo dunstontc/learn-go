@@ -7,7 +7,7 @@
   - imports have file scope
 - exported / unexported 
   - aka, visible / not visible
-  - we don’t say (generally speaking): public / private
+  - we don't say (generally speaking): public / private
   - capitalization
     - capitalize: exported, visible outside the package
     - lowercase: unexported, not visible outside the package

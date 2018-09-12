@@ -73,22 +73,22 @@ of the application layer. When HTTPS is used, the following properties are achie
 authentication, data integrity, confidentiality. How are HTTP and HTTPS related to
 a secure flag of the cookie?
 
-Let’s consider the case of an authentication cookie. As was previously said,
+Let's consider the case of an authentication cookie. As was previously said,
 stealing this cookie is equivalent to impersonating the user. When HTTP is used,
 the cookie is sent in plaintext. This is fine for the attacker eavesdropping on the
 communication channel between the browser and the server – he can grab the cookie and
 impersonate the user.
 
-Now let’s assume that HTTPS is used instead of HTTP.
-HTTPS provides confidentiality. That’s why the attacker can’t see the cookie.
+Now let's assume that HTTPS is used instead of HTTP.
+HTTPS provides confidentiality. That's why the attacker can't see the cookie.
 The conclusion is to send the authentication cookie over a secure channel so that
-it can’t be eavesdropped. The question that might appear in this moment is:
+it can't be eavesdropped. The question that might appear in this moment is:
 why do we need a secure flag if we can use HTTPS?
 
-Let’s consider the following scenario to answer this question.
-The site is available over HTTP and HTTPS. Moreover, let’s assume that there is
+Let's consider the following scenario to answer this question.
+The site is available over HTTP and HTTPS. Moreover, let's assume that there is
 an attacker in the middle of the communication channel between the browser and the server.
-The cookie sent over HTTPS can’t be eavesdropped. However, the attacker can take advantage of
+The cookie sent over HTTPS can't be eavesdropped. However, the attacker can take advantage of
 the fact that the site is also available over HTTP. The attacker can send the link to
 the HTTP version of the site to the user. The user clicks the link and the HTTP request
 is generated. Since HTTP traffic is sent in plaintext, the attacker eavesdrops on the
@@ -104,7 +104,7 @@ In the previous section, it was presented how to protect the cookie from an atta
 eavesdropping on the communication channel between the browser and the server.
 However, eavesdropping is not the only attack vector to grab the cookie.
 
-Let’s continue the story with the authentication cookie and assume that XSS
+Let's continue the story with the authentication cookie and assume that XSS
 (cross-site scripting) vulnerability is present in the application. Then the
 attacker can take advantage of the XSS vulnerability to steal the authentication cookie.
 Can we somehow prevent this from happening? It turns out that an HttpOnly flag can be used
@@ -113,7 +113,7 @@ this authentication cookie in case of XSS exploitation. It seems like we have ac
 the goal, but the problem might still be present when cross-site tracing (XST)
 vulnerability exists (this vulnerability will be explained in the next section of the article)
  – the attacker might take advantage of XSS and enabled TRACE method to read
- the authentication cookie even if HttpOnly flag is used. Let’s see how XST works.
+ the authentication cookie even if HttpOnly flag is used. Let's see how XST works.
 
 SOURCE:
 http://resources.infosecinstitute.com/securing-cookies-httponly-secure-flags/

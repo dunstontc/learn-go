@@ -20,7 +20,7 @@
 
 A function lets us wrap up a sequence of statements as a unit that can be called from elsewhere in a program, perhaps multiple times. Functions make it possible to break a big job into smaller pieces that might well be written by different people separated by both time and space. A function hides its implementation details from its users. For all of these reasons, functions are a critical part of any programming language.
 
-We’ve seen many functions already. Now let’s take time for a more thorough discussion. The running example of this chapter is a web crawler, that is, the component of a web search engine responsible for fetching web pages, discovering the links within them, fetching the pages identified by those links, and so on. A web crawler gives us ample opportunity to explore recursion, anonymous functions, error handling, and aspects of functions that are unique to Go.
+We've seen many functions already. Now let's take time for a more thorough discussion. The running example of this chapter is a web crawler, that is, the component of a web search engine responsible for fetching web pages, discovering the links within them, fetching the pages identified by those links, and so on. A web crawler gives us ample opportunity to explore recursion, anonymous functions, error handling, and aspects of functions that are unique to Go.
 
 ## 5.1. Function Declarations 
 
@@ -30,7 +30,7 @@ A function declaration has a name, a list of parameters, an optional list of res
       body
   }
 ```
-The parameter list specifies the names and types of the function’s *parameters*, which are the local variables whose values or *arguments* are supplied by the caller. The result list specifies the types of the values that the function returns. If the function returns one unnamed result or no results at all, parentheses are optional and usually omitted. Leaving off the result list entirely declares a function that does not return any value and is called only for its effects. In the hypot function,
+The parameter list specifies the names and types of the function's *parameters*, which are the local variables whose values or *arguments* are supplied by the caller. The result list specifies the types of the values that the function returns. If the function returns one unnamed result or no results at all, parentheses are optional and usually omitted. Leaving off the result list entirely declares a function that does not return any value and is called only for its effects. In the hypot function,
 ```go
   func hypot(x, y float64) float64 {
       return math.Sqrt(x*x + y*y)
@@ -62,11 +62,11 @@ Here are four ways to declare a function with two parameters and one result, all
   fmt.Printf("%T\n", zero)  // "func(int, int) int"
 ```
 
-The type of a function is sometimes called its *signature*. Two functions have the same type or signature if they have the same sequence of parameter types and the same sequence of result types. The names of parameters and results don’t affect the type, nor does whether or not they were declared using the factored form.
+The type of a function is sometimes called its *signature*. Two functions have the same type or signature if they have the same sequence of parameter types and the same sequence of result types. The names of parameters and results don't affect the type, nor does whether or not they were declared using the factored form.
 
-Every function call must provide an argument for each parameter, in the order in which the parameters were declared. Go has no concept of default parameter values, nor any way to specify arguments by name, so the names of parameters and results don’t matter to the caller except as documentation.
+Every function call must provide an argument for each parameter, in the order in which the parameters were declared. Go has no concept of default parameter values, nor any way to specify arguments by name, so the names of parameters and results don't matter to the caller except as documentation.
 
-Parameters are local variables within the body of the function, with their initial values set to the arguments supplied by the caller. Function parameters and named results are variables in the same lexical block as the function’s outermost local variables.
+Parameters are local variables within the body of the function, with their initial values set to the arguments supplied by the caller. Function parameters and named results are variables in the same lexical block as the function's outermost local variables.
 
 Arguments are *passed by value*, so the function receives a copy of each argument; modifications to the copy do not affect the caller. However, if the argument contains some kind of reference, like a pointer, slice, map, function, or channel, then the caller may be affected by any modifications the function makes to variables *indirectly* referred to by the argument.
 
@@ -80,11 +80,11 @@ You may occasionally encounter a function declaration without a body, indicating
 
 ## 5.2. Recursion 
 
-Functions may be *recursive*, that is, they may call themselves, either directly or indirectly. Recursion is a powerful technique for many problems, and of course it’s essential for processing recursive data structures. In Section 4.4, we used recursion over a tree to implement a simple insertion sort. In this section, we’ll use it again for processing HTML documents.
+Functions may be *recursive*, that is, they may call themselves, either directly or indirectly. Recursion is a powerful technique for many problems, and of course it's essential for processing recursive data structures. In Section 4.4, we used recursion over a tree to implement a simple insertion sort. In this section, we'll use it again for processing HTML documents.
 
-The example program below uses a non-standard package, `golang.org/x/net/html`, which provides an HTML parser. The `golang.org/x/...` repositories hold packages designed and maintained by the Go team for applications such as networking, internationalized text processing, mobile platforms, image manipulation, cryptography, and developer tools. These packages are not in the standard library because they’re still under development or because they’re rarely needed by the majority of Go programmers.
+The example program below uses a non-standard package, `golang.org/x/net/html`, which provides an HTML parser. The `golang.org/x/...` repositories hold packages designed and maintained by the Go team for applications such as networking, internationalized text processing, mobile platforms, image manipulation, cryptography, and developer tools. These packages are not in the standard library because they're still under development or because they're rarely needed by the majority of Go programmers.
 
-The parts of the `golang.org/x/net/html` API that we’ll need are shown below. The function `html.Parse` reads a sequence of bytes, parses them, and returns the root of the HTML document tree, which is an `html.Node.` HTML has several kinds of nodes (text, comments, and so on) but here we are concerned only with *element* nodes of the form `<name key='value'>`.
+The parts of the `golang.org/x/net/html` API that we'll need are shown below. The function `html.Parse` reads a sequence of bytes, parses them, and returns the root of the HTML document tree, which is an `html.Node.` HTML has several kinds of nodes (text, comments, and so on) but here we are concerned only with *element* nodes of the form `<name key='value'>`.
 ```go
 // golang.org/x/net/html
   package html
@@ -157,7 +157,7 @@ func visit(links []string, n *html.Node) []string {
 ```
 To descend the tree for a node `n`, visit recursively calls itself for each of `n`'s children, which are held in the `FirstChild` linked list.  
 
-Let’s run `findlinks` on the Go home page, piping the output of `fetch` (§1.5) to the input of `findlinks`. We've edited the output slightly for brevity.
+Let's run `findlinks` on the Go home page, piping the output of `fetch` (§1.5) to the input of `findlinks`. We've edited the output slightly for brevity.
 
 ```
   $ go build gopl.io/ch1/fetch
@@ -177,9 +177,9 @@ Let’s run `findlinks` on the Go home page, piping the output of `fetch` (§1.5
   http://www.google.com/intl/en/policies/privacy/
 ```
 
-Notice the variety of forms of links that appear in the page. Later we’ll see how to resolve them relative to the base URL, `https://golang.org`, to make absolute URLs.
+Notice the variety of forms of links that appear in the page. Later we'll see how to resolve them relative to the base URL, `https://golang.org`, to make absolute URLs.
 
-The next program uses recursion over the HTML node tree to print the structure of the tree in outline. As it encounters each element, it pushes the element’s tag onto a stack, then prints the stack.
+The next program uses recursion over the HTML node tree to print the structure of the tree in outline. As it encounters each element, it pushes the element's tag onto a stack, then prints the stack.
 ```go
 // gopl.io/ch5/outline
 func main() {
@@ -201,9 +201,9 @@ func outline(stack []string, n *html.Node) {
 	}
 }
 ```
-Note one subtlety: although `outline` "pushes" an element on stack, there is no corresponding pop. When `outline` calls itself recursively, the callee receives a copy of `stack`. Although the callee may append elements to this slice, modifying its underlying array and perhaps even allocating a new array, it doesn’t modify the initial elements that are visible to the caller, so when the function returns, the caller’s `stack` is as it was before the call.
+Note one subtlety: although `outline` "pushes" an element on stack, there is no corresponding pop. When `outline` calls itself recursively, the callee receives a copy of `stack`. Although the callee may append elements to this slice, modifying its underlying array and perhaps even allocating a new array, it doesn't modify the initial elements that are visible to the caller, so when the function returns, the caller's `stack` is as it was before the call.
 
-Here’s the outline of `https://golang.org`, again edited for brevity:
+Here's the outline of `https://golang.org`, again edited for brevity:
 ```
   $ go build gopl.io/ch5/outline
   $ ./fetch https://golang.org | ./outline
@@ -222,7 +222,7 @@ Here’s the outline of `https://golang.org`, again edited for brevity:
   ...
 ```
 
-As you can see by experimenting with `outline`, most HTML documents can be processed with only a few levels of recursion, but it’s not hard to construct pathological web pages that require extremely deep recursion.
+As you can see by experimenting with `outline`, most HTML documents can be processed with only a few levels of recursion, but it's not hard to construct pathological web pages that require extremely deep recursion.
 
 Many programming language implementations use a fixed-size function call stack; sizes from 64KB to 2MB are typical. Fixed-size stacks impose a limit on the depth of recursion, so one must be careful to avoid a *stack overflow* when traversing large data structures recursively; fixed-size stacks may even pose a security risk. In contrast, typical Go implementations use variable-size stacks that start small and grow as needed up to a limit on the order of a gigabyte. This lets us use recursion safely and without worrying about overflow.
 
@@ -235,9 +235,9 @@ Many programming language implementations use a fixed-size function call stack; 
 
 ## 5.3. Multiple Return Values 
 
-A function can return more than one result. We’ve seen many examples of functions from standard packages that return two values, the desired computational result and an error value or boolean that indicates whether the computation worked. The next example shows how to write one of our own.
+A function can return more than one result. We've seen many examples of functions from standard packages that return two values, the desired computational result and an error value or boolean that indicates whether the computation worked. The next example shows how to write one of our own.
 
-The program below is a variation of `findlinks` that makes the HTTP request itself so that we no longer need to run `fetch`. Because the HTTP and parsing operations can fail, `findLinks` declares two results: the list of discovered links and an error. Incidentally, the HTML parser can usually recover from bad input and construct a document containing error nodes, so `Parse` rarely fails; when it does, it’s typically due to underlying I/O errors.
+The program below is a variation of `findlinks` that makes the HTTP request itself so that we no longer need to run `fetch`. Because the HTTP and parsing operations can fail, `findLinks` declares two results: the list of discovered links and an error. Incidentally, the HTML parser can usually recover from bad input and construct a document containing error nodes, so `Parse` rarely fails; when it does, it's typically due to underlying I/O errors.
 ```go
 // gopl.io/ch5/findlinks2
 func main() {
@@ -274,7 +274,7 @@ func findLinks(url string) ([]string, error) {
 ```
 There are four return statements in `findLinks`, each of which returns a pair of values. The first three `returns` cause the function to pass the underlying errors from the `http` and `html` packages on to the caller. In the first case, the error is returned unchanged; in the second and third, it is augmented with additional context information by `fmt.Errorf` (§7.8). If `findLinks` is successful, the final return statement returns the slice of links, with no error.
 
-We must ensure that `resp.Body` is closed so that network resources are properly released even in case of error. Go’s garbage collector recycles unused memory, but do not assume it will release unused operating system resources like open files and network connections. They should be closed explicitly.
+We must ensure that `resp.Body` is closed so that network resources are properly released even in case of error. Go's garbage collector recycles unused memory, but do not assume it will release unused operating system resources like open files and network connections. They should be closed explicitly.
 
 The result of calling a multi-valued function is a tuple of values. The caller of such a function must explicitly assign the values to variables if any of them are to be used:
 ```go
@@ -305,7 +305,7 @@ Well-chosen names can document the significance of a function's results. Names a
   func Split(path string) (dir, file string)
   func HourMinSec(t time.Time) (hour, minute, second int)
 ```
-but it’s not always necessary to name multiple results solely for documentation. For instance, convention dictates that a final `bool` result indicates success; an `error` result often needs no explanation.
+but it's not always necessary to name multiple results solely for documentation. For instance, convention dictates that a final `bool` result indicates success; an `error` result often needs no explanation.
 
 In a function with named results, the operands of a return statement may be omitted. This is called a *bare return*.
 ```go
@@ -332,7 +332,7 @@ A bare return is a shorthand way to return each of the named result variables in
 ```go
   return words, images, err
 ```
-In functions like this one, with many return statements and several results, bare returns can reduce code duplication, but they rarely make code easier to understand. For instance, it’s not obvious at first glance that the two early returns are equivalent to `return 0, 0, err` (because the result variables `words` and `images` are initialized to their zero values) and that the final `return` is equivalent to `return words, images, nil`. For this reason, bare returns are best used sparingly.
+In functions like this one, with many return statements and several results, bare returns can reduce code duplication, but they rarely make code easier to understand. For instance, it's not obvious at first glance that the two early returns are equivalent to `return 0, 0, err` (because the result variables `words` and `images` are initialized to their zero values) and that the final `return` is equivalent to `return words, images, nil`. For this reason, bare returns are best used sparingly.
 
 #### Exercises
 - **Exercise 5.5**: Implement `countWordsAndImages`. (See Exercise 4.9 for word-splitting.) 
@@ -342,13 +342,13 @@ results and a bare return statement.
 
 ## 5.4. Errors 
 
-Some functions always succeed at their task. For example, `strings.Contains` and `strconv.FormatBool` have well-defined results for all possible argument values and cannot fail — barring catastrophic and unpredictable scenarios like running out of memory, where the symptom is far from the cause and from which there’s little hope of recovery.
+Some functions always succeed at their task. For example, `strings.Contains` and `strconv.FormatBool` have well-defined results for all possible argument values and cannot fail — barring catastrophic and unpredictable scenarios like running out of memory, where the symptom is far from the cause and from which there's little hope of recovery.
 
 Other functions always succeed so long as their preconditions are met. For example, the time.Date function always constructs a time.Time from its components—year, month, and so on—unless the last argument (the time zone) is nil, in which case it panics. This panic is a sure sign of a bug in the calling code and should never happen in a well-written program.
 
-For many other functions, even in a well-written program, success is not assured because it depends on factors beyond the programmer’s control. Any function that does I/O, for example, must confront the possibility of error, and only a naïve programmer believes a simple read or write cannot fail. Indeed, it’s when the most reliable operations fail unexpectedly that we most need to know why.
+For many other functions, even in a well-written program, success is not assured because it depends on factors beyond the programmer's control. Any function that does I/O, for example, must confront the possibility of error, and only a naïve programmer believes a simple read or write cannot fail. Indeed, it's when the most reliable operations fail unexpectedly that we most need to know why.
 
-Errors are thus an important part of a package’s API or an application’s user interface, and failure is just one of several expected behaviors. This is the approach Go takes to error handling. A function for which failure is an expected behavior returns an additional result, conventionally the last one. If the failure has only one possible cause, the result is a boolean, usually called ok, as in this example of a cache lookup that always succeeds unless there was no entry for that key:
+Errors are thus an important part of a package's API or an application's user interface, and failure is just one of several expected behaviors. This is the approach Go takes to error handling. A function for which failure is an expected behavior returns an additional result, conventionally the last one. If the failure has only one possible cause, the result is a boolean, usually called ok, as in this example of a cache lookup that always succeeds unless there was no entry for that key:
 ```go
   value, ok := cache.Lookup(key)
   if !ok {
@@ -358,11 +358,11 @@ Errors are thus an important part of a package’s API or an application’s use
 
 More often, and especially for I/O, the failure may have a variety of causes for which the caller will need an explanation. In such cases, the type of the additional result is `error`.
 
-The built-in type `error` is an interface type. We’ll see more of what this means and its implications for error handling in Chapter 7. For now it’s enough to know that an `error` may be nil or non-nil, that nil implies success and non-nil implies failure, and that a non-nil `error` has an error message string which we can obtain by calling its `Error` method or print by calling `fmt.Println(err)` or `fmt.Printf("%v", err)`.
+The built-in type `error` is an interface type. We'll see more of what this means and its implications for error handling in Chapter 7. For now it's enough to know that an `error` may be nil or non-nil, that nil implies success and non-nil implies failure, and that a non-nil `error` has an error message string which we can obtain by calling its `Error` method or print by calling `fmt.Println(err)` or `fmt.Printf("%v", err)`.
 
 Usually when a function returns a non-nil error, its other results are undefined and should be ignored. However, a few functions may return partial results in error cases. For example, if an error occurs while reading from a file, a call to `Read` returns the number of bytes it was able to read *and* an `error` value describing the problem. For correct behavior, some callers may need to process the incomplete data before handling the error, so it is important that such functions clearly document their results.
 
-Go’s approach sets it apart from many other languages in which failures are reported using *exceptions*, not ordinary values. Although Go does have an exception mechanism of sorts, as we will see in Section 5.9, it is used only for reporting truly unexpected errors that indicate a bug, not the routine errors that a robust program should be built to expect.
+Go's approach sets it apart from many other languages in which failures are reported using *exceptions*, not ordinary values. Although Go does have an exception mechanism of sorts, as we will see in Section 5.9, it is used only for reporting truly unexpected errors that indicate a bug, not the routine errors that a robust program should be built to expect.
 
 The reason for this design is that exceptions tend to entangle the description of an error with the control flow required to handle it, often leading to an undesirable outcome: routine errors are reported to the end user in the form of an incomprehensible stack trace, full of information about the structure of the program but lacking intelligible context about what went wrong.
 
@@ -371,7 +371,7 @@ By contrast, Go programs use ordinary control-flow mechanisms like `if` and `ret
 
 ### 5.4.1. Error-Handling Strategies
 
-When a function call returns an error, it’s the caller’s responsibility to check it and take appropriate action. Depending on the situation, there may be a number of possibilities. Let’s take a look at five of them.
+When a function call returns an error, it's the caller's responsibility to check it and take appropriate action. Depending on the situation, there may be a number of possibilities. Let's take a look at five of them.
 
 First, and most common, is to *propagate* the error, so that a failure in a subroutine becomes a failure of the calling routine. We saw examples of this in the `findLinks` function of Section 5.3. If the call to `http.Get` fails, findLinks returns the HTTP error to the caller without further ado:
 ```go
@@ -381,7 +381,7 @@ First, and most common, is to *propagate* the error, so that a failure in a subr
   }
 ```
 
-In contrast, if the call to `html.Parse` fails, findLinks does not return the HTML parser’s error directly because it lacks two crucial pieces of information: that the error occurred in the parser, and the URL of the document that was being parsed. In this case, `findLinks` constructs a new error message that includes both pieces of information as well as the underlying parse error:
+In contrast, if the call to `html.Parse` fails, findLinks does not return the HTML parser's error directly because it lacks two crucial pieces of information: that the error occurred in the parser, and the URL of the document that was being parsed. In this case, `findLinks` constructs a new error message that includes both pieces of information as well as the underlying parse error:
 ```go
   doc, err := html.Parse(resp.Body)
   resp.Body.Close()
@@ -389,7 +389,7 @@ In contrast, if the call to `html.Parse` fails, findLinks does not return the HT
       return nil, fmt.Errorf("parsing %s as HTML: %v", url, err)
   }
 ```
-The `fmt.Errorf` function formats an error message using `fmt.Sprintf` and returns a new error value. We use it to build descriptive errors by successively prefixing additional context information to the original error message. When the error is ultimately handled by the program’s main function, it should provide a clear causal chain from the root problem to the overall failure, reminiscent of a NASA accident investigation:
+The `fmt.Errorf` function formats an error message using `fmt.Sprintf` and returns a new error value. We use it to build descriptive errors by successively prefixing additional context information to the original error message. When the error is ultimately handled by the program's main function, it should provide a clear causal chain from the root problem to the overall failure, reminiscent of a NASA accident investigation:
 ```
   genesis: crashed: no parachute: G-switch failed: bad relay orientation
 ```
@@ -397,11 +397,11 @@ Because error messages are frequently chained together, message strings should n
 
 When designing error messages, be deliberate, so that each one is a meaningful description of the problem with sufficient and relevant detail, and be consistent, so that errors returned by the same function or by a group of functions in the same package are similar in form and can be dealt with in the same way.
 
-For example, the os package guarantees that every error returned by a file operation, such as `os.Open` or the `Read`, `Write`, or `Close` methods of an open file, describes not just the nature of the failure (permission denied, no such directory, and so on) but also the name of the file, so the caller needn’t include this information in the error message it constructs.
+For example, the os package guarantees that every error returned by a file operation, such as `os.Open` or the `Read`, `Write`, or `Close` methods of an open file, describes not just the nature of the failure (permission denied, no such directory, and so on) but also the name of the file, so the caller needn't include this information in the error message it constructs.
 
 In general, the call f(x) is responsible for reporting the attempted operation f and the argument value x as they relate to the context of the error. The caller is responsible for adding further information that it has but the call f(x) does not, such as the URL in the call to html.Parse above.
 
-Let’s move on to the second strategy for handling errors. For errors that represent transient or unpredictable problems, it may make sense to *retry* the failed operation, possibly with a delay between tries, and perhaps with a limit on the number of attempts or the time spent trying before giving up entirely.
+Let's move on to the second strategy for handling errors. For errors that represent transient or unpredictable problems, it may make sense to *retry* the failed operation, possibly with a delay between tries, and perhaps with a limit on the number of attempts or the time spent trying before giving up entirely.
 ```go
 // gopl.io/ch5/wait
 // WaitForServer attempts to contact the server of a URL.
@@ -444,7 +444,7 @@ For a more attractive output, we can set the prefix used by the `log` package to
   log.SetPrefix("wait: ")
   log.SetFlags(0)
 ```
-Fourth, in some cases, it’s sufficient just to log the error and then continue, perhaps with reduced functionality. Again there’s a choice between using the `log` package, which adds the usual prefix:
+Fourth, in some cases, it's sufficient just to log the error and then continue, perhaps with reduced functionality. Again there's a choice between using the `log` package, which adds the usual prefix:
 ```go
   if err := Ping(); err != nil {
       log.Printf("ping failed: %v; networking disabled", err)
@@ -500,7 +500,7 @@ The caller can detect this condition using a simple comparison, as in the loop b
       // ...use r...
   }
 ```
-Since in an end-of-file condition there is no information to report besides the fact of it, `io.EOF` has a fixed error message, `"EOF"`. For other errors, we may need to report both the quality and quantity of the error, so to speak, so a fixed error value will not do. In Section 7.11, we’ll present a more systematic way to distinguish certain error values from others.
+Since in an end-of-file condition there is no information to report besides the fact of it, `io.EOF` has a fixed error message, `"EOF"`. For other errors, we may need to report both the quality and quantity of the error, so to speak, so a fixed error value will not do. In Section 7.11, we'll present a more systematic way to distinguish certain error values from others.
 
 
 ## 5.5. Function Values 
@@ -562,7 +562,7 @@ func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	}
 }
 ```
-The `forEachNode` function accepts two function arguments, one to call before a node’s children are visited and one to call after. This arrangement gives the caller a great deal of flexibility. For example, the functions `startElement` and `endElement` print the start and end tags of an HTML element like `<b>...</b>`:
+The `forEachNode` function accepts two function arguments, one to call before a node's children are visited and one to call after. This arrangement gives the caller a great deal of flexibility. For example, the functions `startElement` and `endElement` print the start and end tags of an HTML element like `<b>...</b>`:
 ```go
   var depth int
 
@@ -720,7 +720,7 @@ When an anonymous function requires recursion, as in this example, we must first
       // ...
   }
 ```
-The output of the `toposort` program is shown below. It is deterministic, an often-desirable property that doesn’t always come for free. Here, the values of the prereqs map are slices, not more maps, so their iteration order is deterministic, and we sorted the keys of `prereqs` before making the initial calls to `visitAll`.
+The output of the `toposort` program is shown below. It is deterministic, an often-desirable property that doesn't always come for free. Here, the values of the prereqs map are slices, not more maps, so their iteration order is deterministic, and we sorted the keys of `prereqs` before making the initial calls to `visitAll`.
 ```
   1:      intro to programming
   2:      discrete math
@@ -736,7 +736,7 @@ The output of the `toposort` program is shown below. It is deterministic, an oft
   12:     networks
   13:     programming languages
 ```
-Let’s return to our `findLinks` example. We’ve moved the link-extraction function `links.Extract` to its own package, since we’ll use it again in Chapter 8. We replaced the `visit` function with an anonymous function that appends to the `links` slice directly, and used `forEachNode` to handle the traversal. Since Extract needs only the `pre` function, it passes `nil` for the `post` argument.
+Let's return to our `findLinks` example. We've moved the link-extraction function `links.Extract` to its own package, since we'll use it again in Chapter 8. We replaced the `visit` function with an anonymous function that appends to the `links` slice directly, and used `forEachNode` to handle the traversal. Since Extract needs only the `pre` function, it passes `nil` for the `post` argument.
 ```go
 // gopl/ch5/links
 // Package links provides a link-extraction function.
@@ -788,7 +788,7 @@ func Extract(url string) ([]string, error) {
 ```
 Instead of appending the raw `href` attribute value to the `links` slice, this version parses it as a URL relative to the base URL of the document, `resp.Request.URL`. The resulting `link` is in absolute form, suitable for use in a call to `http.Get`.
 
-Crawling the web is, at its heart, a problem of graph traversal. The `topoSort` example showed a depth-first traversal; for our web crawler, we’ll use breadth-first traversal, at least initially. In Chapter 8, we’ll explore concurrent traversal.
+Crawling the web is, at its heart, a problem of graph traversal. The `topoSort` example showed a depth-first traversal; for our web crawler, we'll use breadth-first traversal, at least initially. In Chapter 8, we'll explore concurrent traversal.
 
 The function below encapsulates the essence of a breadth-first traversal. The caller provides an initial list `worklist` of items to visit and a function value `f` to call for each item. Each item is identified by a string. The function `f` returns a list of new items to append to the worklist. The `breadthFirst` function returns when all items have been visited. It maintains a set of strings to ensure that no item is visited twice.
 ```go
@@ -812,7 +812,7 @@ func breadthFirst(f func(item string) []string, worklist []string) {
 ```
 As we explained in passing in Chapter 3, the argument `"f(item)..."` causes all the items in the list returned by `f` to be appended to the `worklist`.
 
-In our crawler, items are URLs. The crawl function we’ll supply to `breadthFirst` prints the URL, extracts its links, and returns them so that they too are visited.
+In our crawler, items are URLs. The crawl function we'll supply to `breadthFirst` prints the URL, extracts its links, and returns them so that they too are visited.
 ```go
   func crawl(url string) []string {
       fmt.Println(url)
@@ -823,7 +823,7 @@ In our crawler, items are URLs. The crawl function we’ll supply to `breadthFir
       return list
   }
 ```
-To start the crawler off, we’ll use the command-line arguments as the initial URLs.
+To start the crawler off, we'll use the command-line arguments as the initial URLs.
 ```go
   func main() {
       // Crawl the web breadth-first,
@@ -831,7 +831,7 @@ To start the crawler off, we’ll use the command-line arguments as the initial 
       breadthFirst(crawl, os.Args[1:])
   }
 ```
-Let’s crawl the web starting from `https://golang.org`. Here are some of the resulting links:
+Let's crawl the web starting from `https://golang.org`. Here are some of the resulting links:
 ```
   $ go build gopl.io/ch5/findlinks3
   $ ./findlinks3 https://golang.org
@@ -852,13 +852,13 @@ The process ends when all reachable web pages have been crawled or the memory of
 - **Exercise 5.10**: Rewrite `topoSort` to use maps instead of slices and eliminate the initial sort. Verify that the results, though nondeterministic, are valid topological orderings.
 - **Exercise 5.11**: The instructor of the linear algebra course decides that calculus is now a prerequisite. Extend the `topoSort` function to report cycles.
 - **Exercise 5.12**: The `startElement` and `endElement` functions in `gopl.io/ch5/outline2` (§5.5) share a global variable, `depth`. Turn them into anonymous functions that share a variable local to the `outline` function.
-- **Exercise 5.13**: Modify `crawl` to make local copies of the pages it finds, creating directories as necessary. Don’t make copies of pages that come from a different domain. For example, if the original page comes from `golang.org`, save all files from there, but exclude ones from `vimeo.com`.
-- **Exercise 5.14**: Use the `breadthFirst` function to explore a different structure. For example, you could use the course dependencies from the `topoSort` example (a directed graph), the file system hierarchy on your computer (a tree), or a list of bus or subway routes downloaded from your city government’s web site (an undirected graph).
+- **Exercise 5.13**: Modify `crawl` to make local copies of the pages it finds, creating directories as necessary. Don't make copies of pages that come from a different domain. For example, if the original page comes from `golang.org`, save all files from there, but exclude ones from `vimeo.com`.
+- **Exercise 5.14**: Use the `breadthFirst` function to explore a different structure. For example, you could use the course dependencies from the `topoSort` example (a directed graph), the file system hierarchy on your computer (a tree), or a list of bus or subway routes downloaded from your city government's web site (an undirected graph).
 
 
 ### 5.6.1. Caveat: Capturing Iteration Variables
 
-In this section, we’ll look at a pitfall of Go’s lexical scope rules that can cause surprising results. We urge you to understand the problem before proceeding, because the trap can ensnare even experienced programmers.
+In this section, we'll look at a pitfall of Go's lexical scope rules that can cause surprising results. We urge you to understand the problem before proceeding, because the trap can ensnare even experienced programmers.
 
 Consider a program that must create a set of directories and later remove them. We can use a slice of function values to hold the clean-up operations. (For brevity, we have omitted all error handling in this example.)
 ```go
@@ -952,7 +952,7 @@ Variadic functions are often used for string formatting. The `errorf` function b
   linenum, name := 12, "count"
   errorf(linenum, "undefined: %s", name) // "Line 12: undefined: count"
 ```
-The `interface{}` type means that this function can accept any values at all for its final arguments, as we’ll explain in Chapter 7.
+The `interface{}` type means that this function can accept any values at all for its final arguments, as we'll explain in Chapter 7.
 
 #### Exercises
 - **Exercise 5.15**: Write variadic functions `max` and `min`, analogous to sum. What should these functions do when called with no arguments? Write variants that require at least one argument.
@@ -969,7 +969,7 @@ The `interface{}` type means that this function can accept any values at all for
 ## 5.8. Deferred Function Calls 
 Our `findLinks` examples used the output of `http.Get` as the input to `html.Parse`. This works well if the content of the requested URL is indeed HTML, but many pages contain images, plain text, and other file formats. Feeding such files into an HTML parser could have undesirable effects.
 
-The program below fetches an HTML document and prints its title. The `title` function inspects the `Content-Type` header of the server’s response and returns an error if the document is not HTML.
+The program below fetches an HTML document and prints its title. The `title` function inspects the `Content-Type` header of the server's response and returns an error if the document is not HTML.
 ```go
 // gopl.io/ch5/title1
 // Title1 prints the title of an HTML document specified by a URL.
@@ -1002,7 +1002,7 @@ func title(url string) error {
 	return nil
 }
 ```
-Here’s a typical session, slightly edited to fit:
+Here's a typical session, slightly edited to fit:
 ```
   $ go build gopl.io/ch5/title1
   $ ./title1 http://gopl.io
@@ -1013,7 +1013,7 @@ Here’s a typical session, slightly edited to fit:
   title: https://golang.org/doc/gopher/frontpage.png
       has type image/png, not text/html
 ```
-Observe the duplicated `resp.Body.Close()` call, which ensures that `title` closes the network connection on all execution paths, including failures. As functions grow more complex and have to handle more errors, such duplication of clean-up logic may become a maintenance problem. Let’s see how Go’s novel `defer` mechanism makes things simpler.
+Observe the duplicated `resp.Body.Close()` call, which ensures that `title` closes the network connection on all execution paths, including failures. As functions grow more complex and have to handle more errors, such duplication of clean-up logic may become a maintenance problem. Let's see how Go's novel `defer` mechanism makes things simpler.
 
 Syntactically, a `defer` statement is an ordinary function or method call prefixed by the keyword `defer`. The function and argument expressions are evaluated when the statement is executed, but the actual call is *deferred* until the function that contains the `defer` statement has finished, whether normally, by executing a return statement or falling off the end, or abnormally, by panicking. Any number of calls may be deferred; they are executed in the reverse of the order in which they were deferred.
 
@@ -1067,7 +1067,7 @@ or to unlock a mutex (§9.2):
       return m[key]
   }
 ```
-The `defer` statement can also be used to pair "on entry" and "on exit" actions when debugging a complex function. The `bigSlowOperation` function below calls `trace` immediately, which does the "on entry" action then returns a function value that, when called, does the corresponding "on exit" action. By deferring a call to the returned function in this way, we can instrument the entry point and all exit points of a function in a single statement and even pass values, like the `start` time, between the two actions. But don’t forget the final parentheses in the `defer` statement, or the "on entry" action will happen on exit and the on-exit action won’t happen at all!
+The `defer` statement can also be used to pair "on entry" and "on exit" actions when debugging a complex function. The `bigSlowOperation` function below calls `trace` immediately, which does the "on entry" action then returns a function value that, when called, does the corresponding "on exit" action. By deferring a call to the returned function in this way, we can instrument the entry point and all exit points of a function in a single statement and even pass values, like the `start` time, between the two actions. But don't forget the final parentheses in the `defer` statement, or the "on entry" action will happen on exit and the on-exit action won't happen at all!
 ```go
 // gopl.io/ch5/trace
 // The trace program uses defer to add entry/exit diagnostics to a function.
@@ -1090,7 +1090,7 @@ Each time `bigSlowOperation` is called, it logs its entry and exit and the elaps
   2015/11/18 09:53:26 enter bigSlowOperation
   2015/11/18 09:53:36 exit bigSlowOperation (10.000589217s)
 ```
-Deferred functions run *after* return statements have updated the function’s result variables. Because an anonymous function can access its enclosing function’s variables, including named results, a deferred anonymous function can observe the function’s results.
+Deferred functions run *after* return statements have updated the function's result variables. Because an anonymous function can access its enclosing function's variables, including named results, a deferred anonymous function can observe the function's results.
 
 Consider the function `double`:
 ```go
@@ -1120,7 +1120,7 @@ A deferred anonymous function can even change the values that the enclosing func
 
   fmt.Println(triple(4)) // "12"
 ```
-Because deferred functions aren’t executed until the very end of a function’s execution, a `defer` statement in a loop deserves extra scrutiny. The code below could run out of file descriptors since no file will be closed until all files have been processed:
+Because deferred functions aren't executed until the very end of a function's execution, a `defer` statement in a loop deserves extra scrutiny. The code below could run out of file descriptors since no file will be closed until all files have been processed:
 ```go
   for _, filename := range filenames {
       f, err := os.Open(filename)
@@ -1176,7 +1176,7 @@ func fetch(url string) (filename string, n int64, err error) {
 	return local, n, err
 }
 ```
-The deferred call to `resp.Body.Close` should be familiar by now. It’s tempting to use a second deferred call, to `f.Close`, to close the local file, but this would be subtly wrong because `os.Create` opens a file for writing, creating it as needed. On many file systems, notably NFS, write errors are not reported immediately but may be postponed until the file is closed. Failure to check the result of the close operation could cause serious data loss to go unnoticed. However, if both `io.Copy` and `f.Close` fail, we should prefer to report the error from `io.Copy` since it occurred first and is more likely to tell us the root cause.
+The deferred call to `resp.Body.Close` should be familiar by now. It's tempting to use a second deferred call, to `f.Close`, to close the local file, but this would be subtly wrong because `os.Create` opens a file for writing, creating it as needed. On many file systems, notably NFS, write errors are not reported immediately but may be postponed until the file is closed. Failure to check the result of the close operation could cause serious data loss to go unnoticed. However, if both `io.Copy` and `f.Close` fail, we should prefer to report the error from `io.Copy` since it occurred first and is more likely to tell us the root cause.
 
 ### Exercises
 - **Exercise 5.18**: Without changing its behavior, rewrite the `fetch` function to use `defer` to close the writable file.
@@ -1184,11 +1184,11 @@ The deferred call to `resp.Body.Close` should be familiar by now. It’s temptin
 
 ## 5.9. Panic 
 
-Go’s type system catches many mistakes at compile time, but others, like an out-of-bounds array access or nil pointer dereference, require checks at run time. When the Go runtime detects these mistakes, it *panics*.
+Go's type system catches many mistakes at compile time, but others, like an out-of-bounds array access or nil pointer dereference, require checks at run time. When the Go runtime detects these mistakes, it *panics*.
 
 During a typical panic, normal execution stops, all deferred function calls in that goroutine are executed, and the program crashes with a log message. This log message includes the *panic value*, which is usually an error message of some sort, and, for each goroutine, a *stack trace* showing the stack of function calls that were active at the time of the panic. This log message often has enough information to diagnose the root cause of the problem without running the program again, so it should always be included in a bug report about a panicking program.
 
-Not all panics come from the runtime. The built-in panic function may be called directly; it accepts any value as an argument. A panic is often the best thing to do when some "impossible" situation happens, for instance, execution reaches a case that logically can’t happen:
+Not all panics come from the runtime. The built-in panic function may be called directly; it accepts any value as an argument. A panic is often the best thing to do when some "impossible" situation happens, for instance, execution reaches a case that logically can't happen:
 ```go
   switch s := suit(drawCard()); s {
       case "Spades":   // ...
@@ -1199,7 +1199,7 @@ Not all panics come from the runtime. The built-in panic function may be called 
           panic(fmt.Sprintf("invalid suit %q", s)) // Joker?
   }
 ```
-It’s good practice to assert that the preconditions of a function hold, but this can easily be done to excess. Unless you can provide a more informative error message or detect an error sooner, there is no point asserting a condition that the runtime will check for you.
+It's good practice to assert that the preconditions of a function hold, but this can easily be done to excess. Unless you can provide a more informative error message or detect an error sooner, there is no point asserting a condition that the runtime will check for you.
 ```go
   func Reset(x *Buffer) {
       if x == nil {
@@ -1209,9 +1209,9 @@ It’s good practice to assert that the preconditions of a function hold, but th
   }
 ```
 
-Although Go’s panic mechanism resembles exceptions in other languages, the situations in which panic is used are quite different. Since a panic causes the program to crash, it is generally used for grave errors, such as a logical inconsistency in the program; diligent programmers consider any crash to be proof of a bug in their code. In a robust program, "expected" errors, the kind that arise from incorrect input, misconfiguration, or failing I/O, should be handled gracefully; they are best dealt with using error values.
+Although Go's panic mechanism resembles exceptions in other languages, the situations in which panic is used are quite different. Since a panic causes the program to crash, it is generally used for grave errors, such as a logical inconsistency in the program; diligent programmers consider any crash to be proof of a bug in their code. In a robust program, "expected" errors, the kind that arise from incorrect input, misconfiguration, or failing I/O, should be handled gracefully; they are best dealt with using error values.
 
-Consider the function regexp.Compile, which compiles a regular expression into an efficient form for matching. It returns an error if called with an ill-formed pattern, but checking this error is unnecessary and burdensome if the caller knows that a particular call cannot fail. In such cases, it’s reasonable for the caller to handle an error by panicking, since it is believed to be impossible.
+Consider the function regexp.Compile, which compiles a regular expression into an efficient form for matching. It returns an error if called with an ill-formed pattern, but checking this error is unnecessary and burdensome if the caller knows that a particular call cannot fail. In such cases, it's reasonable for the caller to handle an error by panicking, since it is believed to be impossible.
 
 Since most regular expressions are literals in the program source code, the `regexp` package provides a wrapper function `regexp.MustCompile` that does this check:
 ```go
@@ -1302,7 +1302,7 @@ the following additional text (again simplified for clarity) is printed to the s
   main.main()
       src/gopl.io/ch5/defer2/defer.go:15
 ```
-Readers familiar with exceptions in other languages may be surprised that `runtime.Stack` can print information about functions that seem to have already been "unwound." Go’s panic mechanism runs the deferred functions *before* it unwinds the stack.
+Readers familiar with exceptions in other languages may be surprised that `runtime.Stack` can print information about functions that seem to have already been "unwound." Go's panic mechanism runs the deferred functions *before* it unwinds the stack.
 
 
 ## 5.10. Recover
@@ -1324,13 +1324,13 @@ To illustrate, consider the development of a parser for a language. Even when it
 ```
 The deferred function in `Parse` recovers from a panic, using the panic value to construct an error message; a fancier version might include the entire call stack using `runtime.Stack`. The deferred function then assigns to the err result, which is returned to the caller.
 
-Recovering indiscriminately from panics is a dubious practice because the state of a package’s variables after a panic is rarely well defined or documented. Perhaps a critical update to a data structure was incomplete, a file or network connection was opened but not closed, or a lock was acquired but not released. Furthermore, by replacing a crash with, say, a line in a log file, indiscriminate recovery may cause bugs to go unnoticed.
+Recovering indiscriminately from panics is a dubious practice because the state of a package's variables after a panic is rarely well defined or documented. Perhaps a critical update to a data structure was incomplete, a file or network connection was opened but not closed, or a lock was acquired but not released. Furthermore, by replacing a crash with, say, a line in a log file, indiscriminate recovery may cause bugs to go unnoticed.
 
-Recovering from a panic within the same package can help simplify the handling of complex or unexpected errors, but as a general rule, you should not attempt to recover from another package’s panic. Public APIs should report failures as `error`s. Similarly, you should not recover from a panic that may pass through a function you do not maintain, such as a caller-provided callback, since you cannot reason about its safety.
+Recovering from a panic within the same package can help simplify the handling of complex or unexpected errors, but as a general rule, you should not attempt to recover from another package's panic. Public APIs should report failures as `error`s. Similarly, you should not recover from a panic that may pass through a function you do not maintain, such as a caller-provided callback, since you cannot reason about its safety.
 
 For example, the `net/http` package provides a web server that dispatches incoming requests to user-provided handler functions. Rather than let a panic in one of these handlers kill the process, the server calls `recover`, prints a stack trace, and continues serving. This is convenient in practice, but it does risk leaking resources or leaving the failed handler in an unspecified state that could lead to other problems.
 
-For all the above reasons, it’s safest to recover selectively if at all. In other words, recover only from panics that were intended to be recovered from, which should be rare. This intention can be encoded by using a distinct, unexported type for the panic value and testing whether the value returned by `recover` has that type. (We’ll see one way to do this in the next example.) If so, we report the panic as an ordinary `error`; if not, we call `panic` with the same value to resume the state of panic.
+For all the above reasons, it's safest to recover selectively if at all. In other words, recover only from panics that were intended to be recovered from, which should be rare. This intention can be encoded by using a distinct, unexported type for the panic value and testing whether the value returned by `recover` has that type. (We'll see one way to do this in the next example.) If so, we report the panic as an ordinary `error`; if not, we call `panic` with the same value to resume the state of panic.
 
 The example below is a variation on the `title` program that reports an error if the HTML document contains multiple `<title>` elements. If so, it aborts the recursion by calling `panic` with a value of the special type bailout.
 ```go

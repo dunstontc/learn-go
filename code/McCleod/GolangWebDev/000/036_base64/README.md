@@ -1,7 +1,7 @@
 In terms of actual standards, there have been a few attempts to codify cookie behaviour but none thus far actually reflect the real world.
 
 RFC 2109 was an attempt to codify and fix the original Netscape cookie_spec. In this standard many more special characters are disallowed, as it uses RFC 2616 tokens (a - is still allowed there), and only the value may be specified in a quoted-string with other characters. No browser ever implemented the limitations, the special handling of quoted strings and escaping, or the new features in this spec.
-RFC 2965 was another go at it, tidying up 2109 and adding more features under a ‘version 2 cookies’ scheme. Nobody ever implemented any of that either. This spec has the same token-and-quoted-string limitations as the earlier version and it's just as much a load of nonsense.
+RFC 2965 was another go at it, tidying up 2109 and adding more features under a ‘version 2 cookies' scheme. Nobody ever implemented any of that either. This spec has the same token-and-quoted-string limitations as the earlier version and it's just as much a load of nonsense.
 RFC 6265 is an HTML5-era attempt to clear up the historical mess. It still doesn't match reality exactly but it's much better then the earlier attempts—it is at least a proper subset of what browsers support, not introducing any syntax that is supposed to work but doesn't (like the previous quoted-string).
 In 6265 the cookie name is still specified as an RFC 2616 token, which means you can pick from the alphanums plus:
 
