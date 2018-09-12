@@ -162,6 +162,8 @@ You may find the following declarations helpful.
 
 
 ## Chapter 10
+- **Exercise 10.1**: Extend the `jpeg` program so that it converts any supported input format to any output format, using `image.Decode` to detect the input format and a flag to select the output format.
+- **Exercise 10.2**: Define a generic archive file-reading function capable of reading ZIP files (`archive/zip`) and POSIX tar files (`archive/tar`). Use a registration mechanism similar to the one described above so that support for each file format can be plugged in using blank imports.
 
 
 ## Chapter 11
