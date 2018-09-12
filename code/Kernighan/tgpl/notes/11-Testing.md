@@ -4,6 +4,12 @@
 
 - [11.1. The go test Tool](#111-the-go-test-tool)
 - [11.2. Test Functions](#112-test-functions)
+  - [11.2.1. Randomized Testing](#1121-randomized-testing)
+  - [11.2.2. Testing a Command](#1122-testing-a-command)
+  - [11.2.3. White-Box Testing](#1123-white-box-testing)
+  - [11.2.4. External Test Packages](#1124-external-test-packages)
+  - [11.2.5. Writing Effective Tests](#1125-writing-effective-tests)
+  - [11.2.6. Avoiding Brittle Tests](#1126-avoiding-brittle-tests)
 - [11.3. Coverage](#113-coverage)
 - [11.4. Benchmark Functions](#114-benchmark-functions)
 - [11.5. Profiling](#115-profiling)
@@ -27,12 +33,12 @@ In practice, writing test code is not much different from writing the original p
 
 ## 11.1. The go test Tool 
 ## 11.2. Test Functions 
-### 11.2.1.
-### 11.2.2.
-### 11.2.3.
-### 11.2.4.
-### 11.2.5.
-### 11.2.6.
+### 11.2.1. Randomized Testing
+### 11.2.2. Testing a Command
+### 11.2.3. White-Box Testing
+### 11.2.4. External Test Packages
+### 11.2.5. Writing Effective Tests
+### 11.2.6. Avoiding Brittle Tests
 ## 11.3. Coverage 
 ## 11.4. Benchmark Functions 
 ## 11.5. Profiling 

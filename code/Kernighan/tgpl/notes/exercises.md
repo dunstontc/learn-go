@@ -12,7 +12,7 @@
 - **Exercise 1.8**: Modify fetch to add the prefix http:// to each argument URL if it is missing. You might want to use strings.HasPrefix.
 - **Exercise 1.9**: Modify fetch to also print the HTTP status code, found in resp.Status.
 - **Exercise 1.10**: Find a web site that produces a large amount of data. Investigate caching by running `fetchall` twice in succession to see whether the reported time changes much. Do you get the same content each time? Modify `fetchall` to print its output to a file so it can be examined.
-- **Exercise 1.11**: Try `fetchall` with longer argument lists, such as samples from the top million web sites available at `alexa.com`. How does the program behave if a web site just doesn’t respond? (Section 8.9 describes mechanisms for coping in such cases.)
+- **Exercise 1.11**: Try `fetchall` with longer argument lists, such as samples from the top million web sites available at `alexa.com`. How does the program behave if a web site just doesn't respond? (Section 8.9 describes mechanisms for coping in such cases.)
 - **Exercise 1.12**: Modify the Lissajous server to read parameter values from the URL. For example, you might arrange it so that a URL like `http://localhost:8000/?cycles=20` sets the number of cycles to 20 instead of the default 5. Use the `strconv.Atoi` function to convert the string parameter into an integer. You can see its documentation with go doc `strconv.Atoi`.
 
 ## Chapter 2
@@ -35,7 +35,7 @@
 ```
 - **Exercise 3.5**: Implement a full-color Mandelbrot set using the function `image.NewRGBA` and the type `color.RGBA` or `color.YCbCr`.
 - **Exercise 3.6**: Supersampling is a technique to reduce the effect of pixelation by computing the color value at several points within each pixel and taking the average. The simplest method is to divide each pixel into four "subpixels." Implement it.
-- **Exercise 3.7**: Another simple fractal uses Newton’s method to find complex solutions to a function such as $z^4−1 = 0$. Shade each starting point by the number of iterations required to get close to one of the four roots. Color each point by the root it approaches.
+- **Exercise 3.7**: Another simple fractal uses Newton's method to find complex solutions to a function such as $z^4−1 = 0$. Shade each starting point by the number of iterations required to get close to one of the four roots. Color each point by the root it approaches.
 - **Exercise 3.8**: Rendering fractals at high zoom levels demands great arithmetic precision. Implement the same fractal using four different representations of numbers: `complex64`, `complex128`, `big.Float`, and `big.Rat`. (The latter two types are found in the `math/big` package. `Float` uses arbitrary but bounded-precision floating-point; `Rat` uses unbounded-precision rational numbers.) How do they compare in performance and memory usage? At what zoom levels do rendering artifacts become visible?
 - **Exercise 3.9**: Write a web server that renders fractals and writes the image data to the client. Allow the client to specify the *x*, *y*, and zoom values as parameters to the HTTP request.
 - **Exercise 3.10**: Write a non-recursive version of `comma`, using `bytes.Buffer` instead of string concatenation.
@@ -75,8 +75,8 @@ replaces each substring `"$foo"` within `s` by the text returned by `f("foo")`.
 - **Exercise 5.10**: Rewrite `topoSort` to use maps instead of slices and eliminate the initial sort. Verify that the results, though nondeterministic, are valid topological orderings.
 - **Exercise 5.11**: The instructor of the linear algebra course decides that calculus is now a prerequisite. Extend the `topoSort` function to report cycles.
 - **Exercise 5.12**: The `startElement` and `endElement` functions in `gopl.io/ch5/outline2` (§5.5) share a global variable, `depth`. Turn them into anonymous functions that share a variable local to the `outline` function.
-- **Exercise 5.13**: Modify `crawl` to make local copies of the pages it finds, creating directories as necessary. Don’t make copies of pages that come from a different domain. For example, if the original page comes from `golang.org`, save all files from there, but exclude ones from `vimeo.com`.
-- **Exercise 5.14**: Use the `breadthFirst` function to explore a different structure. For example, you could use the course dependencies from the `topoSort` example (a directed graph), the file system hierarchy on your computer (a tree), or a list of bus or subway routes downloaded from your city government’s web site (an undirected graph).
+- **Exercise 5.13**: Modify `crawl` to make local copies of the pages it finds, creating directories as necessary. Don't make copies of pages that come from a different domain. For example, if the original page comes from `golang.org`, save all files from there, but exclude ones from `vimeo.com`.
+- **Exercise 5.14**: Use the `breadthFirst` function to explore a different structure. For example, you could use the course dependencies from the `topoSort` example (a directed graph), the file system hierarchy on your computer (a tree), or a list of bus or subway routes downloaded from your city government's web site (an undirected graph).
 - **Exercise 5.15**: Write variadic functions `max` and `min`, analogous to sum. What should these functions do when called with no arguments? Write variants that require at least one argument.
 - **Exercise 5.16**: Write a variadic version of `strings.Join`.
 - **Exercise 5.17**: Write a variadic function `ElementsByTagName` that, given an HTML node tree and zero or more names, returns all the elements that match one of those names. Here are two example calls:
@@ -157,3 +157,27 @@ You may find the following declarations helpful.
 - **Exercise 8.13**: Make the chat server disconnect idle clients, such as those that have sent no messages in the last five minutes. Hint: calling `conn.Close()` in another goroutine unblocks active Read calls such as the one done by `input.Scan()`.
 - **Exercise 8.14**: Change the chat server's network protocol so that each client provides its name on entering. Use that name instead of the network address when prefixing each message with its sender's identity.
 - **Exercise 8.15**: Failure of any client program to read data in a timely manner ultimately causes all clients to get stuck. Modify the broadcaster to skip a message rather than wait if a client writer is not ready to accept it. Alternatively, add buffering to each client's outgoing message channel so that most messages are not dropped; the broadcaster should use a non-blocking send to this channel.
+
+## Chapter 9
+
+
+## Chapter 10
+
+
+## Chapter 11
+
+
+## Chapter 12
+- **Exercise 12.1**: Extend `Display` so that it can display maps whose keys are structs or arrays.
+- **Exercise 12.2**: Make `display` safe to use on cyclic data structures by bounding the number of steps it takes before abandoning the recursion. (In Section 13.3, we'll see another way to detect cycles.)
+- **Exercise 12.3**: Implement the missing cases of the encode function. Encode booleans as t and nil, floating-point numbers using Go's notation, and complex numbers like `1+2i` as `#C(1.02.0)`. Interfaces can be encoded as a pair of a type name and a value, for instance `("[]int"(123))`, but beware that this notation is ambiguous: the `reflect.Type.String` method may return the same string for different types.
+- **Exercise 12.4**: Modify encode to pretty-print the S-expression in the style shown above. 
+- **Exercise 12.5**: Adapt encode to emit JSON instead of S-expressions. Test your encoder using the standard decoder, `json.Unmarshal`.
+- **Exercise 12.6**: Adapt encode so that, as an optimization, it does not encode a field whose value is the zero value of its type.
+- **Exercise 12.7**: Create a streaming API for the S-expression decoder, following the style of `json.Decoder` (§4.5).
+- **Exercise 12.8**: The `sexpr.Unmarshal` function, like `json.Marshal`, requires the complete input in a byte slice before it can begin decoding. Define a `sexpr.Decoder` type that, like `json.Decoder`, allows a sequence of values to be decoded from an `io.Reader`. Change `sexpr.Unmarshal` to use this new type.
+- **Exercise 12.9**: Write a token-based API for decoding S-expressions, following the style of `xml.Decoder` (§7.14). You will need five types of tokens: `Symbol`, `String`, `Int`, `StartList`, and `EndList`.
+- **Exercise 12.10**: Extend `sexpr.Unmarshal` to handle the booleans, floating-point numbers, and interfaces encoded by your solution to Exercise 12.3. (Hint: to decode interfaces, you will need a mapping from the name of each supported type to its `reflect.Type`.)
+- **Exercise 12.11**: Write the corresponding `Pack` function. Given a struct value, `Pack` should return a URL incorporating the parameter values from the struct.
+- **Exercise 12.12**: Extend the field tag notation to express parameter validity requirements. For example, a string might need to be a valid email address or credit-card number, and an integer might need to be a valid US ZIP code. Modify `Unpack` to check these requirements.
+- **Exercise 12.13**: Modify the S-expression encoder (§12.4) and decoder (§12.6) so that they honor the `sexpr:"..."` field tag in a similar manner to `encoding/json` (§4.5).
