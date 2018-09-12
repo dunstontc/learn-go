@@ -61,6 +61,7 @@
 - **Exercise 4.14**: Create a web server that queries GitHub once and then allows navigation of the list of bug reports, milestones, and users.
 
 ## Chapter 5
+
 - **Exercise 5.1**: Change the `findlinks` program to traverse the `n.FirstChild` linked list using recursive calls to `visit` instead of a loop.
 - **Exercise 5.2**: Write a function to populate a mapping from element names (`p`, `div`, `span`, and so on) to the number of elements with that name in an HTML document tree.
 - **Exercise 5.3**: Write a function to print the contents of all text nodes in an HTML document tree. Do not descend into `<script>` or `<style>` elements, since their contents are not visible in a web browser.
@@ -162,6 +163,7 @@ You may find the following declarations helpful.
 
 
 ## Chapter 10
+
 - **Exercise 10.1**: Extend the `jpeg` program so that it converts any supported input format to any output format, using `image.Decode` to detect the input format and a flag to select the output format.
 - **Exercise 10.2**: Define a generic archive file-reading function capable of reading ZIP files (`archive/zip`) and POSIX tar files (`archive/tar`). Use a registration mechanism similar to the one described above so that support for each file format can be plugged in using blank imports.
 - **Exercise 10.3**: Using `fetch http://gopl.io/ch1/helloworld?go-get=1`, find out which service hosts the code samples for this book. (HTTP requests from `go get` include the `go-get` parameter so that servers can distinguish them from ordinary browser requests.)
@@ -171,6 +173,7 @@ You may find the following declarations helpful.
 
 
 ## Chapter 12
+
 - **Exercise 12.1**: Extend `Display` so that it can display maps whose keys are structs or arrays.
 - **Exercise 12.2**: Make `display` safe to use on cyclic data structures by bounding the number of steps it takes before abandoning the recursion. (In Section 13.3, we'll see another way to detect cycles.)
 - **Exercise 12.3**: Implement the missing cases of the encode function. Encode booleans as t and nil, floating-point numbers using Go's notation, and complex numbers like `1+2i` as `#C(1.02.0)`. Interfaces can be encoded as a pair of a type name and a value, for instance `("[]int"(123))`, but beware that this notation is ambiguous: the `reflect.Type.String` method may return the same string for different types.
@@ -184,3 +187,9 @@ You may find the following declarations helpful.
 - **Exercise 12.11**: Write the corresponding `Pack` function. Given a struct value, `Pack` should return a URL incorporating the parameter values from the struct.
 - **Exercise 12.12**: Extend the field tag notation to express parameter validity requirements. For example, a string might need to be a valid email address or credit-card number, and an integer might need to be a valid US ZIP code. Modify `Unpack` to check these requirements.
 - **Exercise 12.13**: Modify the S-expression encoder (§12.4) and decoder (§12.6) so that they honor the `sexpr:"..."` field tag in a similar manner to `encoding/json` (§4.5).
+
+## Chapter 13
+- **Exercise 13.1**: Define a deep comparison function that considers numbers (of any type) equal if they differ by less than one part in a billion.
+- **Exercise 13.2**: Write a function that reports whether its argument is a cyclic data structure.
+- **Exercise 13.3**: Use `sync.Mutex` to make `bzip2.writer` safe for concurrent use by multiple goroutines.
+- **Exercise 13.4**: Depending on C libraries has its drawbacks. Provide an alternative pure-Go implementation of `bzip.NewWriter` that uses the `os/exec` package to run `/bin/bzip2` as a subprocess.
