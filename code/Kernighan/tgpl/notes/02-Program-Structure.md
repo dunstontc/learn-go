@@ -769,13 +769,13 @@ As mentioned above, not all lexical blocks correspond to explicit brace-delimite
 
 The example below also has three variables named `x`, each declared in a different block—one in the function body, one in the `for` statement's block, and one in the loop body—but only two of the blocks are explicit:
 ```go
-  func main() {
-      x := "hello"
-      for _, x := range x {
-          x := x + 'A' - 'a'
-          fmt.Printf("%c", x) // "HELLO" (one letter per iteration)
-      } 
-  }
+    func main() {
+        x := "hello"
+        for _, x := range x {
+            x := x + 'A' - 'a'
+            fmt.Printf("%c", x) // "HELLO" (one letter per iteration)
+        } 
+    }
 ```
 
 Like `for` loops, `if` statements and `switch` statements also create implicit blocks in addition to their body blocks. The code in the following `if`-`else` chain shows the scope of `x` and `y`:
